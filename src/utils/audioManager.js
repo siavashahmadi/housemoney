@@ -56,14 +56,25 @@ function playTone(freq, duration, type = 'sine', volume = 0.15, startTime = 0) {
 }
 
 const sounds = {
-  // Ceramic chip clack — short noise burst through bandpass
+  // Ceramic chip toss — layered click with resonance
   chip_place() {
-    playNoise(0.05, 'bandpass', 3000, 2)
+    const now = ctx.currentTime
+    // Sharp high-freq click (the initial impact)
+    playNoise(0.025, 'bandpass', 4500, 4)
+    // Mid-freq body (ceramic resonance)
+    playNoise(0.04, 'bandpass', 2200, 2)
+    // Subtle low thud (weight of the chip hitting felt)
+    playNoise(0.035, 'bandpass', 800, 1)
   },
 
-  // Slightly deeper stacking sound
+  // Chip stacking — slightly muted, like chip landing on chips
   chip_stack() {
-    playNoise(0.06, 'bandpass', 2000, 2)
+    playNoise(0.02, 'bandpass', 3800, 3)
+    playNoise(0.035, 'bandpass', 1800, 2)
+    // Tiny delayed click for the "settle" sound
+    setTimeout(() => {
+      if (ctx && !muted) playNoise(0.015, 'bandpass', 5000, 4)
+    }, 25)
   },
 
   // Card sliding — noise with high-pass sweep

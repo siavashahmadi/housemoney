@@ -62,7 +62,8 @@ export function gameReducer(state, action) {
 
     case DEAL: {
       if (state.phase !== 'betting') return state
-      if (sumChipStack(state.chipStack) < MIN_BET) return state
+      const assetValue = state.bettedAssets.reduce((sum, a) => sum + a.value, 0)
+      if (sumChipStack(state.chipStack) + assetValue < MIN_BET) return state
       if (!action.cards || action.cards.length !== 4) return state
 
       const currentBet = sumChipStack(state.chipStack)
@@ -196,7 +197,7 @@ export function gameReducer(state, action) {
           break
         case 'lose':
         case 'bust':
-          delta = -state.currentBet
+          delta = -totalBet
           break
       }
 

@@ -9,15 +9,27 @@ function getDebtClass(bankroll) {
   return ''
 }
 
-function BankrollDisplay({ bankroll }) {
+function BankrollDisplay({ bankroll, currentBetTotal = 0 }) {
   const isNegative = bankroll < 0
+  const isOnCredit = bankroll > 0 && currentBetTotal > bankroll
   const debtClass = getDebtClass(bankroll)
+
+  const colorClass = isOnCredit
+    ? styles.credit
+    : isNegative
+      ? styles.negative
+      : styles.positive
 
   return (
     <div className={styles.display}>
-      <span className={`${styles.amount} ${isNegative ? styles.negative : styles.positive} ${debtClass}`}>
+      <span className={`${styles.amount} ${colorClass} ${debtClass}`}>
         {formatMoney(bankroll)}
       </span>
+      {isOnCredit && (
+        <span className={styles.creditLabel}>
+          BETTING ON CREDIT
+        </span>
+      )}
     </div>
   )
 }

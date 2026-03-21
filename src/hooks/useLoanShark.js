@@ -4,6 +4,7 @@ import { setLoanSharkMessage } from '../reducer/actions'
 
 export function useLoanShark(state, dispatch) {
   const prevBankrollRef = useRef(state.bankroll)
+  const timerRef = useRef(null)
 
   useEffect(() => {
     const prevBankroll = prevBankrollRef.current
@@ -14,22 +15,31 @@ export function useLoanShark(state, dispatch) {
     // Only check when in debt
     if (state.bankroll >= 0) return
 
-    // Find newly crossed thresholds
-    const newMessages = []
+    // Find newly crossed thresholds — keep only the worst (most severe)
     const newSeenThresholds = [...state.seenLoanThresholds]
+    let worstMessage = null
 
     for (const { threshold, message } of LOAN_SHARK_THRESHOLDS) {
       if (
         state.bankroll <= threshold &&
         !state.seenLoanThresholds.includes(threshold)
       ) {
-        newMessages.push(message)
+        worstMessage = message // last match = most severe (thresholds sorted ascending)
         newSeenThresholds.push(threshold)
       }
     }
 
-    if (newMessages.length > 0) {
-      dispatch(setLoanSharkMessage(newMessages, newSeenThresholds))
+    if (worstMessage) {
+      // Delay so the player sees the result banner first
+      clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => {
+        dispatch(setLoanSharkMessage([worstMessage], newSeenThresholds))
+      }, 1500)
     }
   }, [state.bankroll])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current)
+  }, [])
 }

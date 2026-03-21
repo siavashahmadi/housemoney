@@ -10,6 +10,7 @@
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+  touch-action: manipulation;
   transition: transform 0.1s ease, box-shadow 0.15s ease;
   flex-shrink: 0;
 }

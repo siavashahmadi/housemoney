@@ -18,8 +18,9 @@ function BettingControls({
   onBetAsset,
   onToggleAssetMenu,
 }) {
-  const total = chipStack.reduce((sum, v) => sum + v, 0)
-  const canDeal = total >= MIN_BET
+  const chipTotal = chipStack.reduce((sum, v) => sum + v, 0)
+  const assetTotal = bettedAssets.reduce((sum, a) => sum + a.value, 0)
+  const canDeal = (chipTotal + assetTotal) >= MIN_BET
 
   const dealClasses = [
     styles.dealButton,

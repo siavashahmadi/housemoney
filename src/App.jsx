@@ -1,4 +1,5 @@
 import { useReducer, useRef, useCallback, useMemo } from 'react'
+import audioManager from './utils/audioManager'
 import { gameReducer } from './reducer/gameReducer'
 import { createInitialState } from './reducer/initialState'
 import {
@@ -41,6 +42,9 @@ function App() {
 
   // --- Handlers (stable via useCallback — dispatch and stateRef never change identity) ---
   const handleChipTap = useCallback((value) => {
+    // Play sound immediately on tap — not in useEffect — for zero-latency feedback
+    const isFirst = stateRef.current.chipStack.length === 0
+    audioManager.play(isFirst ? 'chip_place' : 'chip_stack')
     dispatch(selectChip(value))
     dispatch(addChip(value))
   }, [])
@@ -78,6 +82,11 @@ function App() {
   const handleToggleMute = useCallback(() => dispatch({ type: TOGGLE_MUTE }), [])
 
   // --- Derived state ---
+  const currentBetTotal = useMemo(() =>
+    state.chipStack.reduce((sum, v) => sum + v, 0),
+    [state.chipStack]
+  )
+
   const canDoubleDown = useMemo(() =>
     state.phase === 'playing' &&
     state.playerHand.length === 2 &&
@@ -97,7 +106,7 @@ function App() {
         muted={state.muted}
         onToggleMute={handleToggleMute}
       />
-      <BankrollDisplay bankroll={state.bankroll} />
+      <BankrollDisplay bankroll={state.bankroll} currentBetTotal={currentBetTotal} />
 
       <div className={styles.table}>
         <DealerArea

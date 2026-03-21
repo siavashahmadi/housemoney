@@ -14,7 +14,7 @@ const Chip = memo(function Chip({ label, color, textColor, size = 'tray', select
         '--chip-border': `${color}88`,
         '--chip-glow': `${color}66`,
       }}
-      onClick={onClick}
+      onPointerDown={onClick}
     >
       {label}
     </button>

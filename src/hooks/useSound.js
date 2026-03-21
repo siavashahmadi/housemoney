@@ -26,10 +26,7 @@ export function useSound(state) {
   useEffect(() => {
     const prev = prevRef.current
 
-    // Chip placed
-    if (state.chipStack.length > prev.chipStack.length) {
-      audioManager.play(prev.chipStack.length === 0 ? 'chip_place' : 'chip_stack')
-    }
+    // Chip sounds are handled directly in App.jsx handleChipTap for instant feedback
 
     // Deal — phase changed from betting to playing (4 cards dealt)
     if (prev.phase === 'betting' && state.phase === 'playing') {
