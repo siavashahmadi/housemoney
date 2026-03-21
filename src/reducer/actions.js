@@ -19,6 +19,7 @@ export const DISMISS_ACHIEVEMENT = 'DISMISS_ACHIEVEMENT'
 export const DISMISS_LOAN_SHARK = 'DISMISS_LOAN_SHARK'
 export const SET_LOAN_SHARK_MESSAGE = 'SET_LOAN_SHARK_MESSAGE'
 export const UNLOCK_ACHIEVEMENT = 'UNLOCK_ACHIEVEMENT'
+export const LOAD_ACHIEVEMENTS = 'LOAD_ACHIEVEMENTS'
 export const REMOVE_ASSET = 'REMOVE_ASSET'
 export const TOGGLE_MUTE = 'TOGGLE_MUTE'
 export const SET_DEALER_MESSAGE = 'SET_DEALER_MESSAGE'
@@ -34,6 +35,7 @@ export const dealerDraw = (card) => ({ type: DEALER_DRAW, card })
 export const resolveHand = (outcome) => ({ type: RESOLVE_HAND, outcome })
 export const removeAsset = (assetId) => ({ type: REMOVE_ASSET, assetId })
 export const unlockAchievement = (id) => ({ type: UNLOCK_ACHIEVEMENT, id })
+export const loadAchievements = (ids) => ({ type: LOAD_ACHIEVEMENTS, ids })
 export const setDealerMessage = (message, shownDealerLines) => ({
   type: SET_DEALER_MESSAGE,
   message,

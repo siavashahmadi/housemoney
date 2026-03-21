@@ -4,11 +4,12 @@ import { createInitialState } from './reducer/initialState'
 import {
   addChip, selectChip, deal, hit, doubleDown, betAsset, removeAsset,
   UNDO_CHIP, CLEAR_CHIPS, ALL_IN, STAND, NEW_ROUND, RESET_GAME,
-  TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK,
+  TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK, TOGGLE_ACHIEVEMENTS, DISMISS_ACHIEVEMENT,
 } from './reducer/actions'
 import { useDealerTurn } from './hooks/useDealerTurn'
 import { useDealerMessage } from './hooks/useDealerMessage'
 import { useLoanShark } from './hooks/useLoanShark'
+import { useAchievements } from './hooks/useAchievements'
 import Header from './components/Header'
 import BankrollDisplay from './components/BankrollDisplay'
 import DealerArea from './components/DealerArea'
@@ -18,6 +19,8 @@ import BettingControls from './components/BettingControls'
 import ActionButtons from './components/ActionButtons'
 import ResultBanner from './components/ResultBanner'
 import LoanSharkPopup from './components/LoanSharkPopup'
+import AchievementToast from './components/AchievementToast'
+import AchievementPanel from './components/AchievementPanel'
 import styles from './App.module.css'
 
 function App() {
@@ -29,6 +32,7 @@ function App() {
   useDealerTurn(state, dispatch)
   useDealerMessage(state, dispatch)
   useLoanShark(state, dispatch)
+  useAchievements(state, dispatch)
 
   // Draw cards from deck (component picks, reducer processes)
   const drawCards = (count) => stateRef.current.deck.slice(0, count)
@@ -67,6 +71,8 @@ function App() {
   const handleRemoveAsset = (assetId) => dispatch(removeAsset(assetId))
   const handleToggleAssetMenu = () => dispatch({ type: TOGGLE_ASSET_MENU })
   const handleDismissLoanShark = () => dispatch({ type: DISMISS_LOAN_SHARK })
+  const handleToggleAchievements = () => dispatch({ type: TOGGLE_ACHIEVEMENTS })
+  const handleDismissAchievement = () => dispatch({ type: DISMISS_ACHIEVEMENT })
 
   // --- Derived state ---
   const canDoubleDown =
@@ -78,7 +84,12 @@ function App() {
 
   return (
     <div className={styles.app}>
-      <Header bankroll={state.bankroll} onReset={handleReset} />
+      <Header
+        bankroll={state.bankroll}
+        onReset={handleReset}
+        unlockedCount={state.unlockedAchievements.length}
+        onToggleAchievements={handleToggleAchievements}
+      />
       <BankrollDisplay bankroll={state.bankroll} />
 
       <div className={styles.table}>
@@ -139,6 +150,21 @@ function App() {
         message={state.loanSharkQueue[0] || null}
         onDismiss={handleDismissLoanShark}
       />
+
+      {state.achievementQueue.length > 0 && (
+        <AchievementToast
+          key={state.achievementQueue[0]}
+          achievementId={state.achievementQueue[0]}
+          onDismiss={handleDismissAchievement}
+        />
+      )}
+
+      {state.showAchievements && (
+        <AchievementPanel
+          unlockedAchievements={state.unlockedAchievements}
+          onClose={handleToggleAchievements}
+        />
+      )}
     </div>
   )
 }

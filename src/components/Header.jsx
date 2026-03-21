@@ -10,16 +10,24 @@ function getSubtitle(bankroll) {
   return 'HIGH ROLLER'
 }
 
-function Header({ bankroll, onReset }) {
+function Header({ bankroll, onReset, unlockedCount, onToggleAchievements }) {
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
         <h1 className={styles.logo}>BLACKJACK</h1>
         <span className={styles.subtitle}>{getSubtitle(bankroll)}</span>
       </div>
-      <button className={styles.resetButton} onClick={onReset}>
-        NEW GAME
-      </button>
+      <div className={styles.actions}>
+        <button className={styles.achievementButton} onClick={onToggleAchievements}>
+          <span>🏆</span>
+          {unlockedCount > 0 && (
+            <span className={styles.badge}>{unlockedCount}</span>
+          )}
+        </button>
+        <button className={styles.resetButton} onClick={onReset}>
+          NEW GAME
+        </button>
+      </div>
     </header>
   )
 }

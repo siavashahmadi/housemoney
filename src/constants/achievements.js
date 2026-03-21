@@ -1,0 +1,30 @@
+export const ACHIEVEMENTS = [
+  { id: 'first_hand', name: 'First Timer', description: 'Play your first hand', emoji: '🃏' },
+  { id: 'first_loss', name: 'Welcome to Vegas', description: 'Lose your first hand', emoji: '🎰' },
+  { id: 'first_win', name: "Beginner's Luck", description: 'Win your first hand', emoji: '✨' },
+  { id: 'broke', name: 'Flat Broke', description: 'Hit $0', emoji: '💸' },
+  { id: 'deep_debt', name: 'In Too Deep', description: 'Owe more than $50,000', emoji: '🕳️' },
+  { id: 'million_debt', name: 'National Debt', description: 'Owe more than $1,000,000', emoji: '🇺🇸' },
+  { id: 'bet_watch', name: "Time's Up", description: 'Bet your watch', emoji: '⌚' },
+  { id: 'bet_car', name: 'Walking Home', description: 'Bet your Tesla', emoji: '🚗' },
+  { id: 'bet_kidney', name: 'Organ Donor', description: 'Bet a kidney', emoji: '🫘' },
+  { id: 'bet_house', name: 'Homeless by Choice', description: 'Bet your house', emoji: '🏠' },
+  { id: 'bet_soul', name: 'Deal With the Devil', description: 'Bet your soul', emoji: '😈' },
+  { id: 'lose_everything', name: 'Rock Bottom', description: 'Lose all assets', emoji: '📦' },
+  { id: 'comeback', name: 'Comeback Kid', description: 'Win a hand after being in debt', emoji: '🔥' },
+  { id: 'win_streak_5', name: 'Hot Hand', description: 'Win 5 hands in a row', emoji: '✋' },
+  { id: 'win_streak_10', name: 'On Fire', description: 'Win 10 hands in a row', emoji: '🔥' },
+  { id: 'lose_streak_5', name: 'Down Bad', description: 'Lose 5 hands in a row', emoji: '📉' },
+  { id: 'lose_streak_10', name: 'Free Fall', description: 'Lose 10 hands in a row', emoji: '💀' },
+  { id: 'double_down_loss', name: 'Double the Pain', description: 'Lose a double down', emoji: '😭' },
+  { id: 'double_down_win', name: 'Big Brain Move', description: 'Win a double down', emoji: '🧠' },
+  { id: 'blackjack', name: 'Natural!', description: 'Get a blackjack', emoji: '🃏' },
+  { id: 'hands_50', name: 'Regular', description: 'Play 50 hands', emoji: '🪑' },
+  { id: 'hands_100', name: 'Addict', description: 'Play 100 hands', emoji: '🎰' },
+  { id: 'all_in_win', name: 'YOLO', description: 'Go all-in and win', emoji: '🎲' },
+  { id: 'all_in_loss', name: 'Wipeout', description: 'Go all-in and lose', emoji: '💥' },
+]
+
+export const ACHIEVEMENT_MAP = Object.fromEntries(
+  ACHIEVEMENTS.map(a => [a.id, a])
+)

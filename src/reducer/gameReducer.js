@@ -3,7 +3,7 @@ import {
   DEAL, BET_ASSET, REMOVE_ASSET, HIT, STAND, DOUBLE_DOWN, DEALER_DRAW,
   RESOLVE_HAND, NEW_ROUND, RESET_GAME,
   TOGGLE_ASSET_MENU, TOGGLE_ACHIEVEMENTS,
-  DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT,
+  DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT, LOAD_ACHIEVEMENTS,
   TOGGLE_MUTE, SET_DEALER_MESSAGE, SET_LOAN_SHARK_MESSAGE,
 } from './actions'
 import { createInitialState } from './initialState'
@@ -291,6 +291,10 @@ export function gameReducer(state, action) {
         unlockedAchievements: [...state.unlockedAchievements, action.id],
         achievementQueue: [...state.achievementQueue, action.id],
       }
+    }
+
+    case LOAD_ACHIEVEMENTS: {
+      return { ...state, unlockedAchievements: action.ids }
     }
 
     case TOGGLE_MUTE: {

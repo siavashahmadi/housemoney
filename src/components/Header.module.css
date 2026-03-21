@@ -32,6 +32,41 @@
   letter-spacing: 2px;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.achievementButton {
+  position: relative;
+  font-size: 18px;
+  padding: 4px;
+  line-height: 1;
+}
+
+.achievementButton:active {
+  transform: scale(0.9);
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--felt-dark);
+  background: var(--gold);
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
 .resetButton {
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;
