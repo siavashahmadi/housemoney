@@ -18,8 +18,21 @@
 }
 
 .controlsArea {
+  height: calc(220px + env(safe-area-inset-bottom, 0px));
   flex-shrink: 0;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.phaseContent {
+  animation: controlsFadeIn 0.15s ease-out;
+}
+
+@keyframes controlsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .waitingMessage {

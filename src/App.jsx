@@ -125,41 +125,43 @@ function App() {
       </div>
 
       <div className={styles.controlsArea}>
-        {state.phase === 'betting' && (
-          <BettingControls
-            bankroll={state.bankroll}
-            selectedChipValue={state.selectedChipValue}
-            chipStack={state.chipStack}
-            ownedAssets={state.ownedAssets}
-            bettedAssets={state.bettedAssets}
-            showAssetMenu={state.showAssetMenu}
-            onChipTap={handleChipTap}
-            onUndo={handleUndo}
-            onClear={handleClear}
-            onAllIn={handleAllIn}
-            onDeal={handleDeal}
-            onBetAsset={handleBetAsset}
-            onToggleAssetMenu={handleToggleAssetMenu}
-          />
-        )}
-        {state.phase === 'playing' && (
-          <ActionButtons
-            onHit={handleHit}
-            onStand={handleStand}
-            onDoubleDown={handleDoubleDown}
-            canDoubleDown={canDoubleDown}
-          />
-        )}
-        {state.phase === 'dealerTurn' && (
-          <div className={styles.waitingMessage}>Dealer&apos;s turn...</div>
-        )}
-        {state.phase === 'result' && (
-          <ResultBanner
-            result={state.result}
-            bankroll={state.bankroll}
-            onNextHand={handleNewRound}
-          />
-        )}
+        <div key={state.phase} className={styles.phaseContent}>
+          {state.phase === 'betting' && (
+            <BettingControls
+              bankroll={state.bankroll}
+              selectedChipValue={state.selectedChipValue}
+              chipStack={state.chipStack}
+              ownedAssets={state.ownedAssets}
+              bettedAssets={state.bettedAssets}
+              showAssetMenu={state.showAssetMenu}
+              onChipTap={handleChipTap}
+              onUndo={handleUndo}
+              onClear={handleClear}
+              onAllIn={handleAllIn}
+              onDeal={handleDeal}
+              onBetAsset={handleBetAsset}
+              onToggleAssetMenu={handleToggleAssetMenu}
+            />
+          )}
+          {state.phase === 'playing' && (
+            <ActionButtons
+              onHit={handleHit}
+              onStand={handleStand}
+              onDoubleDown={handleDoubleDown}
+              canDoubleDown={canDoubleDown}
+            />
+          )}
+          {state.phase === 'dealerTurn' && (
+            <div className={styles.waitingMessage}>Dealer&apos;s turn...</div>
+          )}
+          {state.phase === 'result' && (
+            <ResultBanner
+              result={state.result}
+              bankroll={state.bankroll}
+              onNextHand={handleNewRound}
+            />
+          )}
+        </div>
       </div>
 
       <LoanSharkPopup

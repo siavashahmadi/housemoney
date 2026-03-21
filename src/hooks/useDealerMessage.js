@@ -22,7 +22,7 @@ export function useDealerMessage(state, dispatch) {
       {}
     )
     dispatch(setDealerMessage(message, updatedShownLines))
-  }, [])
+  }, [dispatch])
 
   // Resolve-time messages — fires when handsPlayed increments (after RESOLVE_HAND)
   useEffect(() => {
@@ -42,7 +42,7 @@ export function useDealerMessage(state, dispatch) {
       context
     )
     dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.handsPlayed])
+  }, [state.handsPlayed, dispatch])
 
   // Deal-time messages — fires when phase transitions to 'playing'
   useEffect(() => {
@@ -61,7 +61,7 @@ export function useDealerMessage(state, dispatch) {
       context
     )
     dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.phase])
+  }, [state.phase, dispatch])
 
   // Asset bet messages — fires when bettedAssets grows
   useEffect(() => {
@@ -80,7 +80,7 @@ export function useDealerMessage(state, dispatch) {
       context
     )
     dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.bettedAssets.length])
+  }, [state.bettedAssets.length, dispatch])
 
   // Game reset — greeting when handsPlayed drops to 0
   useEffect(() => {
@@ -95,5 +95,5 @@ export function useDealerMessage(state, dispatch) {
       {}
     )
     dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.handsPlayed])
+  }, [state.handsPlayed, dispatch])
 }

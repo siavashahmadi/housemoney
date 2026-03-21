@@ -72,5 +72,5 @@ export function useSound(state) {
     }
 
     prevRef.current = state
-  })
+  }, [state])
 }
