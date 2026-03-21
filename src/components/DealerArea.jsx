@@ -1,8 +1,9 @@
 import Hand from './Hand'
+import DealerSpeechBubble from './DealerSpeechBubble'
 import { handValue, cardValue } from '../utils/cardUtils'
 import styles from './DealerArea.module.css'
 
-function DealerArea({ hand, phase, hideHoleCard }) {
+function DealerArea({ hand, phase, hideHoleCard, dealerMessage }) {
   const hasCards = hand.length > 0
 
   let displayValue = ''
@@ -17,6 +18,7 @@ function DealerArea({ hand, phase, hideHoleCard }) {
 
   return (
     <div className={styles.area}>
+      <DealerSpeechBubble message={dealerMessage} />
       <span className={styles.label}>DEALER</span>
       <div className={styles.handWrapper}>
         {hasCards ? (

@@ -20,6 +20,7 @@ export const DISMISS_LOAN_SHARK = 'DISMISS_LOAN_SHARK'
 export const UNLOCK_ACHIEVEMENT = 'UNLOCK_ACHIEVEMENT'
 export const REMOVE_ASSET = 'REMOVE_ASSET'
 export const TOGGLE_MUTE = 'TOGGLE_MUTE'
+export const SET_DEALER_MESSAGE = 'SET_DEALER_MESSAGE'
 
 // Action creators for actions with payloads
 export const addChip = (value) => ({ type: ADD_CHIP, value })
@@ -32,3 +33,8 @@ export const dealerDraw = (card) => ({ type: DEALER_DRAW, card })
 export const resolveHand = (outcome) => ({ type: RESOLVE_HAND, outcome })
 export const removeAsset = (assetId) => ({ type: REMOVE_ASSET, assetId })
 export const unlockAchievement = (id) => ({ type: UNLOCK_ACHIEVEMENT, id })
+export const setDealerMessage = (message, shownDealerLines) => ({
+  type: SET_DEALER_MESSAGE,
+  message,
+  shownDealerLines,
+})

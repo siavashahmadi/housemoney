@@ -1,0 +1,41 @@
+.bubble {
+  position: relative;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(232, 224, 208, 0.12);
+  border-radius: 12px;
+  padding: 8px 14px;
+  max-width: 280px;
+  text-align: center;
+  animation: speechFadeIn 0.4s ease-out both;
+}
+
+.text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.tail {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+@keyframes speechFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

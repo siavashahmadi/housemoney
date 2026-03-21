@@ -7,6 +7,7 @@ import {
   TOGGLE_ASSET_MENU,
 } from './reducer/actions'
 import { useDealerTurn } from './hooks/useDealerTurn'
+import { useDealerMessage } from './hooks/useDealerMessage'
 import Header from './components/Header'
 import BankrollDisplay from './components/BankrollDisplay'
 import DealerArea from './components/DealerArea'
@@ -24,6 +25,7 @@ function App() {
 
   // Dealer turn automation
   useDealerTurn(state, dispatch)
+  useDealerMessage(state, dispatch)
 
   // Draw cards from deck (component picks, reducer processes)
   const drawCards = (count) => stateRef.current.deck.slice(0, count)
@@ -80,6 +82,7 @@ function App() {
           hand={state.dealerHand}
           phase={state.phase}
           hideHoleCard={hideHoleCard}
+          dealerMessage={state.dealerMessage}
         />
         <BettingCircle
           chipStack={state.chipStack}

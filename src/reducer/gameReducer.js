@@ -4,7 +4,7 @@ import {
   RESOLVE_HAND, NEW_ROUND, RESET_GAME,
   TOGGLE_ASSET_MENU, TOGGLE_ACHIEVEMENTS,
   DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT,
-  TOGGLE_MUTE,
+  TOGGLE_MUTE, SET_DEALER_MESSAGE,
 } from './actions'
 import { createInitialState } from './initialState'
 import { CHIPS } from '../constants/chips'
@@ -287,6 +287,14 @@ export function gameReducer(state, action) {
 
     case TOGGLE_MUTE: {
       return { ...state, muted: !state.muted }
+    }
+
+    case SET_DEALER_MESSAGE: {
+      return {
+        ...state,
+        dealerMessage: action.message,
+        shownDealerLines: action.shownDealerLines,
+      }
     }
 
     default:
