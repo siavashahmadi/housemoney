@@ -1,0 +1,53 @@
+.chip {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  border: 3px dashed var(--chip-border);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+}
+
+.chip:active {
+  transform: scale(0.93);
+}
+
+.tray {
+  width: 52px;
+  height: 52px;
+  font-size: 13px;
+}
+
+.stack {
+  width: 36px;
+  height: 36px;
+  font-size: 10px;
+}
+
+.selected {
+  box-shadow: 0 0 14px var(--chip-glow), 0 0 6px var(--chip-glow);
+}
+
+.animate {
+  animation: chipBounce 0.3s ease-out both;
+}
+
+@media (max-width: 374px) {
+  .tray {
+    width: 44px;
+    height: 44px;
+    font-size: 11px;
+  }
+
+  .stack {
+    width: 32px;
+    height: 32px;
+    font-size: 9px;
+  }
+}

@@ -1,0 +1,78 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  padding: 0;
+  transition: border-color 0.2s ease;
+}
+
+.empty {
+  border: 2px dashed var(--gold-dim);
+  cursor: default;
+}
+
+.chipStack {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+
+.stackedChip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--gold);
+  color: var(--felt-dark);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+
+.placeholder {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gold-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.total {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+@media (max-width: 374px) {
+  .circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .total {
+    font-size: 14px;
+  }
+}

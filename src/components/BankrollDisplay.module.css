@@ -1,0 +1,25 @@
+.display {
+  text-align: center;
+  padding: 6px 0;
+  flex-shrink: 0;
+}
+
+.amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.positive {
+  color: var(--gold);
+}
+
+.negative {
+  color: var(--danger);
+}
+
+@media (max-width: 374px) {
+  .amount {
+    font-size: 24px;
+  }
+}

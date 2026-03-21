@@ -1,0 +1,52 @@
+.banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  animation: slideUp 0.3s ease-out both;
+}
+
+.resultText {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.gold {
+  color: var(--gold);
+  text-shadow: 0 2px 16px var(--gold-glow);
+}
+
+.green {
+  color: var(--success);
+}
+
+.red {
+  color: var(--danger);
+}
+
+.dim {
+  color: var(--text-dim);
+}
+
+.nextButton {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--felt-dark);
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  padding: 0 32px;
+  min-height: 44px;
+  border-radius: 12px;
+  letter-spacing: 2px;
+  box-shadow: 0 2px 12px var(--gold-glow);
+  transition: transform 0.1s ease;
+  width: 100%;
+}
+
+.nextButton:active {
+  transform: scale(0.97);
+}

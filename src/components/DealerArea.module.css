@@ -1,0 +1,43 @@
+.area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+}
+
+.handWrapper {
+  min-height: 109px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty {
+  height: 109px;
+}
+
+.value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+@media (max-width: 374px) {
+  .handWrapper {
+    min-height: 87px;
+  }
+
+  .empty {
+    height: 87px;
+  }
+}

@@ -1,0 +1,39 @@
+.actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.button {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  transition: transform 0.1s ease;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.hit {
+  background: linear-gradient(135deg, var(--success), #1e8b4e);
+}
+
+.stand {
+  background: linear-gradient(135deg, var(--danger), #c0392b);
+}
+
+.doubleDown {
+  background: linear-gradient(135deg, #7b2d8b, #5a1d6a);
+}
+
+.disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
