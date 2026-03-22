@@ -313,6 +313,14 @@ async def handle_leave(player_id: str):
         return
 
     player_name = room.players[player_id].name if player_id in room.players else "Unknown"
+
+    # Handle mid-game departure BEFORE removing player (needs turn order intact)
+    # Mark disconnected so _skip_done_players treats them as gone
+    if player_id in room.players:
+        room.players[player_id].connected = False
+    departure_events = engine.handle_player_departure(room, player_id)
+    triggered_dealer = room.phase == "dealer_turn"
+
     new_host_id = remove_player_from_room(room, player_id)
     manager.player_rooms.pop(player_id, None)
     manager.cancel_disconnect_task(player_id)
@@ -338,6 +346,14 @@ async def handle_leave(player_id: str):
                 "new_host": new_host_name,
             },
         )
+
+        # Broadcast departure events (turn advancement, auto-deal, etc.)
+        for event in departure_events:
+            await manager.broadcast_to_room(room_code, event)
+
+        # If departure triggered dealer turn, run it
+        if triggered_dealer:
+            asyncio.create_task(_run_dealer_and_advance(remaining_room, room_code))
 
 
 async def handle_disconnect(player_id: str):
@@ -367,6 +383,15 @@ async def handle_disconnect(player_id: str):
             "players": get_player_list(room),
         },
     )
+
+    # Handle mid-game departure (advance turn, auto-deal, etc.)
+    departure_events = engine.handle_player_departure(room, player_id)
+    for event in departure_events:
+        await manager.broadcast_to_room(room_code, event)
+
+    # If departure triggered dealer turn, run it
+    if room.phase == "dealer_turn":
+        asyncio.create_task(_run_dealer_and_advance(room, room_code))
 
     # Schedule auto-leave after grace period
     async def auto_leave():
@@ -441,6 +466,14 @@ async def handle_reconnect(player_id_from_msg: str, code: str, websocket: WebSoc
     if room.phase not in ("lobby",):
         reconnect_msg["state"] = engine.get_room_state(room)
     await websocket.send_text(json.dumps(reconnect_msg))
+
+    # If it's this player's turn, notify them
+    if room.phase == "playing":
+        current_pid = engine._get_current_player_id(room)
+        if current_pid == player_id_from_msg:
+            await websocket.send_text(
+                json.dumps({"type": "your_turn", "player_id": player_id_from_msg})
+            )
 
     # Broadcast to others
     await manager.broadcast_to_room(

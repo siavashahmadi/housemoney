@@ -689,5 +689,90 @@ class TestGetRoomState(unittest.TestCase):
         self.assertEqual(state["dealer_hand"][1]["rank"], "K")
 
 
+class TestHandlePlayerDeparture(unittest.TestCase):
+    def _setup_playing_room(self):
+        """Create a room in playing phase with controlled cards."""
+        room = make_room_with_players(2)
+        eng = GameEngine()
+        eng.start_game(room)
+
+        # Stack deck with safe cards (no blackjacks)
+        room.deck = [
+            make_card("5"), make_card("6"),   # p0 card1, p1 card1
+            make_card("7"),                    # dealer card1
+            make_card("8"), make_card("9"),   # p0 card2, p1 card2
+            make_card("10"),                   # dealer card2
+        ] + [make_card("2")] * 50
+
+        eng.place_bet(room, "player0", 100)
+        eng.place_bet(room, "player1", 100)
+
+        return room, eng
+
+    def test_departure_advances_turn_when_current(self):
+        room, eng = self._setup_playing_room()
+        if room.phase != "playing":
+            return
+
+        current_pid = room.turn_order[room.current_player_idx]
+        other_pid = [p for p in room.turn_order if p != current_pid][0]
+
+        # Mark current player as disconnected
+        room.players[current_pid].connected = False
+        events = eng.handle_player_departure(room, current_pid)
+
+        # Turn should have advanced (your_turn for other player or dealer_turn_start)
+        self.assertTrue(
+            any(e["type"] == "your_turn" for e in events)
+            or any(e["type"] == "dealer_turn_start" for e in events)
+        )
+
+    def test_departure_no_events_when_not_current(self):
+        room, eng = self._setup_playing_room()
+        if room.phase != "playing":
+            return
+
+        current_pid = room.turn_order[room.current_player_idx]
+        other_pid = [p for p in room.turn_order if p != current_pid][0]
+
+        # Mark non-current player as disconnected
+        room.players[other_pid].connected = False
+        events = eng.handle_player_departure(room, other_pid)
+
+        self.assertEqual(events, [])
+
+    def test_departure_during_betting_auto_deals(self):
+        room = make_room_with_players(3)
+        eng = GameEngine()
+        eng.start_game(room)
+
+        # Two players bet, third hasn't
+        eng.place_bet(room, "player0", 100)
+        eng.place_bet(room, "player1", 100)
+        self.assertEqual(room.phase, "betting")  # Still waiting for player2
+
+        # Player2 disconnects
+        room.players["player2"].connected = False
+        events = eng.handle_player_departure(room, "player2")
+
+        # Should auto-deal since all remaining connected players are ready
+        self.assertTrue(any(e["type"] == "cards_dealt" for e in events))
+
+    def test_departure_during_betting_no_deal_if_not_all_ready(self):
+        room = make_room_with_players(3)
+        eng = GameEngine()
+        eng.start_game(room)
+
+        # Only one player has bet
+        eng.place_bet(room, "player0", 100)
+
+        # Player2 disconnects (player1 still hasn't bet)
+        room.players["player2"].connected = False
+        events = eng.handle_player_departure(room, "player2")
+
+        self.assertEqual(events, [])
+        self.assertEqual(room.phase, "betting")
+
+
 if __name__ == "__main__":
     unittest.main()

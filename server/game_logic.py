@@ -310,6 +310,31 @@ class GameEngine:
         events.extend(self._advance_turn(room))
         return events
 
+    # --- Mid-Game Departure ---
+
+    def handle_player_departure(self, room: GameRoom, player_id: str) -> list[dict]:
+        """Handle a player disconnecting or leaving during an active game.
+
+        Returns events to broadcast. The caller is responsible for marking
+        the player as disconnected/removing them BEFORE calling this.
+        """
+        if room.phase == "playing":
+            current_pid = self._get_current_player_id(room)
+            if current_pid == player_id:
+                # It was this player's turn — advance to next player
+                return self._advance_turn(room)
+            # Not their turn — _skip_done_players will skip them naturally
+            return []
+
+        if room.phase == "betting":
+            # Check if all remaining connected players have bet
+            connected = [p for p in room.players.values() if p.connected]
+            if connected and all(p.status == "ready" for p in connected):
+                return self.deal_initial_cards(room)
+            return []
+
+        return []
+
     # --- Turn Management ---
 
     def _advance_turn(self, room: GameRoom) -> list[dict]:
