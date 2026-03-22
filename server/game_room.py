@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 import random
 import string
 
+from constants import ASSETS, DEFAULT_OWNED_ASSETS, STARTING_BANKROLL
+
 # Excludes ambiguous characters (I/1/O/0) for mobile entry ease
 ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
@@ -20,14 +22,40 @@ class PlayerState:
     is_host: bool = False
     disconnected_at: datetime | None = None
 
+    # Game state
+    bankroll: int = STARTING_BANKROLL
+    hand: list = field(default_factory=list)
+    bet: int = 0
+    betted_assets: list = field(default_factory=list)
+    owned_assets: dict = field(default_factory=lambda: dict(DEFAULT_OWNED_ASSETS))
+    status: str = "idle"  # idle|betting|ready|playing|standing|bust|done
+    is_doubled_down: bool = False
+    result: str | None = None  # per-player outcome: blackjack|win|lose|bust|push|dealerBust
+
+    # Stats (per-session)
+    hands_played: int = 0
+    win_streak: int = 0
+    lose_streak: int = 0
+    total_won: int = 0
+    total_lost: int = 0
+    peak_bankroll: int = STARTING_BANKROLL
+    lowest_bankroll: int = STARTING_BANKROLL
+
 
 @dataclass
 class GameRoom:
     code: str
     players: dict[str, PlayerState] = field(default_factory=dict)
-    phase: str = "lobby"  # "lobby" or "playing"
+    phase: str = "lobby"  # lobby|betting|playing|dealer_turn|result
     host_id: str | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Game state
+    dealer_hand: list = field(default_factory=list)
+    deck: list = field(default_factory=list)
+    current_player_idx: int = 0
+    turn_order: list = field(default_factory=list)  # ordered player_ids
+    round_number: int = 0
 
 
 # Global in-memory registry: room_code -> GameRoom
@@ -134,6 +162,31 @@ def get_player_list(room: GameRoom) -> list[dict]:
         }
         for p in room.players.values()
     ]
+
+
+def get_active_players(room: GameRoom) -> list[PlayerState]:
+    """Return connected players in turn order."""
+    if room.turn_order:
+        return [room.players[pid] for pid in room.turn_order if pid in room.players and room.players[pid].connected]
+    return [p for p in room.players.values() if p.connected]
+
+
+def get_current_player(room: GameRoom) -> PlayerState | None:
+    """Return the player whose turn it is, or None."""
+    if not room.turn_order or room.current_player_idx >= len(room.turn_order):
+        return None
+    pid = room.turn_order[room.current_player_idx]
+    return room.players.get(pid)
+
+
+def reset_round_state(player: PlayerState):
+    """Reset per-round state for a new round. Keeps bankroll, assets, stats."""
+    player.hand = []
+    player.bet = 0
+    player.betted_assets = []
+    player.status = "betting"
+    player.is_doubled_down = False
+    player.result = None
 
 
 def cleanup_empty_rooms(max_age_seconds: int = 300) -> int:

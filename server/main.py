@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from constants import NEW_ROUND_DELAY
+from game_logic import GameEngine
 from game_room import (
     MAX_PLAYERS,
     MIN_PLAYERS,
@@ -82,6 +84,7 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
+engine = GameEngine()
 
 
 # --- Background Tasks ---
@@ -278,8 +281,10 @@ async def handle_start_game(player_id: str):
         )
         return
 
-    room.phase = "playing"
     logger.info(f"Game started in room {room_code} with {connected_count} players")
+
+    # Initialize game engine — transitions to betting phase
+    events = engine.start_game(room)
 
     await manager.broadcast_to_room(
         room_code,
@@ -288,6 +293,10 @@ async def handle_start_game(player_id: str):
             "players": get_player_list(room),
         },
     )
+
+    # Broadcast engine events (betting_phase)
+    for event in events:
+        await manager.broadcast_to_room(room_code, event)
 
 
 async def handle_leave(player_id: str):
@@ -421,18 +430,17 @@ async def handle_reconnect(player_id_from_msg: str, code: str, websocket: WebSoc
 
     logger.info(f"{player.name} ({player_id_from_msg}) reconnected to room {code}")
 
-    # Notify the reconnecting player
-    await websocket.send_text(
-        json.dumps(
-            {
-                "type": "reconnected",
-                "code": code,
-                "player_id": player_id_from_msg,
-                "players": get_player_list(room),
-                "phase": room.phase,
-            }
-        )
-    )
+    # Notify the reconnecting player — include full game state if in-game
+    reconnect_msg = {
+        "type": "reconnected",
+        "code": code,
+        "player_id": player_id_from_msg,
+        "players": get_player_list(room),
+        "phase": room.phase,
+    }
+    if room.phase not in ("lobby",):
+        reconnect_msg["state"] = engine.get_room_state(room)
+    await websocket.send_text(json.dumps(reconnect_msg))
 
     # Broadcast to others
     await manager.broadcast_to_room(
@@ -448,6 +456,82 @@ async def handle_reconnect(player_id_from_msg: str, code: str, websocket: WebSoc
     return player_id_from_msg
 
 
+async def handle_game_action(player_id: str, message: dict):
+    """Handle game actions (place_bet, hit, stand, double_down, bet_asset).
+
+    Routes to the appropriate GameEngine method, broadcasts results.
+    """
+    room_code = manager.player_rooms.get(player_id)
+    if not room_code:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "You are not in a room"}
+        )
+        return
+
+    room = get_room(room_code)
+    if not room:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Room not found"}
+        )
+        return
+
+    msg_type = message.get("type")
+
+    try:
+        if msg_type == "place_bet":
+            amount = message.get("amount")
+            if not isinstance(amount, int):
+                raise ValueError("Bet amount must be an integer")
+            events = engine.place_bet(room, player_id, amount)
+        elif msg_type == "bet_asset":
+            asset_id = message.get("asset_id", "")
+            events = engine.bet_asset(room, player_id, asset_id)
+        elif msg_type == "hit":
+            events = engine.hit(room, player_id)
+        elif msg_type == "stand":
+            events = engine.stand(room, player_id)
+        elif msg_type == "double_down":
+            events = engine.double_down(room, player_id)
+        else:
+            await manager.send_to_player(
+                player_id,
+                {"type": "error", "message": f"Unknown game action: {msg_type}"},
+            )
+            return
+    except ValueError as e:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": str(e)}
+        )
+        return
+
+    # Broadcast all events to the room
+    for event in events:
+        await manager.broadcast_to_room(room_code, event)
+
+    # If we transitioned to dealer_turn, run the dealer asynchronously
+    if room.phase == "dealer_turn":
+        asyncio.create_task(_run_dealer_and_advance(room, room_code))
+
+
+async def _run_dealer_and_advance(room: GameRoom, room_code: str):
+    """Run dealer turn with broadcasting, then auto-advance to next round."""
+
+    async def broadcast_fn(event: dict):
+        await manager.broadcast_to_room(room_code, event)
+
+    await engine.run_dealer_turn(room, broadcast_fn)
+
+    # Auto-advance to next betting phase after delay
+    await asyncio.sleep(NEW_ROUND_DELAY)
+
+    # Verify room still exists and is in result phase
+    r = get_room(room_code)
+    if r and r.phase == "result":
+        events = engine.start_betting_phase(r)
+        for event in events:
+            await manager.broadcast_to_room(room_code, event)
+
+
 async def handle_message(player_id: str, message: dict):
     msg_type = message.get("type")
 
@@ -461,6 +545,8 @@ async def handle_message(player_id: str, message: dict):
         await handle_leave(player_id)
     elif msg_type == "pong":
         pass  # Heartbeat response, no action needed
+    elif msg_type in ("place_bet", "bet_asset", "hit", "stand", "double_down"):
+        await handle_game_action(player_id, message)
     else:
         await manager.send_to_player(
             player_id,
