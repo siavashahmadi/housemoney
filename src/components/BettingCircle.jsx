@@ -22,7 +22,7 @@ const BettingCircle = forwardRef(function BettingCircle(
     const prevLen = prevChipLenRef.current
     prevChipLenRef.current = chipStack.length
 
-    if (prevLen > 0 && chipStack.length === 0) {
+    if (prevLen > 0 && chipStack.length === 0 && result) {
       // Chips just cleared (RESOLVE_HAND) — keep displaying for animation
       setAnimatingOut(true)
       const timer = setTimeout(() => {
