@@ -148,3 +148,17 @@
     gap: 6px;
   }
 }
+
+@media (max-height: 700px) and (max-width: 480px) {
+  .handWrapper {
+    min-height: 70px;
+  }
+
+  .empty {
+    height: 70px;
+  }
+
+  .handsContainer {
+    gap: 6px;
+  }
+}

@@ -19,6 +19,16 @@ import QuickChat from './QuickChat'
 import SessionLeaderboard from './SessionLeaderboard'
 import styles from './MultiplayerGame.module.css'
 
+const RESULT_DISPLAY = {
+  blackjack: { text: 'BLACKJACK!', color: 'gold' },
+  win: { text: 'YOU WIN!', color: 'green' },
+  dealerBust: { text: 'DEALER BUSTS!', color: 'green' },
+  bust: { text: 'BUST!', color: 'red' },
+  lose: { text: 'YOU LOSE', color: 'red' },
+  push: { text: 'PUSH', color: 'dim' },
+  mixed: { text: 'SPLIT RESULT', color: 'dim' },
+}
+
 let flyingChipId = 0
 
 function MultiplayerGame({ state, send, dispatch, onLeave }) {
@@ -184,6 +194,14 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
           send={send}
           playerId={state.playerId}
         />
+
+        {state.phase === 'result' && localResult && (
+          <div className={styles.resultOverlay}>
+            <span className={`${styles.resultOverlayText} ${styles[`resultColor_${RESULT_DISPLAY[localResult]?.color}`]}`}>
+              {RESULT_DISPLAY[localResult]?.text}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className={styles.controlsArea}>

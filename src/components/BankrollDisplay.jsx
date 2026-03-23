@@ -71,7 +71,7 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
         </span>
       )}
       {showVig && displayedVig.amount > 0 && (
-        <span className={`${styles.vigIndicator} ${hasDebtLabel ? styles.vigWithDebt : ''}`}>
+        <span className={styles.vigIndicator}>
           Vig: -{formatMoney(displayedVig.amount)} ({Math.round(displayedVig.rate * 100)}%)
         </span>
       )}

@@ -41,3 +41,14 @@
   cursor: default;
   pointer-events: none;
 }
+
+@media (max-height: 700px) and (max-width: 480px) {
+  .actions {
+    padding: 6px 12px;
+  }
+
+  .button {
+    min-height: 44px;
+    font-size: 14px;
+  }
+}

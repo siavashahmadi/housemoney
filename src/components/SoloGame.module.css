@@ -7,6 +7,7 @@
 }
 
 .table {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -18,7 +19,6 @@
 }
 
 .controlsArea {
-  min-height: 120px;
   flex-shrink: 0;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
@@ -31,6 +31,37 @@
 }
 
 @keyframes controlsFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Result overlay on table */
+.resultOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 10;
+  pointer-events: none;
+  animation: resultFadeIn 0.3s ease-out;
+}
+
+.resultOverlayText {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+}
+
+.resultColor_gold { color: var(--gold); text-shadow: 0 4px 20px var(--gold-glow); }
+.resultColor_green { color: var(--success); }
+.resultColor_red { color: var(--danger); }
+.resultColor_dim { color: var(--text-dim); }
+
+@keyframes resultFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }

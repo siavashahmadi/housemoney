@@ -339,3 +339,40 @@
     height: 40px;
   }
 }
+
+/* ===== Short Viewport (phones with browser chrome) ===== */
+@media (max-height: 700px) and (max-width: 480px) {
+  .card {
+    width: 70px;
+    height: 100px;
+  }
+
+  .rank {
+    font-size: 12px;
+  }
+
+  .suitSmall {
+    font-size: 9px;
+  }
+
+  .centerSuit {
+    font-size: 32px;
+  }
+
+  .pip,
+  .pipFlipped {
+    font-size: 11px;
+  }
+
+  .faceCardRank {
+    font-size: 24px;
+  }
+
+  .faceCardSuit {
+    font-size: 18px;
+  }
+
+  .aceSuit {
+    font-size: 36px;
+  }
+}

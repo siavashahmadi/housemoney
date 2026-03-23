@@ -54,9 +54,6 @@ function ResultBanner({ result, bankroll, onNextHand, playerHands = [], autoAdva
 
   return (
     <div className={styles.banner}>
-      <span className={`${styles.resultText} ${styles[config.colorClass]}`}>
-        {isSplit && result === 'mixed' ? getSplitResultText(playerHands) : config.text}
-      </span>
       {isSplit && (
         <span className={`${styles.netPayout} ${netPayout >= 0 ? styles.payoutWin : styles.payoutLoss}`}>
           {netPayout >= 0 ? '+' : ''}{formatMoney(netPayout)}

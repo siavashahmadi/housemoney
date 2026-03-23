@@ -1,6 +1,9 @@
 .display {
-  text-align: center;
-  padding: 6px 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0;
   flex-shrink: 0;
   position: relative;
 }
@@ -26,16 +29,13 @@
 }
 
 .creditLabel {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -10px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: #e67e22;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  white-space: nowrap;
   animation: creditPulse 1.5s ease-in-out infinite;
 }
 
@@ -97,37 +97,30 @@
 }
 
 .debtLabel {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -10px;
   font-family: 'DM Sans', sans-serif;
   font-size: 10px;
   font-weight: 700;
   color: var(--danger);
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  animation: creditPulse 1.5s ease-in-out infinite;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  animation: creditPulse 1.5s ease-in-out infinite;
 }
 
 .vigIndicator {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -10px;
+  bottom: -14px;
+  text-align: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--danger);
   letter-spacing: 0.5px;
   animation: vigFade 2s ease-in-out forwards;
-}
-
-.vigWithDebt {
-  bottom: -26px;
 }
 
 @keyframes vigFade {
