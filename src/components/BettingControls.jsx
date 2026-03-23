@@ -50,8 +50,8 @@ function BettingControls({
         >
           CLEAR
         </button>
-        <button className={styles.allInButton} onClick={onAllIn}>
-          ALL IN
+        <button className={`${styles.allInButton}${bankroll < 0 ? ` ${styles.hailMary}` : ''}`} onClick={onAllIn}>
+          {bankroll < 0 ? 'HAIL MARY' : 'ALL IN'}
         </button>
       </div>
       <AssetBetting

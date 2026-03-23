@@ -49,6 +49,11 @@
   transform: scale(0.95);
 }
 
+.hailMary {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  letter-spacing: 0.5px;
+}
+
 .dealButton {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 18px;

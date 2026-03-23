@@ -56,7 +56,7 @@ export function gameReducer(state, action) {
     case ALL_IN: {
       if (state.phase !== 'betting') return state
       const chipStack = state.bankroll <= 0
-        ? [MIN_BET]
+        ? decomposeIntoChips(Math.abs(state.bankroll) || MIN_BET)
         : decomposeIntoChips(state.bankroll)
       return { ...state, chipStack, isAllIn: true }
     }
