@@ -1,8 +1,8 @@
 .display {
   display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   padding: 4px 0;
   flex-shrink: 0;
   position: relative;
@@ -10,7 +10,7 @@
 
 .amount {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 28px;
+  font-size: var(--bankroll-font-size);
   font-weight: 700;
   display: inline-block;
 }
@@ -35,7 +35,7 @@
   color: #e67e22;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  white-space: nowrap;
+  text-align: center;
   animation: creditPulse 1.5s ease-in-out infinite;
 }
 
@@ -103,7 +103,7 @@
   color: var(--danger);
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  white-space: nowrap;
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   animation: creditPulse 1.5s ease-in-out infinite;
@@ -130,8 +130,3 @@
   100% { opacity: 0; transform: translateY(-4px); }
 }
 
-@media (max-width: 374px) {
-  .amount {
-    font-size: 24px;
-  }
-}

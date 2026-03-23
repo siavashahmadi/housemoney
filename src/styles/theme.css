@@ -21,6 +21,71 @@
   --text-primary:     #e8e0d0;
   --text-dim:         rgba(232, 224, 208, 0.5);
   --surface:          rgba(0, 0, 0, 0.25);
+
+  /* ===== Sizing Tokens (responsive, overridden per breakpoint) ===== */
+
+  /* Card */
+  --card-width: 86px;
+  --card-height: 100px;
+  --card-radius: 10px;
+  --card-body-top: 21%;
+  --card-body-bottom: 21%;
+  --pip-size: 13px;
+  --face-rank-size: 30px;
+  --face-suit-size: 22px;
+  --ace-suit-size: 42px;
+  --corner-rank-size: 14px;
+  --corner-suit-size: 10px;
+  --center-suit-size: 38px;
+
+  /* Layout */
+  --hand-min-height: 88px;
+  --circle-size: 100px;
+  --chip-tray-size: 52px;
+  --chip-stack-size: 36px;
+  --bankroll-font-size: 28px;
+  --action-btn-height: 48px;
+  --action-btn-font: 15px;
+}
+
+/* iPhone SE and very small phones */
+@media (max-width: 374px) {
+  :root {
+    --card-width: 70px;
+    --card-height: 82px;
+    --pip-size: 10px;
+    --face-rank-size: 24px;
+    --face-suit-size: 18px;
+    --ace-suit-size: 36px;
+    --corner-rank-size: 12px;
+    --corner-suit-size: 8px;
+    --center-suit-size: 34px;
+    --card-body-top: 16%;
+    --card-body-bottom: 16%;
+    --hand-min-height: 70px;
+    --chip-tray-size: 44px;
+    --chip-stack-size: 32px;
+    --bankroll-font-size: 24px;
+  }
+}
+
+/* Short viewport — phones with browser chrome */
+@media (max-height: 700px) and (max-width: 480px) {
+  :root {
+    --card-width: 70px;
+    --pip-size: 11px;
+    --face-rank-size: 24px;
+    --face-suit-size: 18px;
+    --ace-suit-size: 36px;
+    --corner-rank-size: 12px;
+    --corner-suit-size: 9px;
+    --center-suit-size: 32px;
+    --card-body-top: 18%;
+    --card-body-bottom: 18%;
+    --hand-min-height: 70px;
+    --action-btn-height: 44px;
+    --action-btn-font: 14px;
+  }
 }
 
 /* ===== CSS Reset & Base ===== */

@@ -6,8 +6,8 @@
 }
 
 .circle {
-  width: 120px;
-  height: 120px;
+  width: var(--circle-size);
+  height: var(--circle-size);
   border-radius: 50%;
   position: relative;
   display: flex;
@@ -127,24 +127,3 @@
   animation: chipSweep 0.8s ease-out forwards;
 }
 
-@media (max-width: 374px) {
-  .circle {
-    width: 100px;
-    height: 100px;
-  }
-
-  .total {
-    font-size: 11px;
-  }
-}
-
-@media (max-height: 700px) and (max-width: 480px) {
-  .circle {
-    width: 80px;
-    height: 80px;
-  }
-
-  .total {
-    font-size: 11px;
-  }
-}

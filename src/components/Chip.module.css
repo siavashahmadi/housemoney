@@ -87,20 +87,20 @@
     0 2px 4px rgba(10, 30, 10, 0.5);
 }
 
-/* --- Tray size (52px) --- */
+/* --- Tray size --- */
 .tray {
-  width: 52px;
-  height: 52px;
+  width: var(--chip-tray-size);
+  height: var(--chip-tray-size);
 }
 
 .tray .label { font-size: 14px; }
 .tray::before { top: 6px; left: 6px; right: 6px; bottom: 6px; }
 .tray::after { top: 11px; left: 11px; right: 11px; bottom: 11px; }
 
-/* --- Stack size (36px) --- */
+/* --- Stack size --- */
 .stack {
-  width: 36px;
-  height: 36px;
+  width: var(--chip-stack-size);
+  height: var(--chip-stack-size);
   /* Proportional 3D edge for smaller stack */
   box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.4),
@@ -128,15 +128,3 @@
   animation: chipBounce 0.3s ease-out both;
 }
 
-/* --- Mobile Responsive --- */
-@media (max-width: 374px) {
-  .tray { width: 44px; height: 44px; }
-  .tray .label { font-size: 12px; }
-  .tray::before { top: 5px; left: 5px; right: 5px; bottom: 5px; }
-  .tray::after { top: 9px; left: 9px; right: 9px; bottom: 9px; }
-
-  .stack { width: 32px; height: 32px; }
-  .stack .label { font-size: 9px; }
-  .stack::before { top: 3px; left: 3px; right: 3px; bottom: 3px; }
-  .stack::after { top: 6px; left: 6px; right: 6px; bottom: 6px; }
-}

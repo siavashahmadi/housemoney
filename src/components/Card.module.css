@@ -2,9 +2,9 @@
 
 .card {
   position: relative;
-  width: 86px;
-  height: 125px;
-  border-radius: 10px;
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: var(--card-radius);
   flex-shrink: 0;
   font-family: 'DM Sans', sans-serif;
 }
@@ -88,21 +88,21 @@
 }
 
 .rank {
-  font-size: 14px;
+  font-size: var(--corner-rank-size);
   font-weight: 700;
   line-height: 1.1;
 }
 
 .suitSmall {
-  font-size: 10px;
+  font-size: var(--corner-suit-size);
   line-height: 1;
 }
 
 /* ===== Card Body (pip zone / face art / ace) ===== */
 .cardBody {
   position: absolute;
-  top: 21%;
-  bottom: 21%;
+  top: var(--card-body-top);
+  bottom: var(--card-body-bottom);
   left: 4%;
   right: 4%;
   z-index: 0;
@@ -110,7 +110,7 @@
 
 /* ===== Center Suit (fallback for small variant) ===== */
 .centerSuit {
-  font-size: 38px;
+  font-size: var(--center-suit-size);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -129,14 +129,14 @@
 .pip {
   position: absolute;
   transform: translate(-50%, -50%);
-  font-size: 13px;
+  font-size: var(--pip-size);
   line-height: 1;
 }
 
 .pipFlipped {
   position: absolute;
   transform: translate(-50%, -50%) rotate(180deg);
-  font-size: 13px;
+  font-size: var(--pip-size);
   line-height: 1;
 }
 
@@ -165,13 +165,13 @@
 
 .faceCardRank {
   font-family: 'Playfair Display', serif;
-  font-size: 30px;
+  font-size: var(--face-rank-size);
   font-weight: 900;
   line-height: 1;
 }
 
 .faceCardSuit {
-  font-size: 22px;
+  font-size: var(--face-suit-size);
   line-height: 1;
   opacity: 0.65;
 }
@@ -199,7 +199,7 @@
 }
 
 .aceSuit {
-  font-size: 42px;
+  font-size: var(--ace-suit-size);
   line-height: 1;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   position: relative;
@@ -298,81 +298,3 @@
   animation: cardDeal 0.4s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
-/* ===== Responsive: Small Screens ===== */
-@media (max-width: 374px) {
-  .card {
-    width: 70px;
-    height: 82px;
-  }
-
-  .rank {
-    font-size: 12px;
-  }
-
-  .suitSmall {
-    font-size: 8px;
-  }
-
-  .centerSuit {
-    font-size: 34px;
-  }
-
-  .pip,
-  .pipFlipped {
-    font-size: 10px;
-  }
-
-  .faceCardRank {
-    font-size: 24px;
-  }
-
-  .faceCardSuit {
-    font-size: 18px;
-  }
-
-  .aceSuit {
-    font-size: 36px;
-  }
-
-  .aceCenter::after {
-    width: 40px;
-    height: 40px;
-  }
-}
-
-/* ===== Short Viewport (phones with browser chrome) ===== */
-@media (max-height: 700px) and (max-width: 480px) {
-  .card {
-    width: 70px;
-    height: 100px;
-  }
-
-  .rank {
-    font-size: 12px;
-  }
-
-  .suitSmall {
-    font-size: 9px;
-  }
-
-  .centerSuit {
-    font-size: 32px;
-  }
-
-  .pip,
-  .pipFlipped {
-    font-size: 11px;
-  }
-
-  .faceCardRank {
-    font-size: 24px;
-  }
-
-  .faceCardSuit {
-    font-size: 18px;
-  }
-
-  .aceSuit {
-    font-size: 36px;
-  }
-}

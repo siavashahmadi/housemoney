@@ -4,6 +4,7 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .tableArea {
@@ -21,6 +22,7 @@
 
 .controlsArea {
   flex-shrink: 0;
+  min-height: 68px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
   flex-direction: column;
@@ -45,28 +47,3 @@
   to { opacity: 1; }
 }
 
-/* Result overlay on table */
-.resultOverlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 10;
-  pointer-events: none;
-  animation: fadeIn 0.3s ease-out;
-}
-
-.resultOverlayText {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 36px;
-  font-weight: 900;
-  letter-spacing: 3px;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
-}
-
-.resultColor_gold { color: var(--gold); text-shadow: 0 4px 20px var(--gold-glow); }
-.resultColor_green { color: var(--success); }
-.resultColor_red { color: var(--danger); }
-.resultColor_dim { color: var(--text-dim); }

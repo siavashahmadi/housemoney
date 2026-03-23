@@ -31,39 +31,6 @@ import DebtTracker from './DebtTracker'
 import FlyingChip from './FlyingChip'
 import styles from './SoloGame.module.css'
 
-const RESULT_DISPLAY = {
-  blackjack: { text: 'BLACKJACK!', color: 'gold' },
-  win: { text: 'YOU WIN!', color: 'green' },
-  dealerBust: { text: 'DEALER BUSTS!', color: 'green' },
-  bust: { text: 'BUST!', color: 'red' },
-  lose: { text: 'YOU LOSE', color: 'red' },
-  push: { text: 'PUSH', color: 'dim' },
-  mixed: { text: 'SPLIT RESULT', color: 'dim' },
-}
-
-function ResultOverlay({ result, playerHands }) {
-  const config = RESULT_DISPLAY[result]
-  if (!config) return null
-
-  let text = config.text
-  if (playerHands.length > 1 && result === 'mixed') {
-    const wins = playerHands.filter(h =>
-      h.result === 'win' || h.result === 'dealerBust' || h.result === 'blackjack'
-    ).length
-    text = wins === playerHands.length ? `WON ALL ${playerHands.length}`
-      : wins === 0 ? `LOST ALL ${playerHands.length}`
-      : `WON ${wins} OF ${playerHands.length}`
-  }
-
-  return (
-    <div className={styles.resultOverlay}>
-      <span className={`${styles.resultOverlayText} ${styles[`resultColor_${config.color}`]}`}>
-        {text}
-      </span>
-    </div>
-  )
-}
-
 let flyingChipId = 0
 
 function SoloGame({ onBack }) {
@@ -265,7 +232,11 @@ function SoloGame({ onBack }) {
           bettedAssets={state.bettedAssets}
         />
         {state.phase === 'result' && state.result && (
-          <ResultOverlay result={state.result} playerHands={state.playerHands} />
+          <ResultBanner
+            result={state.result}
+            playerHands={state.playerHands}
+            displayOnly
+          />
         )}
       </div>
 

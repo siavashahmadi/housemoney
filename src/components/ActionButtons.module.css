@@ -6,10 +6,10 @@
 
 .button {
   flex: 1;
-  min-height: 48px;
+  min-height: var(--action-btn-height);
   border-radius: 12px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 15px;
+  font-size: var(--action-btn-font);
   font-weight: 700;
   color: #fff;
   letter-spacing: 1px;
@@ -42,13 +42,3 @@
   pointer-events: none;
 }
 
-@media (max-height: 700px) and (max-width: 480px) {
-  .actions {
-    padding: 6px 12px;
-  }
-
-  .button {
-    min-height: 44px;
-    font-size: 14px;
-  }
-}
