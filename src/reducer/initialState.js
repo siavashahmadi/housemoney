@@ -1,6 +1,5 @@
 import { STARTING_BANKROLL } from '../constants/gameConfig'
 import { ASSETS } from '../constants/assets'
-import { createDeck, shuffle } from '../utils/cardUtils'
 
 export function createInitialState() {
   const ownedAssets = {}
@@ -9,8 +8,8 @@ export function createInitialState() {
   }
 
   return {
-    // Deck
-    deck: shuffle(createDeck()),
+    // Deck — intentionally empty; callers must supply a shuffled deck
+    deck: [],
 
     // Hands
     playerHand: [],

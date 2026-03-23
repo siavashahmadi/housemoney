@@ -9,6 +9,7 @@ export const MP_CLEAR_CHIPS = 'MP_CLEAR_CHIPS'
 export const MP_SELECT_CHIP = 'MP_SELECT_CHIP'
 export const MP_ALL_IN = 'MP_ALL_IN'
 export const MP_TOGGLE_ASSET_MENU = 'MP_TOGGLE_ASSET_MENU'
+export const MP_TOGGLE_MUTE = 'MP_TOGGLE_MUTE'
 export const SET_PLAYER_NAME = 'SET_PLAYER_NAME'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
@@ -120,6 +121,9 @@ export function multiplayerReducer(state, action) {
 
     case MP_TOGGLE_ASSET_MENU:
       return { ...state, showAssetMenu: !state.showAssetMenu }
+
+    case MP_TOGGLE_MUTE:
+      return { ...state, muted: !state.muted }
 
     // ===== Server messages =====
 

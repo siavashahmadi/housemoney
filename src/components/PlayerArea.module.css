@@ -15,14 +15,14 @@
 }
 
 .handWrapper {
-  min-height: 109px;
+  min-height: 88px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .empty {
-  height: 109px;
+  height: 88px;
 }
 
 .value {
@@ -34,10 +34,10 @@
 
 @media (max-width: 374px) {
   .handWrapper {
-    min-height: 87px;
+    min-height: 70px;
   }
 
   .empty {
-    height: 87px;
+    height: 70px;
   }
 }

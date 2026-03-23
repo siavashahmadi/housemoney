@@ -3,7 +3,7 @@ import audioManager from '../utils/audioManager'
 import { useMultiplayerSound } from '../hooks/useMultiplayerSound'
 import {
   MP_ADD_CHIP, MP_UNDO_CHIP, MP_CLEAR_CHIPS, MP_SELECT_CHIP,
-  MP_ALL_IN, MP_TOGGLE_ASSET_MENU,
+  MP_ALL_IN, MP_TOGGLE_ASSET_MENU, MP_TOGGLE_MUTE,
 } from '../reducer/multiplayerReducer'
 import Header from './Header'
 import BankrollDisplay from './BankrollDisplay'
@@ -139,8 +139,8 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
         mode="multiplayer"
         roomCode={state.roomCode}
         onLeave={handleLeave}
-        muted={false}
-        onToggleMute={() => {}}
+        muted={state.muted}
+        onToggleMute={() => dispatch({ type: MP_TOGGLE_MUTE })}
         isHost={state.isHost}
         onViewStats={handleViewStats}
       />

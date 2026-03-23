@@ -6,6 +6,7 @@
   background: var(--chip-bg);
   color: var(--chip-text);
   border: 3px dashed var(--chip-border);
+  outline: 1px solid rgba(0, 0, 0, 0.2);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
   cursor: pointer;
@@ -23,16 +24,16 @@
   width: 52px;
   height: 52px;
   font-size: 13px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  border: 3px dashed var(--chip-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.15);
 }
 
 .stack {
   width: 36px;
   height: 36px;
   font-size: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  border: 2px dashed var(--chip-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 .selected {

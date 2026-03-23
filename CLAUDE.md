@@ -68,7 +68,7 @@ The component picks the cards, the reducer processes them. A helper function rea
 
 1. **Bankroll CAN go negative.** Never add validation that prevents betting when broke — this is the core mechanic.
 2. **Screen must NEVER shake.** Only the bankroll number element and the deal button can have shake/wobble animations.
-3. **Cards must be large** — min 70px wide, rank text 18px+, center suit 34px+.
+3. **Cards must be large** — min 70px wide, rank text 14px+ (corners), center suit 34px+ (ace only).
 4. **Background must look like green felt** — layered green base + noise/grain texture + radial "spotlight" gradient. Not just a dark gradient.
 5. **Constants in separate files** — never hardcode dealer lines, achievements, assets, or game config values in components.
 6. **Reducer purity** — no side effects, no randomness inside the reducer.

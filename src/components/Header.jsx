@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import styles from './Header.module.css'
 
 function getSubtitle(bankroll) {
@@ -20,6 +20,7 @@ function Header({
   onToggleMute,
   notificationsEnabled,
   onToggleNotifications,
+  onBack,
   // Multiplayer props
   mode,
   roomCode,
@@ -28,6 +29,8 @@ function Header({
   onViewStats,
 }) {
   const [copied, setCopied] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
 
   const handleCopyCode = useCallback(async () => {
     if (!roomCode) return
@@ -42,6 +45,21 @@ function Header({
 
   const isMultiplayer = mode === 'multiplayer'
 
+  const toggleMenu = useCallback(() => setMenuOpen(prev => !prev), [])
+  const closeMenu = useCallback(() => setMenuOpen(false), [])
+
+  // Close menu when tapping outside
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('pointerdown', handleClick)
+    return () => document.removeEventListener('pointerdown', handleClick)
+  }, [menuOpen])
+
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
@@ -54,36 +72,51 @@ function Header({
           <span className={styles.subtitle}>{getSubtitle(bankroll)}</span>
         )}
       </div>
-      <div className={styles.actions}>
-        {!isMultiplayer && (
-          <button className={styles.achievementButton} onClick={onToggleAchievements}>
-            <span>🏆</span>
-            {unlockedCount > 0 && (
-              <span className={styles.badge}>{unlockedCount}</span>
-            )}
-          </button>
-        )}
-        {!isMultiplayer && (
-          <button className={styles.muteButton} onClick={onToggleNotifications}>
-            {notificationsEnabled ? '🔔' : '🔕'}
-          </button>
-        )}
-        <button className={styles.muteButton} onClick={onToggleMute}>
-          {muted ? '🔇' : '🔊'}
+      <div className={styles.menuWrapper} ref={menuRef}>
+        <button className={styles.hamburger} onClick={toggleMenu}>
+          <span className={styles.hamburgerLine} />
+          <span className={styles.hamburgerLine} />
+          <span className={styles.hamburgerLine} />
         </button>
-        {isMultiplayer && isHost && (
-          <button className={styles.statsButton} onClick={onViewStats}>
-            STATS
-          </button>
-        )}
-        {isMultiplayer ? (
-          <button className={styles.resetButton} onClick={onLeave}>
-            LEAVE
-          </button>
-        ) : (
-          <button className={styles.resetButton} onClick={onReset}>
-            NEW GAME
-          </button>
+        {menuOpen && (
+          <div className={styles.dropdown}>
+            {onBack && (
+              <button className={styles.menuItem} onClick={() => { closeMenu(); onBack(); }}>
+                Back to Home
+              </button>
+            )}
+            {!isMultiplayer && (
+              <button className={styles.menuItem} onClick={() => { closeMenu(); onToggleAchievements(); }}>
+                <span>Achievements</span>
+                {unlockedCount > 0 && (
+                  <span className={styles.menuBadge}>{unlockedCount}</span>
+                )}
+              </button>
+            )}
+            {!isMultiplayer && (
+              <button className={styles.menuItem} onClick={() => { closeMenu(); onToggleNotifications(); }}>
+                Notifications {notificationsEnabled ? 'On' : 'Off'}
+              </button>
+            )}
+            <button className={styles.menuItem} onClick={() => { closeMenu(); onToggleMute(); }}>
+              Sound {muted ? 'Off' : 'On'}
+            </button>
+            {isMultiplayer && isHost && (
+              <button className={styles.menuItem} onClick={() => { closeMenu(); onViewStats(); }}>
+                Stats
+              </button>
+            )}
+            <div className={styles.menuDivider} />
+            {isMultiplayer ? (
+              <button className={`${styles.menuItem} ${styles.menuDanger}`} onClick={() => { closeMenu(); onLeave(); }}>
+                Leave Room
+              </button>
+            ) : (
+              <button className={`${styles.menuItem} ${styles.menuDanger}`} onClick={() => { closeMenu(); onReset(); }}>
+                New Game
+              </button>
+            )}
+          </div>
         )}
       </div>
     </header>

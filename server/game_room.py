@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-import random
-import string
+import secrets
 
 from constants import ASSETS, DEFAULT_OWNED_ASSETS, STARTING_BANKROLL
 
@@ -68,11 +67,11 @@ rooms: dict[str, GameRoom] = {}
 def generate_room_code(length: int = 4) -> str:
     """Generate a unique 4-character room code."""
     for _ in range(100):
-        code = "".join(random.choices(ROOM_CODE_CHARS, k=length))
+        code = "".join(secrets.choice(ROOM_CODE_CHARS) for _ in range(length))
         if code not in rooms:
             return code
     # Extremely unlikely fallback: extend to 5 characters
-    return "".join(random.choices(ROOM_CODE_CHARS, k=length + 1))
+    return "".join(secrets.choice(ROOM_CODE_CHARS) for _ in range(length + 1))
 
 
 def get_room(code: str) -> GameRoom | None:

@@ -39,6 +39,13 @@ HEARTBEAT_TIMEOUT = 10  # seconds
 DISCONNECT_GRACE_PERIOD = 120  # seconds
 CLEANUP_INTERVAL = 60  # seconds
 
+ALLOWED_ORIGINS = {
+    "http://localhost:5173",
+    "https://blackjack.siaahmadi.com",
+}
+
+MAX_MESSAGE_SIZE = 4096  # 4KB
+
 
 class ConnectionManager:
     """Manages WebSocket connections, mapping player_ids to sockets and rooms."""
@@ -59,8 +66,8 @@ class ConnectionManager:
         if ws:
             try:
                 await ws.send_text(json.dumps(message))
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Failed to send to player %s: %s", player_id, e)
 
     async def broadcast_to_room(
         self, room_code: str, message: dict, exclude: str | None = None
@@ -737,12 +744,24 @@ async def handle_message(player_id: str, message: dict):
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    # Validate origin
+    origin = websocket.headers.get("origin", "")
+    if origin and origin not in ALLOWED_ORIGINS:
+        await websocket.close(code=4003, reason="Origin not allowed")
+        return
+
     await websocket.accept()
     player_id = None
 
     try:
         # First message determines if this is a new connection or reconnection
         data = await websocket.receive_text()
+        if len(data) > MAX_MESSAGE_SIZE:
+            await websocket.send_text(
+                json.dumps({"type": "error", "message": "Message too large"})
+            )
+            await websocket.close()
+            return
         message = json.loads(data)
 
         if message.get("type") == "reconnect":
@@ -765,6 +784,11 @@ async def websocket_endpoint(websocket: WebSocket):
         # Main message loop
         while True:
             data = await websocket.receive_text()
+            if len(data) > MAX_MESSAGE_SIZE:
+                await manager.send_to_player(
+                    player_id, {"type": "error", "message": "Message too large"}
+                )
+                continue
             try:
                 message = json.loads(data)
             except json.JSONDecodeError:

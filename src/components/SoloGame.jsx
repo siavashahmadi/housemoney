@@ -2,9 +2,11 @@ import { useReducer, useRef, useCallback, useMemo, useState } from 'react'
 import audioManager from '../utils/audioManager'
 import { gameReducer } from '../reducer/gameReducer'
 import { createInitialState } from '../reducer/initialState'
+import { createDeck, shuffle } from '../utils/cardUtils'
 import {
   addChip, selectChip, deal, hit, doubleDown, betAsset, removeAsset,
-  UNDO_CHIP, CLEAR_CHIPS, ALL_IN, STAND, NEW_ROUND, RESET_GAME,
+  newRound, resetGame,
+  UNDO_CHIP, CLEAR_CHIPS, ALL_IN, STAND,
   TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK, TOGGLE_ACHIEVEMENTS, DISMISS_ACHIEVEMENT,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS,
 } from '../reducer/actions'
@@ -31,7 +33,10 @@ import styles from './SoloGame.module.css'
 let flyingChipId = 0
 
 function SoloGame({ onBack }) {
-  const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState)
+  const [state, dispatch] = useReducer(gameReducer, null, () => ({
+    ...createInitialState(),
+    deck: shuffle(createDeck()),
+  }))
   const stateRef = useRef(state)
   stateRef.current = state
 
@@ -77,7 +82,7 @@ function SoloGame({ onBack }) {
 
     dispatch({ type: UNDO_CHIP })
 
-    // Spawn flying chip from circle to tray (visual only)
+    // Spawn flying chip from circle to tray (visual only — reverse animation)
     if (circleRef.current) {
       const circleRect = circleRef.current.getBoundingClientRect()
       const from = { x: circleRect.left + circleRect.width / 2 - 18, y: circleRect.top + circleRect.height / 2 - 18 }
@@ -89,6 +94,7 @@ function SoloGame({ onBack }) {
         value: removedValue,
         from,
         to,
+        reverse: true,
       }])
     }
   }, [])
@@ -113,8 +119,8 @@ function SoloGame({ onBack }) {
     dispatch(doubleDown(card))
   }, [])
 
-  const handleNewRound = useCallback(() => dispatch({ type: NEW_ROUND }), [])
-  const handleReset = useCallback(() => dispatch({ type: RESET_GAME }), [])
+  const handleNewRound = useCallback(() => dispatch(newRound(shuffle(createDeck()))), [])
+  const handleReset = useCallback(() => dispatch(resetGame(shuffle(createDeck()))), [])
 
   // Asset betting with confirmation for high-value assets
   const [pendingAssetConfirm, setPendingAssetConfirm] = useState(null)
@@ -244,6 +250,7 @@ function SoloGame({ onBack }) {
           value={chip.value}
           from={chip.from}
           to={chip.to}
+          reverse={chip.reverse}
           onDone={() => removeFlyingChip(chip.id)}
         />
       ))}

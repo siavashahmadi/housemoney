@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 109px;
+  min-height: 88px;
   max-width: 100%;
   overflow: hidden;
 }
@@ -17,6 +17,6 @@
 /* ===== Responsive ===== */
 @media (max-width: 374px) {
   .hand {
-    min-height: 87px;
+    min-height: 70px;
   }
 }

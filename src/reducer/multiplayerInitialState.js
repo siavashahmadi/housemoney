@@ -33,4 +33,7 @@ export const multiplayerInitialState = {
   // Session stats
   sessionStats: null,
   showLeaderboard: false,
+
+  // Audio
+  muted: false,
 }

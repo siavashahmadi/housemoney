@@ -47,77 +47,104 @@
   transform: scale(0.95);
 }
 
-.actions {
+/* ===== Hamburger Menu ===== */
+.menuWrapper {
+  position: relative;
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.hamburger:active {
+  opacity: 0.7;
+}
+
+.hamburgerLine {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 1px;
+}
+
+/* ===== Dropdown Menu ===== */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: var(--felt-dark);
+  border: 1px solid var(--gold-dim);
+  border-radius: 10px;
+  padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  animation: menuSlideDown 0.15s ease-out;
+}
+
+.menuItem {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
 }
 
-.achievementButton {
-  position: relative;
-  font-size: 18px;
-  padding: 4px;
-  line-height: 1;
+.menuItem:active {
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.achievementButton:active {
-  transform: scale(0.9);
-}
-
-.badge {
-  position: absolute;
-  top: -4px;
-  right: -6px;
+.menuBadge {
+  margin-left: auto;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--felt-dark);
   background: var(--gold);
-  min-width: 16px;
-  height: 16px;
-  border-radius: 8px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 3px;
+  padding: 0 4px;
 }
 
-.muteButton {
-  font-size: 18px;
-  padding: 4px;
-  line-height: 1;
+.menuDivider {
+  height: 1px;
+  margin: 4px 12px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.muteButton:active {
-  transform: scale(0.9);
+.menuDanger {
+  color: var(--danger);
 }
 
-.statsButton {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--gold-dim);
-  background: none;
-  padding: 4px 6px;
-  letter-spacing: 1px;
-}
-
-.statsButton:active {
-  transform: scale(0.95);
-  color: var(--gold);
-}
-
-.resetButton {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-dim);
-  background: rgba(255, 255, 255, 0.06);
-  padding: 4px 10px;
-  border-radius: 4px;
-  letter-spacing: 1px;
-}
-
-.resetButton:active {
-  transform: scale(0.95);
+@keyframes menuSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

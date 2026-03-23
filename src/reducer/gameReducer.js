@@ -10,7 +10,7 @@ import {
 import { createInitialState } from './initialState'
 import { CHIPS } from '../constants/chips'
 import { MIN_BET, BLACKJACK_PAYOUT, RESHUFFLE_THRESHOLD } from '../constants/gameConfig'
-import { handValue, isBlackjack, createDeck, shuffle } from '../utils/cardUtils'
+import { handValue, isBlackjack } from '../utils/cardUtils'
 
 // Chip values sorted descending for greedy decomposition
 const CHIP_VALUES_DESC = [...CHIPS].map(c => c.value).sort((a, b) => b - a)
@@ -238,7 +238,7 @@ export function gameReducer(state, action) {
       if (state.phase !== 'result') return state
 
       const deck = state.deck.length < RESHUFFLE_THRESHOLD
-        ? shuffle(createDeck())
+        ? action.freshDeck
         : state.deck
 
       return {
@@ -259,7 +259,7 @@ export function gameReducer(state, action) {
     }
 
     case RESET_GAME: {
-      return { ...createInitialState(), muted: state.muted, notificationsEnabled: state.notificationsEnabled }
+      return { ...createInitialState(), deck: action.freshDeck, muted: state.muted, notificationsEnabled: state.notificationsEnabled }
     }
 
     case TOGGLE_ASSET_MENU: {

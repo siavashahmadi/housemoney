@@ -49,3 +49,5 @@ export const setLoanSharkMessage = (messages, seenThresholds) => ({
   messages,
   seenThresholds,
 })
+export const newRound = (freshDeck) => ({ type: NEW_ROUND, freshDeck })
+export const resetGame = (freshDeck) => ({ type: RESET_GAME, freshDeck })

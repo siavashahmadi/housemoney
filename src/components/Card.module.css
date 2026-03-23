@@ -2,8 +2,8 @@
 
 .card {
   position: relative;
-  width: 75px;
-  height: 109px;
+  width: 86px;
+  height: 125px;
   border-radius: 10px;
   flex-shrink: 0;
   font-family: 'DM Sans', sans-serif;
@@ -16,13 +16,14 @@
   height: 100%;
   background: linear-gradient(135deg, var(--card-white) 0%, #ede7d9 100%);
   border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    0 1px 3px rgba(0, 0, 0, 0.2);
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 4px 6px;
+  padding: 3px 4px;
   overflow: hidden;
 }
 
@@ -33,7 +34,7 @@
   height: 100%;
   background: linear-gradient(145deg, #1a1a4e 0%, #0d0d2b 50%, #1a1a4e 100%);
   border-radius: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(0, 0, 0, 0.15);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.3),
     0 1px 3px rgba(0, 0, 0, 0.2),
@@ -73,6 +74,12 @@
   flex-direction: column;
   align-items: center;
   line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.cornerTopLeft {
+  align-self: flex-start;
 }
 
 .cornerBottomRight {
@@ -81,17 +88,27 @@
 }
 
 .rank {
-  font-size: 22px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 1.1;
 }
 
 .suitSmall {
-  font-size: 14px;
+  font-size: 10px;
   line-height: 1;
 }
 
-/* ===== Center Suit ===== */
+/* ===== Card Body (pip zone / face art / ace) ===== */
+.cardBody {
+  position: absolute;
+  top: 21%;
+  bottom: 21%;
+  left: 4%;
+  right: 4%;
+  z-index: 0;
+}
+
+/* ===== Center Suit (fallback for small variant) ===== */
 .centerSuit {
   font-size: 38px;
   position: absolute;
@@ -100,6 +117,93 @@
   transform: translate(-50%, -50%);
   opacity: 0.85;
   line-height: 1;
+}
+
+/* ===== Pip Layout (number cards 2-10) ===== */
+.pipZone {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.pip {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.pipFlipped {
+  position: absolute;
+  transform: translate(-50%, -50%) rotate(180deg);
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ===== Face Card (J/Q/K monogram) ===== */
+.faceCardArt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Decorative inner border frame */
+.faceCardArt::before {
+  content: '';
+  position: absolute;
+  inset: 1px 10px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.faceCardRank {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.faceCardSuit {
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.65;
+}
+
+.faceCardAccent {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.35;
+}
+
+.faceCardAccentBottom {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.35;
+}
+
+/* ===== Ace Design ===== */
+.aceCenter {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aceSuit {
+  font-size: 42px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  position: relative;
+  z-index: 1;
 }
 
 /* ===== Suit Color Modifiers ===== */
@@ -128,11 +232,11 @@
 }
 
 .small .rank {
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .small .suitSmall {
-  font-size: 8px;
+  font-size: 7px;
 }
 
 .small .centerSuit {
@@ -147,19 +251,41 @@
 /* ===== Responsive: Small Screens ===== */
 @media (max-width: 374px) {
   .card {
-    width: 60px;
-    height: 87px;
+    width: 70px;
+    height: 82px;
   }
 
   .rank {
-    font-size: 18px;
+    font-size: 12px;
   }
 
   .suitSmall {
-    font-size: 11px;
+    font-size: 8px;
   }
 
   .centerSuit {
-    font-size: 30px;
+    font-size: 34px;
+  }
+
+  .pip,
+  .pipFlipped {
+    font-size: 10px;
+  }
+
+  .faceCardRank {
+    font-size: 24px;
+  }
+
+  .faceCardSuit {
+    font-size: 18px;
+  }
+
+  .aceSuit {
+    font-size: 36px;
+  }
+
+  .aceCenter::after {
+    width: 40px;
+    height: 40px;
   }
 }

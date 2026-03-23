@@ -15,25 +15,25 @@ export function useLoanShark(state, dispatch) {
     // Only check when in debt
     if (state.bankroll >= 0) return
 
-    // Find newly crossed thresholds — keep only the worst (most severe)
+    // Find ALL newly crossed thresholds and queue their messages
     const newSeenThresholds = [...state.seenLoanThresholds]
-    let worstMessage = null
+    const newMessages = []
 
     for (const { threshold, message } of LOAN_SHARK_THRESHOLDS) {
       if (
         state.bankroll <= threshold &&
         !state.seenLoanThresholds.includes(threshold)
       ) {
-        worstMessage = message // last match = most severe (thresholds sorted ascending)
+        newMessages.push(message)
         newSeenThresholds.push(threshold)
       }
     }
 
-    if (worstMessage) {
+    if (newMessages.length > 0) {
       // Delay so the player sees the result banner first
       clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => {
-        dispatch(setLoanSharkMessage([worstMessage], newSeenThresholds))
+        dispatch(setLoanSharkMessage(newMessages, newSeenThresholds))
       }, 1500)
     }
   }, [state.bankroll])

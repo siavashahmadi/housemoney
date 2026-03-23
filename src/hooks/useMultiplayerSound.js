@@ -22,6 +22,11 @@ export function useMultiplayerSound(state) {
     return () => document.removeEventListener('pointerdown', handler)
   }, [])
 
+  // Sync mute state
+  useEffect(() => {
+    audioManager.setMuted(state.muted)
+  }, [state.muted])
+
   useEffect(() => {
     const prev = prevRef.current
 
