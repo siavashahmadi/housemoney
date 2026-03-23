@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3021:80"
+      - "3021:8080"
     restart: unless-stopped
     depends_on:
       - backend

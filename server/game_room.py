@@ -92,7 +92,9 @@ def validate_player_name(name: str | None) -> str:
     """Validate and clean a player name. Returns cleaned name or raises ValueError."""
     if not name or not name.strip():
         raise ValueError("Player name is required")
-    cleaned = name.strip()
+    cleaned = name.strip().replace('<', '').replace('>', '')
+    if not cleaned:
+        raise ValueError("Player name is required")
     if len(cleaned) > 20:
         raise ValueError("Player name must be 20 characters or less")
     return cleaned

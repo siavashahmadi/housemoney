@@ -20,6 +20,7 @@ from constants import (
     BLACKJACK_PAYOUT,
     DEALER_HIT_DELAY,
     DEALER_STAND_DELAY,
+    MAX_BET,
     MIN_BET,
     NEW_ROUND_DELAY,
     RESHUFFLE_THRESHOLD,
@@ -72,6 +73,8 @@ class GameEngine:
 
         if not isinstance(amount, int) or amount < 0:
             raise ValueError("Invalid bet amount")
+        if amount > MAX_BET:
+            raise ValueError(f"Maximum bet is ${MAX_BET:,}")
         if amount < MIN_BET and amount > 0:
             raise ValueError(f"Bet must be at least ${MIN_BET}")
         if amount == 0 and not player.betted_assets:

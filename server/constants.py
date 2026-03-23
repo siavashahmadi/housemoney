@@ -7,6 +7,7 @@ RANKS = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
 # Game config
 STARTING_BANKROLL = 10_000
 MIN_BET = 25
+MAX_BET = 10_000_000
 DECK_COUNT = 6
 RESHUFFLE_THRESHOLD = 20
 BLACKJACK_PAYOUT = 1.5
