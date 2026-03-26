@@ -2,6 +2,8 @@ import { multiplayerInitialState } from './multiplayerInitialState'
 import { MIN_BET } from '../constants/gameConfig'
 import { CHIPS } from '../constants/chips'
 
+const NEXT_ROUND_DELAY_MS = 5000
+
 // --- Local-only action types ---
 export const MP_ADD_CHIP = 'MP_ADD_CHIP'
 export const MP_UNDO_CHIP = 'MP_UNDO_CHIP'
@@ -204,6 +206,12 @@ export function multiplayerReducer(state, action) {
     case 'SERVER_PLAYER_DOUBLE_DOWN':
       return applyServerState(state, action.payload.state)
 
+    case 'SERVER_PLAYER_SPLIT':
+      return applyServerState(state, action.payload.state)
+
+    case 'SERVER_BET_TIMEOUT':
+      return applyServerState(state, action.payload.state)
+
     case 'SERVER_DEALER_TURN_START': {
       return {
         ...applyServerState(state, action.payload.state),
@@ -227,7 +235,7 @@ export function multiplayerReducer(state, action) {
         dealerHand: action.payload.dealer_hand,
         dealerValue: action.payload.dealer_value,
         phase: 'result',
-        nextRoundAt: Date.now() + 5000,
+        nextRoundAt: Date.now() + NEXT_ROUND_DELAY_MS,
       }
     }
 

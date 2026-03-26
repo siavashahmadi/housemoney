@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import audioManager from '../utils/audioManager'
+import { cardValue } from '../utils/cardUtils'
 import { useMultiplayerSound } from '../hooks/useMultiplayerSound'
 import {
   MP_ADD_CHIP, MP_UNDO_CHIP, MP_CLEAR_CHIPS, MP_SELECT_CHIP,
@@ -101,10 +102,23 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
     send({ type: 'bet_asset', asset_id: asset.id })
   }, [send])
 
+  // In-flight guard — prevents rapid double-sends, clears reactively on server response
+  const actionPendingRef = useRef(false)
+  const guardedSend = useCallback((msg) => {
+    if (actionPendingRef.current) return
+    actionPendingRef.current = true
+    send(msg)
+  }, [send])
+
+  useEffect(() => {
+    actionPendingRef.current = false
+  }, [state.playerStates, state.phase, state.currentPlayerId])
+
   // Game actions — send to server
-  const handleHit = useCallback(() => send({ type: 'hit' }), [send])
-  const handleStand = useCallback(() => send({ type: 'stand' }), [send])
-  const handleDoubleDown = useCallback(() => send({ type: 'double_down' }), [send])
+  const handleHit = useCallback(() => guardedSend({ type: 'hit' }), [guardedSend])
+  const handleStand = useCallback(() => guardedSend({ type: 'stand' }), [guardedSend])
+  const handleDoubleDown = useCallback(() => guardedSend({ type: 'double_down' }), [guardedSend])
+  const handleSplit = useCallback(() => guardedSend({ type: 'split' }), [guardedSend])
 
   const handleLeave = useCallback(() => {
     send({ type: 'leave' })
@@ -124,13 +138,20 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
     [state.chipStack]
   )
 
-  const canDoubleDown = useMemo(() =>
-    state.phase === 'playing' &&
-    isMyTurn &&
-    localPlayer.hand?.length === 2 &&
-    !localPlayer.is_doubled_down,
-    [state.phase, isMyTurn, localPlayer.hand?.length, localPlayer.is_doubled_down]
-  )
+  const canDoubleDown = useMemo(() => {
+    if (state.phase !== 'playing' || !isMyTurn) return false
+    const activeHand = localPlayer.hands?.[localPlayer.active_hand_index]
+    return activeHand?.cards?.length === 2 && !activeHand.is_doubled_down && !activeHand.is_split_aces
+  }, [state.phase, isMyTurn, localPlayer.hands, localPlayer.active_hand_index])
+
+  const canSplit = useMemo(() => {
+    if (state.phase !== 'playing' || !isMyTurn) return false
+    const activeHand = localPlayer.hands?.[localPlayer.active_hand_index]
+    if (!activeHand || activeHand.cards?.length !== 2) return false
+    if (activeHand.is_split_aces) return false
+    if ((localPlayer.hands?.length || 0) >= 4) return false
+    return cardValue(activeHand.cards[0]) === cardValue(activeHand.cards[1])
+  }, [state.phase, isMyTurn, localPlayer.hands, localPlayer.active_hand_index])
 
   return (
     <div className={styles.game}>
@@ -224,6 +245,8 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
               onStand={handleStand}
               onDoubleDown={handleDoubleDown}
               canDoubleDown={canDoubleDown}
+              onSplit={handleSplit}
+              canSplit={canSplit}
             />
           )}
 

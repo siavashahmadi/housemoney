@@ -165,7 +165,12 @@ class GameEngine:
 
     def deal_initial_cards(self, room: GameRoom) -> list[dict]:
         """Deal 2 cards to each player + dealer. Check for blackjacks."""
-        active_pids = [pid for pid, p in room.players.items() if p.connected]
+        active_pids = [pid for pid, p in room.players.items() if p.connected and p.status == "ready"]
+
+        if not active_pids:
+            # No one bet — restart betting phase
+            return self.start_betting_phase(room)
+
         room.turn_order = active_pids
         num_players = len(active_pids)
 

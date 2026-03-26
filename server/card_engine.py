@@ -70,5 +70,10 @@ def draw_cards(deck: list[dict], count: int) -> tuple[list[dict], list[dict]]:
     """Draw count cards from the top of the deck.
 
     Returns (drawn_cards, remaining_deck).
+    Raises ValueError if insufficient cards remain.
     """
+    if count > len(deck):
+        raise ValueError(
+            f"Cannot draw {count} cards from deck with {len(deck)} remaining"
+        )
     return deck[:count], deck[count:]

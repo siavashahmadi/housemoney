@@ -444,7 +444,7 @@ export function gameReducer(state, action) {
     }
 
     case NEW_ROUND: {
-      if (state.phase !== 'result') return state
+      if (state.phase !== 'result' || state.chipStack.length > 0) return state
 
       const deck = state.deck.length < RESHUFFLE_THRESHOLD
         ? action.freshDeck

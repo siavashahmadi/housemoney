@@ -39,6 +39,8 @@ HEARTBEAT_INTERVAL = 30  # seconds
 HEARTBEAT_TIMEOUT = 10  # seconds
 DISCONNECT_GRACE_PERIOD = 120  # seconds
 CLEANUP_INTERVAL = 60  # seconds
+TURN_TIMEOUT = 60  # seconds — auto-stand AFK players
+BET_TIMEOUT = 30  # seconds — auto-skip AFK players who don't bet
 
 ALLOWED_ORIGINS = {
     "http://localhost:5173",
@@ -99,6 +101,12 @@ engine = GameEngine()
 # Quick chat rate limiting: player_id -> last send timestamp
 chat_cooldowns: dict[str, float] = {}
 CHAT_COOLDOWN_SECONDS = 2.0
+
+# Turn timers: player_id -> asyncio.Task that auto-stands after TURN_TIMEOUT
+turn_timers: dict[str, asyncio.Task] = {}
+
+# Bet timers: room_code -> asyncio.Task that auto-skips AFK bettors after BET_TIMEOUT
+bet_timers: dict[str, asyncio.Task] = {}
 
 
 # --- Background Tasks ---
@@ -314,6 +322,8 @@ async def handle_start_game(player_id: str):
     for event in events:
         await manager.broadcast_to_room(room_code, event)
 
+    _start_bet_timer(room_code)
+
 
 async def handle_leave(player_id: str):
     room_code = manager.player_rooms.get(player_id)
@@ -340,6 +350,8 @@ async def handle_leave(player_id: str):
     new_host_id = remove_player_from_room(room, player_id)
     manager.player_rooms.pop(player_id, None)
     manager.cancel_disconnect_task(player_id)
+    chat_cooldowns.pop(player_id, None)
+    _cancel_turn_timer(player_id)
 
     logger.info(f"{player_name} ({player_id}) left room {room_code}")
 
@@ -367,14 +379,23 @@ async def handle_leave(player_id: str):
         for event in departure_events:
             await manager.broadcast_to_room(room_code, event)
 
+        # Cancel bet timer if departure triggered dealing
+        if any(e.get("type") == "cards_dealt" for e in departure_events):
+            _cancel_bet_timer(room_code)
+
         # If departure triggered dealer turn, run it
         if triggered_dealer:
             _start_dealer_turn_if_needed(remaining_room, room_code)
+    else:
+        # Room was deleted — clean up bet timer
+        _cancel_bet_timer(room_code)
 
 
 async def handle_disconnect(player_id: str):
     """Handle unexpected WebSocket disconnection with grace period."""
     manager.disconnect(player_id)
+    chat_cooldowns.pop(player_id, None)
+    _cancel_turn_timer(player_id)
 
     room_code = manager.player_rooms.get(player_id)
     if not room_code:
@@ -404,6 +425,10 @@ async def handle_disconnect(player_id: str):
     departure_events = engine.handle_player_departure(room, player_id)
     for event in departure_events:
         await manager.broadcast_to_room(room_code, event)
+
+    # Cancel bet timer if departure triggered dealing
+    if any(e.get("type") == "cards_dealt" for e in departure_events):
+        _cancel_bet_timer(room_code)
 
     # If departure triggered dealer turn, run it
     if room.phase == "dealer_turn":
@@ -490,13 +515,14 @@ async def handle_reconnect(player_id_from_msg: str, code: str, session_token: st
         reconnect_msg["state"] = engine.get_room_state(room)
     await websocket.send_text(json.dumps(reconnect_msg))
 
-    # If it's this player's turn, notify them
+    # If it's this player's turn, notify them and start turn timer
     if room.phase == "playing":
         current_pid = engine._get_current_player_id(room)
         if current_pid == player_id_from_msg:
             await websocket.send_text(
                 json.dumps({"type": "your_turn", "player_id": player_id_from_msg})
             )
+            _start_turn_timer(player_id_from_msg, code)
 
     # Broadcast to others
     await manager.broadcast_to_room(
@@ -510,6 +536,109 @@ async def handle_reconnect(player_id_from_msg: str, code: str, session_token: st
     )
 
     return player_id_from_msg
+
+
+# --- Turn Timer ---
+
+
+def _cancel_turn_timer(player_id: str):
+    """Cancel any active turn timer for this player."""
+    task = turn_timers.pop(player_id, None)
+    if task and not task.done():
+        task.cancel()
+
+
+def _start_turn_timer(player_id: str, room_code: str):
+    """Start a timer that auto-stands the player after TURN_TIMEOUT seconds."""
+    _cancel_turn_timer(player_id)
+
+    async def _auto_stand():
+        await asyncio.sleep(TURN_TIMEOUT)
+        room = get_room(room_code)
+        if not room or room.phase != "playing":
+            return
+        if player_id not in room.players:
+            return
+        # Verify it is still this player's turn
+        current_pid = None
+        for pid in room.turn_order:
+            if pid in room.players and room.players[pid].status == "playing":
+                current_pid = pid
+                break
+        if current_pid != player_id:
+            return
+        logger.info(f"Turn timer expired for {player_id} in room {room_code}, auto-standing")
+        try:
+            events = engine.stand(room, player_id)
+            for event in events:
+                await manager.broadcast_to_room(room_code, event)
+            # Check if a new your_turn was emitted and start timer for next player
+            for event in events:
+                if event.get("type") == "your_turn":
+                    _start_turn_timer(event["player_id"], room_code)
+            if room.phase == "dealer_turn":
+                _start_dealer_turn_if_needed(room, room_code)
+        except ValueError:
+            pass  # Player already stood or game state changed
+
+    turn_timers[player_id] = asyncio.create_task(_auto_stand())
+
+
+def _cancel_bet_timer(room_code: str):
+    """Cancel any active bet timer for this room."""
+    task = bet_timers.pop(room_code, None)
+    if task and not task.done():
+        task.cancel()
+
+
+def _start_bet_timer(room_code: str):
+    """Start a timer that auto-skips AFK players after BET_TIMEOUT seconds."""
+    _cancel_bet_timer(room_code)
+
+    async def _auto_skip_afk():
+        await asyncio.sleep(BET_TIMEOUT)
+        room = get_room(room_code)
+        if not room or room.phase != "betting":
+            return
+
+        # Mark AFK players as sitting out
+        afk_names = []
+        for player in room.players.values():
+            if player.connected and player.status == "betting":
+                player.status = "sitting_out"
+                afk_names.append(player.name)
+
+        if not afk_names:
+            return  # Everyone bet just in time
+
+        logger.info(f"Bet timer expired in room {room_code}, sitting out: {afk_names}")
+
+        # Broadcast timeout notification
+        await manager.broadcast_to_room(room_code, {
+            "type": "bet_timeout",
+            "sat_out": afk_names,
+            "state": engine.get_room_state(room),
+        })
+
+        # Deal to ready players (or restart if nobody bet)
+        ready = [p for p in room.players.values() if p.connected and p.status == "ready"]
+        if ready:
+            events = engine.deal_initial_cards(room)
+            for event in events:
+                await manager.broadcast_to_room(room_code, event)
+            for event in events:
+                if event.get("type") == "your_turn":
+                    _start_turn_timer(event["player_id"], room_code)
+            if room.phase == "dealer_turn":
+                _start_dealer_turn_if_needed(room, room_code)
+        else:
+            # Nobody bet — restart betting phase
+            events = engine.start_betting_phase(room)
+            for event in events:
+                await manager.broadcast_to_room(room_code, event)
+            _start_bet_timer(room_code)
+
+    bet_timers[room_code] = asyncio.create_task(_auto_skip_afk())
 
 
 async def handle_game_action(player_id: str, message: dict):
@@ -532,6 +661,9 @@ async def handle_game_action(player_id: str, message: dict):
         return
 
     msg_type = message.get("type")
+
+    # Cancel turn timer when a player acts
+    _cancel_turn_timer(player_id)
 
     try:
         if msg_type == "place_bet":
@@ -566,6 +698,15 @@ async def handle_game_action(player_id: str, message: dict):
     for event in events:
         await manager.broadcast_to_room(room_code, event)
 
+    # Cancel bet timer if cards were dealt (all bets placed naturally)
+    if any(e.get("type") == "cards_dealt" for e in events):
+        _cancel_bet_timer(room_code)
+
+    # Start turn timer for the next player if a your_turn event was emitted
+    for event in events:
+        if event.get("type") == "your_turn":
+            _start_turn_timer(event["player_id"], room_code)
+
     # If we transitioned to dealer_turn, run the dealer asynchronously
     if room.phase == "dealer_turn":
         _start_dealer_turn_if_needed(room, room_code)
@@ -595,6 +736,7 @@ async def _run_dealer_and_advance(room: GameRoom, room_code: str):
         events = engine.start_betting_phase(r)
         for event in events:
             await manager.broadcast_to_room(room_code, event)
+        _start_bet_timer(room_code)
 
 
 async def handle_quick_chat(player_id: str, message: dict):

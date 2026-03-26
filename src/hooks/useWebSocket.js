@@ -15,6 +15,15 @@ const RECONNECT_BASE_DELAY = 1000
 let activeWs = null
 let reconnectAttempts = 0
 let reconnectTimer = null
+let heartbeatTimeout = null
+
+function resetHeartbeatTimeout() {
+  clearTimeout(heartbeatTimeout)
+  heartbeatTimeout = setTimeout(() => {
+    console.warn('[WS] No heartbeat received in 45s, connection presumed dead')
+    if (activeWs) activeWs.close()
+  }, 45000)
+}
 
 export function useWebSocket(dispatch) {
   const dispatchRef = useRef(dispatch)
@@ -35,6 +44,7 @@ export function useWebSocket(dispatch) {
     ws.onopen = () => {
       dispatchRef.current({ type: 'WS_CONNECTED' })
       reconnectAttempts = 0
+      resetHeartbeatTimeout()
 
       // Check for reconnection data
       const savedPlayerId = sessionStorage.getItem('mp_player_id')
@@ -60,6 +70,7 @@ export function useWebSocket(dispatch) {
 
       if (message.type === 'ping') {
         ws.send(JSON.stringify({ type: 'pong' }))
+        resetHeartbeatTimeout()
         return
       }
 
@@ -90,6 +101,7 @@ export function useWebSocket(dispatch) {
     }
 
     ws.onclose = () => {
+      clearTimeout(heartbeatTimeout)
       // Only dispatch if this is still the active WebSocket
       if (activeWs === ws) {
         activeWs = null
@@ -112,7 +124,9 @@ export function useWebSocket(dispatch) {
       }
     }
 
-    ws.onerror = () => {}
+    ws.onerror = (event) => {
+      console.error('[WS] WebSocket error:', event)
+    }
 
     activeWs = ws
   }, [])
@@ -128,6 +142,7 @@ export function useWebSocket(dispatch) {
   const disconnect = useCallback(() => {
     intentionalCloseRef.current = true
     clearTimeout(reconnectTimer)
+    clearTimeout(heartbeatTimeout)
     reconnectAttempts = 0
     sessionStorage.removeItem('mp_player_id')
     sessionStorage.removeItem('mp_room_code')

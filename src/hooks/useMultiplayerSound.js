@@ -43,7 +43,9 @@ export function useMultiplayerSound(state) {
     if (state.phase === 'playing' && prev.phase === 'playing') {
       for (const [id, player] of Object.entries(state.playerStates)) {
         const prevPlayer = prev.playerStates[id]
-        if (prevPlayer && player.hand?.length > prevPlayer.hand?.length) {
+        const currLen = player.hands?.[player.active_hand_index]?.cards?.length || 0
+        const prevLen = prevPlayer?.hands?.[prevPlayer.active_hand_index]?.cards?.length || 0
+        if (prevPlayer && currLen > prevLen) {
           audioManager.play('card_deal')
           break
         }
