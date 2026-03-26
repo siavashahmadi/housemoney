@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
+import { FORCE_LEAVE } from '../reducer/multiplayerReducer'
 import styles from './Lobby.module.css'
 
 function Lobby({ state, send, dispatch, onBack }) {
@@ -29,8 +30,14 @@ function Lobby({ state, send, dispatch, onBack }) {
   }, [send])
 
   const handleLeave = useCallback(() => {
-    send({ type: 'leave' })
-  }, [send])
+    if (state.connected) {
+      send({ type: 'leave' })
+    }
+    sessionStorage.removeItem('mp_player_id')
+    sessionStorage.removeItem('mp_room_code')
+    sessionStorage.removeItem('mp_session_token')
+    dispatch({ type: FORCE_LEAVE })
+  }, [send, state.connected, dispatch])
 
   const handleCodeInput = useCallback((index, value) => {
     const char = value.slice(-1).toUpperCase()

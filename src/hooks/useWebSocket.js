@@ -43,7 +43,6 @@ export function useWebSocket(dispatch) {
 
     ws.onopen = () => {
       dispatchRef.current({ type: 'WS_CONNECTED' })
-      reconnectAttempts = 0
       resetHeartbeatTimeout()
 
       // Check for reconnection data
@@ -90,10 +89,15 @@ export function useWebSocket(dispatch) {
         if (message.code) sessionStorage.setItem('mp_room_code', message.code)
         if (message.session_token) sessionStorage.setItem('mp_session_token', message.session_token)
       }
-      if (message.type === 'left_room') {
+      if (message.type === 'left_room' || message.type === 'reconnect_failed') {
         sessionStorage.removeItem('mp_player_id')
         sessionStorage.removeItem('mp_room_code')
         sessionStorage.removeItem('mp_session_token')
+      }
+
+      // Reset reconnect counter only on confirmed room success
+      if (message.type === 'room_created' || message.type === 'player_joined' || message.type === 'reconnected') {
+        reconnectAttempts = 0
       }
 
       const actionType = `SERVER_${message.type.toUpperCase()}`

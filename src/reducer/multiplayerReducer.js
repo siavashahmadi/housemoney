@@ -13,6 +13,7 @@ export const MP_ALL_IN = 'MP_ALL_IN'
 export const MP_TOGGLE_ASSET_MENU = 'MP_TOGGLE_ASSET_MENU'
 export const MP_TOGGLE_MUTE = 'MP_TOGGLE_MUTE'
 export const SET_PLAYER_NAME = 'SET_PLAYER_NAME'
+export const FORCE_LEAVE = 'FORCE_LEAVE'
 export const CLEAR_ERROR = 'CLEAR_ERROR'
 
 // --- Connection action types ---
@@ -255,7 +256,11 @@ export function multiplayerReducer(state, action) {
     }
 
     case 'SERVER_LEFT_ROOM':
+    case FORCE_LEAVE:
       return { ...multiplayerInitialState, connected: state.connected, playerName: state.playerName }
+
+    case 'SERVER_RECONNECT_FAILED':
+      return { ...multiplayerInitialState, connected: state.connected, playerName: state.playerName, error: action.payload.message }
 
     case 'SERVER_RECONNECTED': {
       const { code, player_id, players, phase, state: serverState } = action.payload

@@ -328,9 +328,8 @@ async def handle_start_game(player_id: str):
 async def handle_leave(player_id: str):
     room_code = manager.player_rooms.get(player_id)
     if not room_code:
-        await manager.send_to_player(
-            player_id, {"type": "error", "message": "You are not in a room"}
-        )
+        # Idempotent: always confirm the leave so the client can reset
+        await manager.send_to_player(player_id, {"type": "left_room"})
         return
 
     room = get_room(room_code)
@@ -391,8 +390,17 @@ async def handle_leave(player_id: str):
         _cancel_bet_timer(room_code)
 
 
-async def handle_disconnect(player_id: str):
-    """Handle unexpected WebSocket disconnection with grace period."""
+async def handle_disconnect(player_id: str, websocket: WebSocket = None):
+    """Handle unexpected WebSocket disconnection with grace period.
+
+    If websocket is provided, skip if the connection was already taken over
+    by a newer WebSocket (e.g., reconnection replaced the old one).
+    """
+    if websocket is not None:
+        current_ws = manager.connections.get(player_id)
+        if current_ws is not None and current_ws is not websocket:
+            logger.debug(f"Skipping disconnect for {player_id} — connection was taken over")
+            return
     manager.disconnect(player_id)
     chat_cooldowns.pop(player_id, None)
     _cancel_turn_timer(player_id)
@@ -458,39 +466,50 @@ async def handle_reconnect(player_id_from_msg: str, code: str, session_token: st
     room = get_room(code)
     if not room:
         await websocket.send_text(
-            json.dumps({"type": "error", "message": "Reconnection failed. Room no longer exists."})
+            json.dumps({"type": "reconnect_failed", "message": "Reconnection failed. Room no longer exists."})
         )
         return None
 
     if player_id_from_msg not in room.players:
         await websocket.send_text(
-            json.dumps({"type": "error", "message": "Reconnection failed. Player not found in room."})
+            json.dumps({"type": "reconnect_failed", "message": "Reconnection failed. Player not found in room."})
         )
         return None
 
     player = room.players[player_id_from_msg]
     if player.connected:
-        await websocket.send_text(
-            json.dumps({"type": "error", "message": "Reconnection failed. Player already connected."})
+        # Connection takeover: the old WS is likely dead (e.g., mobile Safari
+        # killed it on app switch) but the server hasn't detected it yet.
+        old_ws = manager.connections.get(player_id_from_msg)
+        manager.disconnect(player_id_from_msg)
+        manager.cancel_disconnect_task(player_id_from_msg)
+        player.connected = False
+        player.disconnected_at = datetime.now(timezone.utc)
+        if old_ws is not None and old_ws is not websocket:
+            try:
+                await old_ws.close(code=4000, reason="Session taken over by new connection")
+            except Exception:
+                pass
+        logger.info(
+            f"Connection takeover for {player.name} ({player_id_from_msg}) — old WS replaced"
         )
-        return None
 
     if not session_token or not secrets.compare_digest(player.session_token, session_token):
         await websocket.send_text(
-            json.dumps({"type": "error", "message": "Reconnection failed. Invalid session."})
+            json.dumps({"type": "reconnect_failed", "message": "Reconnection failed. Invalid session."})
         )
         return None
 
     if player.disconnected_at is None:
         await websocket.send_text(
-            json.dumps({"type": "error", "message": "Reconnection failed. Invalid state."})
+            json.dumps({"type": "reconnect_failed", "message": "Reconnection failed. Invalid state."})
         )
         return None
 
     elapsed = (datetime.now(timezone.utc) - player.disconnected_at).total_seconds()
     if elapsed > DISCONNECT_GRACE_PERIOD:
         await websocket.send_text(
-            json.dumps({"type": "error", "message": "Reconnection failed. Session expired."})
+            json.dumps({"type": "reconnect_failed", "message": "Reconnection failed. Session expired."})
         )
         return None
 
@@ -962,7 +981,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect:
         if player_id:
-            await handle_disconnect(player_id)
+            await handle_disconnect(player_id, websocket)
     except json.JSONDecodeError:
         # First message was invalid JSON
         try:
@@ -974,4 +993,4 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         logger.error(f"WebSocket error for {player_id}: {e}")
         if player_id:
-            await handle_disconnect(player_id)
+            await handle_disconnect(player_id, websocket)
