@@ -110,6 +110,10 @@ engine = GameEngine()
 chat_cooldowns: dict[str, float] = {}
 CHAT_COOLDOWN_SECONDS = 2.0
 
+# Game action rate limiting: player_id -> last action timestamp
+action_cooldowns: dict[str, float] = {}
+ACTION_COOLDOWN_SECONDS = 0.2
+
 # Turn timers: player_id -> asyncio.Task that auto-stands after TURN_TIMEOUT
 turn_timers: dict[str, asyncio.Task] = {}
 
@@ -152,6 +156,14 @@ async def heartbeat_loop():
         ]
         for pid in stale_cooldowns:
             del chat_cooldowns[pid]
+
+        # Purge stale action cooldown entries for disconnected players
+        stale_action_cooldowns = [
+            pid for pid, ts in action_cooldowns.items()
+            if pid not in manager.connections and now - ts > ACTION_COOLDOWN_SECONDS
+        ]
+        for pid in stale_action_cooldowns:
+            del action_cooldowns[pid]
 
 
 # --- Lifespan ---
@@ -369,6 +381,7 @@ async def handle_leave(player_id: str):
         manager.player_rooms.pop(player_id, None)
         manager.cancel_disconnect_task(player_id)
         chat_cooldowns.pop(player_id, None)
+        action_cooldowns.pop(player_id, None)
         _cancel_turn_timer(player_id)
 
         logger.info(f"{player_name} ({player_id}) left room {room_code}")
@@ -429,6 +442,7 @@ async def handle_disconnect(player_id: str, websocket: WebSocket = None, generat
             return
     manager.disconnect(player_id)
     chat_cooldowns.pop(player_id, None)
+    action_cooldowns.pop(player_id, None)
     _cancel_turn_timer(player_id)
 
     room_code = manager.player_rooms.get(player_id)
@@ -712,6 +726,16 @@ async def handle_game_action(player_id: str, message: dict):
             player_id, {"type": "error", "message": "Room not found"}
         )
         return
+
+    # Rate limit: 200ms cooldown per player
+    now = time.monotonic()
+    last_action = action_cooldowns.get(player_id, 0)
+    if now - last_action < ACTION_COOLDOWN_SECONDS:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Too fast — slow down"}
+        )
+        return
+    action_cooldowns[player_id] = now
 
     async with room._lock:
         msg_type = message.get("type")

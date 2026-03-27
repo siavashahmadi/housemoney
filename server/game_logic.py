@@ -222,6 +222,11 @@ class GameEngine:
 
     # --- Betting ---
 
+    # DEBT GATE FLOW: Cash bets blocked when bankroll <= 0 and not in_debt_mode.
+    # Player must bet assets (which push bankroll negative) or take a loan first.
+    # Sequence: cash → $0 → asset gate → bet assets → lose → loan gate → debt mode.
+    # See client gameReducer.js for full flow documentation.
+
     def place_bet(self, room: GameRoom, player_id: str, amount: int) -> list[dict]:
         """Validate and record a player's bet. Auto-deals when all bets are in."""
         player = self._validate_betting(room, player_id)

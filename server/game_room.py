@@ -3,6 +3,7 @@
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+import re
 import secrets
 
 from constants import ASSETS, DEFAULT_OWNED_ASSETS, STARTING_BANKROLL
@@ -109,6 +110,8 @@ def validate_player_name(name: str | None) -> str:
     if not name or not name.strip():
         raise ValueError("Player name is required")
     cleaned = name.strip().replace('<', '').replace('>', '')
+    # Remove zero-width and control characters (preserves legitimate Unicode)
+    cleaned = re.sub(r'[\u200b-\u200f\u2028-\u202f\u2060-\u2069\ufeff\x00-\x1f\x7f]', '', cleaned)
     if not cleaned:
         raise ValueError("Player name is required")
     if len(cleaned) > 20:
