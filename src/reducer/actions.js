@@ -27,6 +27,7 @@ export const LOAD_HIGHEST_DEBT = 'LOAD_HIGHEST_DEBT'
 export const SET_DEALER_MESSAGE = 'SET_DEALER_MESSAGE'
 export const TOGGLE_NOTIFICATIONS = 'TOGGLE_NOTIFICATIONS'
 export const TOGGLE_DEBT_TRACKER = 'TOGGLE_DEBT_TRACKER'
+export const TAKE_LOAN = 'TAKE_LOAN'
 
 // Action creators for actions with payloads
 export const addChip = (value) => ({ type: ADD_CHIP, value })
@@ -52,5 +53,6 @@ export const setLoanSharkMessage = (messages, seenThresholds) => ({
   messages,
   seenThresholds,
 })
+export const takeLoan = () => ({ type: TAKE_LOAN })
 export const newRound = (freshDeck) => ({ type: NEW_ROUND, freshDeck })
 export const resetGame = (freshDeck) => ({ type: RESET_GAME, freshDeck })

@@ -51,6 +51,9 @@ def get_vig_rate(bankroll: int) -> float:
             return tier["rate"]
     return VIG_TIERS[-1]["rate"]
 
+# Chip denominations (server validates total bet, not individual chips)
+# Client-side chips: 25, 100, 500, 1K, 5K, 25K, 100K, 500K, 1M
+
 # Quick chat messages — predefined messages players can send in multiplayer
 QUICK_CHAT_MESSAGES = {
     "nice_hand": "Nice hand!",

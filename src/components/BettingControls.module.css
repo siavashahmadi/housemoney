@@ -5,6 +5,10 @@
   padding: 8px 16px;
 }
 
+.chipTrayWrapper {
+  position: relative;
+}
+
 .controlRow {
   display: flex;
   gap: 8px;
@@ -54,6 +58,21 @@
   letter-spacing: 0.5px;
 }
 
+.cooldown {
+  opacity: 0.4;
+  cursor: default;
+  animation: cooldownPulse 1s ease-in-out infinite;
+}
+
+.cooldown:active {
+  transform: none;
+}
+
+@keyframes cooldownPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.25; }
+}
+
 .dealButton {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 18px;
@@ -92,4 +111,58 @@
   30% { transform: translateX(1.5px); }
   45% { transform: translateX(-1px); }
   60% { transform: translateX(0.5px); }
+}
+
+/* ===== Debt Gate Overlays ===== */
+
+.gateOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: 10;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.assetGateButton {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  padding: 8px 20px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(142, 68, 173, 0.4);
+}
+
+.assetGateButton:active {
+  transform: scale(0.97);
+}
+
+.loanGateButton {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--danger), #c0392b);
+  padding: 8px 20px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+}
+
+.loanGateButton:active {
+  transform: scale(0.97);
+}
+
+.gateSubtext {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
 }

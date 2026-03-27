@@ -140,6 +140,16 @@ export function useAchievements(state, dispatch) {
     }
   }, [state.handsPlayed])
 
+  // Effect 5: Debt mode achievement — triggers on TAKE_LOAN (not on hands played)
+  useEffect(() => {
+    const prevState = prevStateRef.current
+    if (state.inDebtMode && !prevState.inDebtMode) {
+      if (!state.unlockedAchievements.includes('point_of_no_return')) {
+        dispatch(unlockAchievement('point_of_no_return'))
+      }
+    }
+  }, [state.inDebtMode, state.unlockedAchievements, dispatch])
+
   // Always update prevStateRef last
   useEffect(() => {
     prevStateRef.current = state

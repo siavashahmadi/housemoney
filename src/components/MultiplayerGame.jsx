@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import audioManager from '../utils/audioManager'
-import { cardValue } from '../utils/cardUtils'
 import { useMultiplayerSound } from '../hooks/useMultiplayerSound'
 import {
   MP_ADD_CHIP, MP_UNDO_CHIP, MP_CLEAR_CHIPS, MP_SELECT_CHIP,
@@ -36,6 +35,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
   const bankroll = localPlayer.bankroll ?? 0
   const ownedAssets = localPlayer.owned_assets || {}
   const bettedAssets = localPlayer.betted_assets || []
+  const inDebtMode = localPlayer.in_debt_mode || false
   const localResult = localPlayer.result
 
   // Is it my turn?
@@ -90,6 +90,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
   const handleClear = useCallback(() => dispatch({ type: MP_CLEAR_CHIPS }), [dispatch])
   const handleAllIn = useCallback(() => dispatch({ type: MP_ALL_IN }), [dispatch])
   const handleToggleAssetMenu = useCallback(() => dispatch({ type: MP_TOGGLE_ASSET_MENU }), [dispatch])
+  const handleTakeLoan = useCallback(() => send({ type: 'take_loan' }), [send])
 
   // Submit bet to server (equivalent of "DEAL" in solo)
   const handlePlaceBet = useCallback(() => {
@@ -157,7 +158,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
     if (!activeHand || activeHand.cards?.length !== 2) return false
     if (activeHand.is_split_aces) return false
     if ((localPlayer.hands?.length || 0) >= 4) return false
-    return cardValue(activeHand.cards[0]) === cardValue(activeHand.cards[1])
+    return activeHand.cards[0].rank === activeHand.cards[1].rank
   }, [state.phase, isMyTurn, localPlayer.hands, localPlayer.active_hand_index])
 
   return (
@@ -232,6 +233,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
               ownedAssets={ownedAssets}
               bettedAssets={bettedAssets}
               showAssetMenu={state.showAssetMenu}
+              inDebtMode={inDebtMode}
               onChipTap={handleChipTap}
               onUndo={handleUndo}
               onClear={handleClear}
@@ -239,6 +241,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
               onDeal={handlePlaceBet}
               onBetAsset={handleBetAsset}
               onToggleAssetMenu={handleToggleAssetMenu}
+              onTakeLoan={handleTakeLoan}
             />
           )}
 

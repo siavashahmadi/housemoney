@@ -46,7 +46,7 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
     if (vigAmount > 0) {
       setDisplayedVig({ amount: vigAmount, rate: vigRate })
       setShowVig(true)
-      const timer = setTimeout(() => setShowVig(false), 2000)
+      const timer = setTimeout(() => setShowVig(false), 3000)
       return () => clearTimeout(timer)
     }
     setShowVig(false)

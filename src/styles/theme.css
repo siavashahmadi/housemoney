@@ -26,7 +26,7 @@
 
   /* Card */
   --card-width: 86px;
-  --card-height: 100px;
+  --card-height: 120px;
   --card-radius: 10px;
   --card-body-top: 21%;
   --card-body-bottom: 21%;
@@ -39,7 +39,7 @@
   --center-suit-size: 38px;
 
   /* Layout */
-  --hand-min-height: 88px;
+  --hand-min-height: 108px;
   --circle-size: 100px;
   --chip-tray-size: 52px;
   --chip-stack-size: 36px;

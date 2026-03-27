@@ -1,7 +1,7 @@
 import {
   ADD_CHIP, UNDO_CHIP, CLEAR_CHIPS, SELECT_CHIP, ALL_IN,
   DEAL, BET_ASSET, REMOVE_ASSET, HIT, STAND, DOUBLE_DOWN, SPLIT, DEALER_DRAW,
-  RESOLVE_HAND, NEW_ROUND, RESET_GAME,
+  RESOLVE_HAND, NEW_ROUND, RESET_GAME, TAKE_LOAN,
   TOGGLE_ASSET_MENU, TOGGLE_ACHIEVEMENTS,
   DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT, LOAD_ACHIEVEMENTS,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, SET_DEALER_MESSAGE, SET_LOAN_SHARK_MESSAGE,
@@ -83,6 +83,11 @@ export function gameReducer(state, action) {
   switch (action.type) {
     case ADD_CHIP: {
       if (state.phase !== 'betting') return state
+      // Block chips when broke and not in debt mode (must bet asset or take loan first)
+      if (state.bankroll <= 0 && !state.inDebtMode) return state
+      // Cap total bet at bankroll when not in debt mode
+      const newTotal = sumChipStack(state.chipStack) + action.value
+      if (newTotal > state.bankroll && !state.inDebtMode) return state
       return { ...state, chipStack: [...state.chipStack, action.value] }
     }
 
@@ -102,8 +107,10 @@ export function gameReducer(state, action) {
 
     case ALL_IN: {
       if (state.phase !== 'betting') return state
+      // Block when broke and not in debt mode
+      if (state.bankroll <= 0 && !state.inDebtMode) return state
       const chipStack = state.bankroll <= 0
-        ? decomposeIntoChips(Math.abs(state.bankroll) || MIN_BET)
+        ? decomposeIntoChips(MIN_BET)
         : decomposeIntoChips(state.bankroll)
       return { ...state, chipStack, isAllIn: true }
     }
@@ -279,8 +286,8 @@ export function gameReducer(state, action) {
       const splitHand = activeHand(state)
       if (!splitHand || splitHand.cards.length !== 2) return state
 
-      // Cards must have same value (K-Q splittable since both are 10-value)
-      if (cardValue(splitHand.cards[0]) !== cardValue(splitHand.cards[1])) return state
+      // Cards must have same rank (K-K splittable, but K-Q is not)
+      if (splitHand.cards[0].rank !== splitHand.cards[1].rank) return state
 
       const isAces = splitHand.cards[0].rank === 'A' && splitHand.cards[1].rank === 'A'
 
@@ -423,9 +430,13 @@ export function gameReducer(state, action) {
       const isWin = aggregateResult === 'win' || aggregateResult === 'dealerBust' || aggregateResult === 'blackjack'
       const isLoss = aggregateResult === 'lose' || aggregateResult === 'bust'
 
+      // Exit debt mode if bankroll recovered above $0
+      const newInDebtMode = state.inDebtMode && newBankroll <= 0
+
       return {
         ...state,
         bankroll: newBankroll,
+        inDebtMode: newInDebtMode,
         playerHands: resolvedHands,
         ownedAssets: newOwnedAssets,
         bettedAssets: [],
@@ -482,6 +493,15 @@ export function gameReducer(state, action) {
 
     case TOGGLE_DEBT_TRACKER: {
       return { ...state, showDebtTracker: !state.showDebtTracker }
+    }
+
+    case TAKE_LOAN: {
+      if (state.phase !== 'betting') return state
+      if (state.bankroll > 0) return state
+      // Can only take a loan when all assets are gone
+      const hasAssets = Object.values(state.ownedAssets).some(v => v)
+      if (hasAssets) return state
+      return { ...state, inDebtMode: true }
     }
 
     case DISMISS_ACHIEVEMENT: {

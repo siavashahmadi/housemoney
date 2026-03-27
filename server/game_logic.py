@@ -96,6 +96,16 @@ class GameEngine:
             raise ValueError(f"Bet must be at least ${MIN_BET}")
         if amount == 0 and not player.betted_assets:
             raise ValueError(f"Bet must be at least ${MIN_BET}")
+        # Debt gate: block cash bets when broke and not in debt mode
+        if player.bankroll <= 0 and amount > 0 and not player.in_debt_mode:
+            has_assets = any(player.owned_assets.values())
+            if has_assets:
+                raise ValueError("You're broke. Bet an asset to continue.")
+            else:
+                raise ValueError("Take a loan to continue playing.")
+        # Cap bet at bankroll when not in debt mode
+        if amount > player.bankroll and not player.in_debt_mode:
+            raise ValueError("Bet cannot exceed your bankroll")
 
         player.bet = amount
         player.status = "ready"
@@ -163,6 +173,32 @@ class GameEngine:
                 "player_name": player.name,
                 "asset_id": asset_id,
                 "asset_name": asset["name"],
+                "state": self.get_room_state(room),
+            }
+        ]
+
+    def take_loan(self, room: GameRoom, player_id: str) -> list[dict]:
+        """Activate debt mode for a player who is broke with no assets."""
+        if room.phase != "betting":
+            raise ValueError("Cannot take a loan in this phase")
+
+        player = room.players.get(player_id)
+        if not player or not player.connected:
+            raise ValueError("Player not found")
+        if player.bankroll > 0:
+            raise ValueError("You still have money")
+        if any(player.owned_assets.values()):
+            raise ValueError("You still have assets to bet")
+        if player.in_debt_mode:
+            raise ValueError("Already in debt mode")
+
+        player.in_debt_mode = True
+
+        return [
+            {
+                "type": "loan_taken",
+                "player_id": player_id,
+                "player_name": player.name,
                 "state": self.get_room_state(room),
             }
         ]
@@ -426,8 +462,8 @@ class GameEngine:
             raise ValueError("Can only split with exactly two cards")
         if hand["is_split_aces"]:
             raise ValueError("Cannot re-split aces")
-        if card_value(hand["cards"][0]) != card_value(hand["cards"][1]):
-            raise ValueError("Can only split cards of equal value")
+        if hand["cards"][0]["rank"] != hand["cards"][1]["rank"]:
+            raise ValueError("Can only split cards of equal rank")
 
         drawn, room.deck = draw_cards(room.deck, 2)
         is_aces = hand["cards"][0]["rank"] == "A"
@@ -722,6 +758,10 @@ class GameEngine:
             player.lowest_bankroll = min(player.lowest_bankroll, player.bankroll)
             player.best_win_streak = max(player.best_win_streak, player.win_streak)
 
+            # Exit debt mode if bankroll recovered above $0
+            if player.in_debt_mode and player.bankroll > 0:
+                player.in_debt_mode = False
+
             player.status = "done"
 
             results[pid] = {
@@ -856,6 +896,7 @@ class GameEngine:
             "bet": player.bet,
             "betted_assets": player.betted_assets,
             "owned_assets": player.owned_assets,
+            "in_debt_mode": player.in_debt_mode,
             "status": player.status,
             "is_host": player.is_host,
             "connected": player.connected,

@@ -2,10 +2,10 @@ import { useReducer, useRef, useCallback, useMemo, useState } from 'react'
 import audioManager from '../utils/audioManager'
 import { gameReducer } from '../reducer/gameReducer'
 import { createInitialState } from '../reducer/initialState'
-import { cardValue, createDeck, shuffle } from '../utils/cardUtils'
+import { createDeck, shuffle } from '../utils/cardUtils'
 import {
   addChip, selectChip, deal, hit, doubleDown, split, betAsset, removeAsset,
-  newRound, resetGame,
+  takeLoan, newRound, resetGame,
   UNDO_CHIP, CLEAR_CHIPS, ALL_IN, STAND,
   TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK, TOGGLE_ACHIEVEMENTS, DISMISS_ACHIEVEMENT,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER,
@@ -151,6 +151,7 @@ function SoloGame({ onBack }) {
 
   const handleRemoveAsset = useCallback((assetId) => dispatch(removeAsset(assetId)), [])
   const handleToggleAssetMenu = useCallback(() => dispatch({ type: TOGGLE_ASSET_MENU }), [])
+  const handleTakeLoan = useCallback(() => dispatch(takeLoan()), [])
   const handleDismissLoanShark = useCallback(() => dispatch({ type: DISMISS_LOAN_SHARK }), [])
   const handleToggleAchievements = useCallback(() => dispatch({ type: TOGGLE_ACHIEVEMENTS }), [])
   const handleToggleDebtTracker = useCallback(() => dispatch({ type: TOGGLE_DEBT_TRACKER }), [])
@@ -182,7 +183,7 @@ function SoloGame({ onBack }) {
     if (currentActiveHand.cards.length !== 2) return false
     if (currentActiveHand.isSplitAces) return false
     if (state.playerHands.length >= 4) return false
-    return cardValue(currentActiveHand.cards[0]) === cardValue(currentActiveHand.cards[1])
+    return currentActiveHand.cards[0].rank === currentActiveHand.cards[1].rank
   }, [state.phase, currentActiveHand, state.playerHands.length])
 
   const hideHoleCard = state.phase === 'playing'
@@ -250,6 +251,7 @@ function SoloGame({ onBack }) {
               ownedAssets={state.ownedAssets}
               bettedAssets={state.bettedAssets}
               showAssetMenu={state.showAssetMenu}
+              inDebtMode={state.inDebtMode}
               onChipTap={handleChipTap}
               onUndo={handleUndo}
               onClear={handleClear}
@@ -257,6 +259,7 @@ function SoloGame({ onBack }) {
               onDeal={handleDeal}
               onBetAsset={handleBetAsset}
               onToggleAssetMenu={handleToggleAssetMenu}
+              onTakeLoan={handleTakeLoan}
             />
           )}
           {state.phase === 'playing' && (

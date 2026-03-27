@@ -1,18 +1,15 @@
 import { useMemo } from 'react'
-import { CHIPS } from '../constants/chips'
+import { getVisibleChips } from '../constants/chips'
 import Chip from './Chip'
 import styles from './ChipTray.module.css'
 
-function ChipTray({ bankroll, selectedChipValue, onChipTap }) {
-  const availableChips = useMemo(
-    () => CHIPS.filter(chip => chip.unlockThreshold === null || bankroll <= chip.unlockThreshold || (chip.unlockAbove != null && bankroll >= chip.unlockAbove)),
-    [bankroll]
-  )
+function ChipTray({ bankroll, selectedChipValue, onChipTap, disabled }) {
+  const availableChips = useMemo(() => getVisibleChips(bankroll), [bankroll])
 
   const isBorrowed = bankroll <= 0
 
   return (
-    <div className={`${styles.tray} ${isBorrowed ? styles.borrowed : ''}`}>
+    <div className={`${styles.tray} ${isBorrowed ? styles.borrowed : ''} ${disabled ? styles.disabled : ''}`}>
       {availableChips.map(chip => (
         <Chip
           key={chip.value}
@@ -26,7 +23,7 @@ function ChipTray({ bankroll, selectedChipValue, onChipTap }) {
           onClick={(e) => onChipTap(chip.value, e)}
         />
       ))}
-      {isBorrowed && <span className={styles.borrowedLabel}>BORROWED</span>}
+      {isBorrowed && !disabled && <span className={styles.borrowedLabel}>BORROWED</span>}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react'
 import { MIN_BET } from '../constants/gameConfig'
 import ChipTray from './ChipTray'
 import AssetBetting from './AssetBetting'
@@ -10,6 +11,7 @@ function BettingControls({
   ownedAssets,
   bettedAssets,
   showAssetMenu,
+  inDebtMode,
   onChipTap,
   onUndo,
   onClear,
@@ -17,10 +19,26 @@ function BettingControls({
   onDeal,
   onBetAsset,
   onToggleAssetMenu,
+  onTakeLoan,
 }) {
+  const [allInCooldown, setAllInCooldown] = useState(false)
+
+  const handleAllIn = useCallback(() => {
+    if (allInCooldown) return
+    onAllIn()
+    setAllInCooldown(true)
+    setTimeout(() => setAllInCooldown(false), 3000)
+  }, [allInCooldown, onAllIn])
+
   const chipTotal = chipStack.reduce((sum, v) => sum + v, 0)
   const assetTotal = bettedAssets.reduce((sum, a) => sum + a.value, 0)
   const canDeal = (chipTotal + assetTotal) >= MIN_BET
+
+  // Debt gate logic
+  const hasOwnedAssets = Object.values(ownedAssets).some(v => v)
+  const isChipTrayBlocked = bankroll <= 0 && !inDebtMode
+  const showAssetGate = isChipTrayBlocked && hasOwnedAssets
+  const showLoanGate = isChipTrayBlocked && !hasOwnedAssets
 
   const dealClasses = [
     styles.dealButton,
@@ -28,13 +46,44 @@ function BettingControls({
     bankroll < -10000 ? styles.wobble : '',
   ].filter(Boolean).join(' ')
 
+  const allInClasses = [
+    styles.allInButton,
+    bankroll < 0 ? styles.hailMary : '',
+    allInCooldown || isChipTrayBlocked ? styles.cooldown : '',
+  ].filter(Boolean).join(' ')
+
   return (
     <div className={styles.controls}>
-      <ChipTray
-        bankroll={bankroll}
-        selectedChipValue={selectedChipValue}
-        onChipTap={onChipTap}
-      />
+      <div className={styles.chipTrayWrapper}>
+        <ChipTray
+          bankroll={bankroll}
+          selectedChipValue={selectedChipValue}
+          onChipTap={onChipTap}
+          disabled={isChipTrayBlocked}
+        />
+        {showAssetGate && (
+          <div className={styles.gateOverlay}>
+            <button
+              className={styles.assetGateButton}
+              onClick={onToggleAssetMenu}
+            >
+              BET AN ASSET
+            </button>
+            <span className={styles.gateSubtext}>You're broke. Time for desperate measures.</span>
+          </div>
+        )}
+        {showLoanGate && (
+          <div className={styles.gateOverlay}>
+            <button
+              className={styles.loanGateButton}
+              onClick={onTakeLoan}
+            >
+              TAKE A LOAN
+            </button>
+            <span className={styles.gateSubtext}>Interest applies. There's no going back.</span>
+          </div>
+        )}
+      </div>
       <div className={styles.controlRow}>
         <button
           className={styles.smallButton}
@@ -50,18 +99,20 @@ function BettingControls({
         >
           CLEAR
         </button>
-        <button className={`${styles.allInButton}${bankroll < 0 ? ` ${styles.hailMary}` : ''}`} onClick={onAllIn}>
+        <button className={allInClasses} onClick={handleAllIn} disabled={allInCooldown || isChipTrayBlocked}>
           {bankroll < 0 ? 'HAIL MARY' : 'ALL IN'}
         </button>
       </div>
-      <AssetBetting
-        bankroll={bankroll}
-        ownedAssets={ownedAssets}
-        bettedAssets={bettedAssets}
-        onBetAsset={onBetAsset}
-        showAssetMenu={showAssetMenu}
-        onToggleAssetMenu={onToggleAssetMenu}
-      />
+      {!showLoanGate && (
+        <AssetBetting
+          bankroll={bankroll}
+          ownedAssets={ownedAssets}
+          bettedAssets={bettedAssets}
+          onBetAsset={onBetAsset}
+          showAssetMenu={showAssetMenu}
+          onToggleAssetMenu={onToggleAssetMenu}
+        />
+      )}
       <button
         className={dealClasses}
         onClick={canDeal ? onDeal : undefined}

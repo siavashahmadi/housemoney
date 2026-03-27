@@ -30,6 +30,9 @@ export function createInitialState() {
     ownedAssets,
     bettedAssets: [],
 
+    // Debt gate
+    inDebtMode: false,
+
     // Game flow
     phase: 'betting',
     result: null,

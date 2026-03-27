@@ -10,7 +10,7 @@ A mobile-first blackjack web app where you can never go broke -- the casino exte
 
 ### Core Gameplay
 - **Unlimited debt mechanic** -- Bankroll goes negative with no floor. Bet $500K when you're already $1M in debt. The casino doesn't care.
-- **Split hands** -- Split matching-value pairs into up to 4 hands. Split aces get one card each and auto-stand.
+- **Split hands** -- Split matching-rank pairs (e.g., two Kings, not King-Queen) into up to 4 hands. Split aces get one card each and auto-stand.
 - **Double down** -- Double your bet mid-hand for one more card. Auto-stands afterward.
 - **6-deck shoe** -- 312-card shoe reshuffled when fewer than 75 cards remain, checked between hands.
 
@@ -31,7 +31,8 @@ A mobile-first blackjack web app where you can never go broke -- the casino exte
 - **Reconnection** -- 120-second grace period with session tokens. Disconnect mid-hand and rejoin without losing your spot.
 
 ### Production Features
-- **Chip stacking** -- Tap casino chips ($25 to $25K) that animate into a betting circle. No text input.
+- **Chip stacking** -- Tap casino chips ($25 to $1M) that animate into a betting circle. No text input. Fixed chip sets of 5 scale with debt level.
+- **Debt gate** -- When bankroll hits $0, chip tray locks. Players must sell assets or "Take a Loan" to unlock unlimited credit (with escalating vig).
 - **Synthesized sound effects** -- Web Audio API generates chip, card, win/lose sounds. No .mp3 files.
 - **Session persistence** -- Achievements, mute preference, and highest debt survive page reload.
 - **Mobile-first responsive design** -- Optimized for iPhone with CSS custom properties for responsive sizing.
@@ -446,6 +447,7 @@ When a player disconnects:
   phase: 'betting',          // 'betting' | 'playing' | 'dealerTurn' | 'result'
   result: null,              // Aggregate result across all hands
   isAllIn: false,
+  inDebtMode: false,         // Unlocked via TAKE_LOAN when broke with no assets
 
   // Dealer
   dealerMessage: '',         // Current trash talk line
@@ -521,15 +523,16 @@ When a player disconnects:
 - **Dealer hits on soft 17** -- a hand containing an ace counted as 11 that totals 17 (e.g., A+6). Stands on hard 17+.
 - **Blackjack pays 3:2** -- $100 bet -> $150 profit, $250 total returned
 - **Double down** -- Doubles bet, one card, auto-stand. Available on first two cards only.
-- **Split** -- Split any pair of equal-value cards (K-Q counts as a pair since both are 10). Up to 4 hands total. Split aces receive one card each and auto-stand. 21 after split is a regular win, not blackjack.
+- **Split** -- Split any pair of matching-rank cards (two Kings, two 7s -- not K-Q even though both are 10). Up to 4 hands total. Split aces receive one card each and auto-stand. 21 after split is a regular win, not blackjack.
 - **No insurance, no surrender, no side bets**
 
 ### The Debt Mechanic
 - Starting bankroll: $10,000
 - Minimum bet: $25
-- **Bankroll can go negative** -- the casino extends unlimited credit
-- There is no debt floor -- the player can owe millions
+- **Debt gate** -- When bankroll hits $0, chip tray locks behind a gate. Players must bet an asset (if owned) or "Take a Loan" to enter debt mode
+- **Bankroll can go negative** -- once in debt mode, the casino extends unlimited credit with no floor
 - The vig system charges interest on the borrowed portion of each bet
+- Debt mode auto-clears when bankroll returns to positive
 
 ### Vig (Interest) Tiers
 
@@ -622,7 +625,7 @@ blackjack/
 │   ├── constants/
 │   │   ├── gameConfig.js                  # STARTING_BANKROLL, MIN_BET, DECK_COUNT, etc.
 │   │   ├── cards.js                       # SUITS, RANKS, SUIT_SYMBOLS, SUIT_COLORS
-│   │   ├── chips.js                       # 6 denominations with colors + thresholds
+│   │   ├── chips.js                       # 9 denominations, getVisibleChips() returns 5 per range
 │   │   ├── assets.js                      # 6 assets with values + unlock thresholds
 │   │   ├── achievements.js                # 26 achievement definitions
 │   │   ├── dealerLines.js                 # All trash talk lines by category
@@ -752,13 +755,18 @@ Text:    #e8e0d0 (primary), rgba(232,224,208,0.5) (dim)
 - **DM Sans 400/500/700** -- Body text, buttons, labels
 - **JetBrains Mono 500/700** -- Bankroll numbers, bet totals, chip values
 
-### Chip Colors
+### Chip Colors & Sets
 
-| Value | Color |
-|-------|-------|
-| $25 | Coral-Rose |
-| $100 | Sky-Blue |
-| $500 | Orchid-Purple |
-| $1,000 | Peach-Orange |
-| $5,000 | Seafoam-Green |
-| $25,000 | Pearl-White (unlocks at -$5K debt) |
+9 chip denominations, shown 5 at a time based on bankroll range:
+
+| Value | Color | Visible Range |
+|-------|-------|---------------|
+| $25 | Coral-Rose | Bankroll > $0 |
+| $100 | Sky-Blue | Bankroll > $0, Debt $0 to -$100K |
+| $500 | Orchid-Purple | Bankroll > $0, Debt $0 to -$100K |
+| $1,000 | Peach-Orange | All ranges except Debt < -$1M |
+| $5,000 | Seafoam-Green | All ranges |
+| $25,000 | Pearl-White | All debt ranges |
+| $100,000 | Gold-Metallic | Debt < -$100K |
+| $500,000 | Platinum-Silver | Debt < -$100K |
+| $1,000,000 | Royal-Purple | Debt < -$1M |

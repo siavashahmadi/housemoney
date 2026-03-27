@@ -27,6 +27,7 @@ export const ACHIEVEMENTS = [
   { id: 'split_four', name: 'Quad Damage', description: 'Have 4 hands at once', emoji: '4️⃣' },
   { id: 'split_both_bust', name: 'Double Trouble', description: 'Bust on both split hands', emoji: '💀' },
   { id: 'split_both_win', name: 'Having It Both Ways', description: 'Win both split hands', emoji: '🎉' },
+  { id: 'point_of_no_return', name: 'Point of No Return', description: 'Take a loan for the first time', emoji: '🏦' },
 ]
 
 export const ACHIEVEMENT_MAP = Object.fromEntries(

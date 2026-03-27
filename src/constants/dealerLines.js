@@ -187,4 +187,12 @@ export const DEALER_LINES = {
     "Split Aces? That's the smartest thing you've done all night. Don't get used to it.",
     "Four hands?! Someone call the pit boss, we've got a maniac over here.",
   ],
+  debtActivated: [
+    "Welcome to our lending program. The terms are... flexible.",
+    "Sign here, here, and here. Just kidding, we don't do paperwork.",
+    "Tony will be in touch about the repayment schedule.",
+    "Smart choice. Well, not 'smart' exactly, but a choice.",
+    "The house always extends credit. The house always collects.",
+    "You're officially playing with money that doesn't exist. My favorite kind.",
+  ],
 }

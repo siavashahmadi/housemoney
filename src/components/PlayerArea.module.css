@@ -49,7 +49,10 @@
 }
 
 .activeHand {
-  filter: drop-shadow(0 0 8px rgba(240, 200, 80, 0.5));
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(240, 200, 80, 0.6);
 }
 
 .bustHand {
@@ -100,6 +103,10 @@
   padding: 1px 6px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.3);
+}
+
+.status_playing {
+  color: var(--gold);
 }
 
 .status_bust {

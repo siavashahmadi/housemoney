@@ -22,6 +22,12 @@
   z-index: 1;
 }
 
+.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: saturate(0.3);
+}
+
 .borrowedLabel {
   position: absolute;
   top: -14px;

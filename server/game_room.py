@@ -33,6 +33,9 @@ class PlayerState:
     status: str = "idle"  # idle|betting|ready|playing|standing|bust|done
     result: str | None = None  # per-player aggregate outcome
 
+    # Debt gate
+    in_debt_mode: bool = False
+
     # Vig tracking
     vig_amount: int = 0
     vig_rate: float = 0.0

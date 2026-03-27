@@ -63,10 +63,14 @@ function PlayerArea({ playerHands, activeHandIndex, phase, bettedAssets }) {
                 {hand.isDoubledDown && <span className={styles.ddBadge}>2x</span>}
               </div>
               <Hand cards={hand.cards} size={cardSize} />
-              {isDone && phase === 'playing' && (
-                <span className={`${styles.statusBadge} ${styles[`status_${hand.status}`]}`}>
-                  {hand.status === 'bust' ? 'BUST' : hand.status === 'standing' ? 'STAND' : ''}
-                </span>
+              {phase === 'playing' && (
+                isDone ? (
+                  <span className={`${styles.statusBadge} ${styles[`status_${hand.status}`]}`}>
+                    {hand.status === 'bust' ? 'BUST' : hand.status === 'standing' ? 'STANDING' : ''}
+                  </span>
+                ) : isActive ? (
+                  <span className={`${styles.statusBadge} ${styles.status_playing}`}>PLAYING</span>
+                ) : null
               )}
               {showResult && (
                 <span className={`${styles.resultBadge} ${styles[`result_${hand.result}`]}`}>

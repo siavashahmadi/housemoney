@@ -103,6 +103,21 @@ export function useDealerMessage(state, dispatch) {
     dispatch(setDealerMessage(message, updatedShownLines))
   }, [state.playerHands?.length, state.phase, dispatch])
 
+  // Debt mode activated — fires when inDebtMode transitions to true
+  useEffect(() => {
+    if (!state.inDebtMode) return
+
+    const prevState = prevStateRef.current
+    if (prevState.inDebtMode) return
+
+    const { message, updatedShownLines } = selectDealerLine(
+      'debtActivated',
+      state.shownDealerLines,
+      {}
+    )
+    dispatch(setDealerMessage(message, updatedShownLines))
+  }, [state.inDebtMode, dispatch])
+
   // Game reset — greeting when handsPlayed drops to 0
   useEffect(() => {
     if (state.handsPlayed !== 0) return
