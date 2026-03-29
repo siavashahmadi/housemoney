@@ -68,6 +68,10 @@ function SoloGame({ onBack }) {
 
   // --- Handlers (stable via useCallback — dispatch and stateRef never change identity) ---
   const handleChipTap = useCallback((value, event) => {
+    const s = stateRef.current
+    if (s.phase !== 'betting') return
+    const tapMinBet = TABLE_LEVELS[s.tableLevel].minBet
+    if (s.bankroll < tapMinBet && !s.inDebtMode) return
     // Haptic + sound immediately on tap for zero-latency feedback
     navigator.vibrate?.(10)
     const isFirst = stateRef.current.chipStack.length === 0
@@ -117,15 +121,21 @@ function SoloGame({ onBack }) {
   const handleAllIn = useCallback(() => dispatch({ type: ALL_IN }), [])
 
   const handleDeal = useCallback(() => {
-    if (stateRef.current.deck.length < 4) return
-    const cards = stateRef.current.deck.slice(0, 4)
-    dispatch(deal(cards))
+    if (stateRef.current.deck.length < 4) {
+      const freshDeck = shuffle(createDeck())
+      dispatch(deal(freshDeck.slice(0, 4), freshDeck.slice(4)))
+    } else {
+      dispatch(deal(stateRef.current.deck.slice(0, 4)))
+    }
   }, [])
 
   const handleHit = useCallback(() => {
-    if (stateRef.current.deck.length < 1) return
-    const [card] = stateRef.current.deck.slice(0, 1)
-    dispatch(hit(card))
+    if (stateRef.current.deck.length < 1) {
+      dispatch(hit(null, shuffle(createDeck())))
+    } else {
+      const [card] = stateRef.current.deck.slice(0, 1)
+      dispatch(hit(card))
+    }
   }, [])
 
   const handleStand = useCallback(() => dispatch({ type: STAND }), [])
@@ -134,38 +144,52 @@ function SoloGame({ onBack }) {
   const [pendingLoanAction, setPendingLoanAction] = useState(null)
 
   const handleDoubleDown = useCallback(() => {
-    if (stateRef.current.deck.length < 1) return
     const s = stateRef.current
     const hand = s.playerHands[s.activeHandIndex]
     if (hand && s.bankroll - hand.bet < 0 && !s.inDebtMode) {
       setPendingLoanAction({ type: 'double' })
       return
     }
-    const [card] = s.deck.slice(0, 1)
-    dispatch(doubleDown(card))
+    if (s.deck.length < 1) {
+      dispatch(doubleDown(null, shuffle(createDeck())))
+    } else {
+      const [card] = s.deck.slice(0, 1)
+      dispatch(doubleDown(card))
+    }
   }, [])
 
   const handleSplit = useCallback(() => {
-    if (stateRef.current.deck.length < 2) return
     const s = stateRef.current
     const hand = s.playerHands[s.activeHandIndex]
     if (hand && s.bankroll - hand.bet < 0 && !s.inDebtMode) {
       setPendingLoanAction({ type: 'split' })
       return
     }
-    const cards = s.deck.slice(0, 2)
-    dispatch(split(cards))
+    if (s.deck.length < 2) {
+      dispatch(split(null, shuffle(createDeck())))
+    } else {
+      const cards = s.deck.slice(0, 2)
+      dispatch(split(cards))
+    }
   }, [])
 
   const handleConfirmLoan = useCallback(() => {
+    // Snapshot deck before any dispatch — stateRef won't update until re-render
+    const deck = stateRef.current.deck
     dispatch(takeLoan())
     // useReducer processes dispatches sequentially — inDebtMode is true for the next action
     if (pendingLoanAction?.type === 'double') {
-      const [card] = stateRef.current.deck.slice(0, 1)
-      dispatch(doubleDown(card))
+      if (deck.length < 1) {
+        dispatch(doubleDown(null, shuffle(createDeck())))
+      } else {
+        dispatch(doubleDown(deck[0]))
+      }
     } else if (pendingLoanAction?.type === 'split') {
-      const cards = stateRef.current.deck.slice(0, 2)
-      dispatch(split(cards))
+      if (deck.length < 2) {
+        dispatch(split(null, shuffle(createDeck())))
+      } else {
+        dispatch(split(deck.slice(0, 2)))
+      }
     }
     setPendingLoanAction(null)
   }, [pendingLoanAction])
@@ -173,7 +197,18 @@ function SoloGame({ onBack }) {
   const handleCancelLoan = useCallback(() => setPendingLoanAction(null), [])
 
   const handleNewRound = useCallback(() => dispatch(newRound(shuffle(createDeck()))), [])
-  const handleReset = useCallback(() => dispatch(resetGame(shuffle(createDeck()))), [])
+  const handleReset = useCallback(() => {
+    if (stateRef.current.handsPlayed > 0) {
+      if (!window.confirm('Start a new game? Current progress will be lost.')) return
+    }
+    dispatch(resetGame(shuffle(createDeck())))
+  }, [])
+  const handleBack = useCallback(() => {
+    if (stateRef.current.handsPlayed > 0) {
+      if (!window.confirm('Return to menu? Current progress will be lost.')) return
+    }
+    onBack()
+  }, [onBack])
 
   // Asset betting with confirmation for high-value assets
   const [pendingAssetConfirm, setPendingAssetConfirm] = useState(null)
@@ -247,7 +282,7 @@ function SoloGame({ onBack }) {
         onToggleMute={handleToggleMute}
         notificationsEnabled={state.notificationsEnabled}
         onToggleNotifications={handleToggleNotifications}
-        onBack={onBack}
+        onBack={handleBack}
       />
       <BankrollDisplay
         bankroll={state.bankroll}
