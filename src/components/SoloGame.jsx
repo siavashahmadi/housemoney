@@ -117,26 +117,60 @@ function SoloGame({ onBack }) {
   const handleAllIn = useCallback(() => dispatch({ type: ALL_IN }), [])
 
   const handleDeal = useCallback(() => {
+    if (stateRef.current.deck.length < 4) return
     const cards = stateRef.current.deck.slice(0, 4)
     dispatch(deal(cards))
   }, [])
 
   const handleHit = useCallback(() => {
+    if (stateRef.current.deck.length < 1) return
     const [card] = stateRef.current.deck.slice(0, 1)
     dispatch(hit(card))
   }, [])
 
   const handleStand = useCallback(() => dispatch({ type: STAND }), [])
 
+  // Loan confirmation for split/double when player can't afford it
+  const [pendingLoanAction, setPendingLoanAction] = useState(null)
+
   const handleDoubleDown = useCallback(() => {
-    const [card] = stateRef.current.deck.slice(0, 1)
+    if (stateRef.current.deck.length < 1) return
+    const s = stateRef.current
+    const hand = s.playerHands[s.activeHandIndex]
+    if (hand && s.bankroll - hand.bet < 0 && !s.inDebtMode) {
+      setPendingLoanAction({ type: 'double' })
+      return
+    }
+    const [card] = s.deck.slice(0, 1)
     dispatch(doubleDown(card))
   }, [])
 
   const handleSplit = useCallback(() => {
-    const cards = stateRef.current.deck.slice(0, 2)
+    if (stateRef.current.deck.length < 2) return
+    const s = stateRef.current
+    const hand = s.playerHands[s.activeHandIndex]
+    if (hand && s.bankroll - hand.bet < 0 && !s.inDebtMode) {
+      setPendingLoanAction({ type: 'split' })
+      return
+    }
+    const cards = s.deck.slice(0, 2)
     dispatch(split(cards))
   }, [])
+
+  const handleConfirmLoan = useCallback(() => {
+    dispatch(takeLoan())
+    // useReducer processes dispatches sequentially — inDebtMode is true for the next action
+    if (pendingLoanAction?.type === 'double') {
+      const [card] = stateRef.current.deck.slice(0, 1)
+      dispatch(doubleDown(card))
+    } else if (pendingLoanAction?.type === 'split') {
+      const cards = stateRef.current.deck.slice(0, 2)
+      dispatch(split(cards))
+    }
+    setPendingLoanAction(null)
+  }, [pendingLoanAction])
+
+  const handleCancelLoan = useCallback(() => setPendingLoanAction(null), [])
 
   const handleNewRound = useCallback(() => dispatch(newRound(shuffle(createDeck()))), [])
   const handleReset = useCallback(() => dispatch(resetGame(shuffle(createDeck()))), [])
@@ -190,7 +224,6 @@ function SoloGame({ onBack }) {
     return currentActiveHand.cards.length === 2 && !currentActiveHand.isDoubledDown
   }, [state.phase, currentActiveHand])
 
-  // Never check bankroll — casino extends infinite credit
   const canSplit = useMemo(() => {
     if (state.phase !== 'playing' || !currentActiveHand) return false
     if (currentActiveHand.cards.length !== 2) return false
@@ -230,6 +263,7 @@ function SoloGame({ onBack }) {
           phase={state.phase}
           hideHoleCard={hideHoleCard}
           dealerMessage={state.dealerMessage}
+          deckLength={state.deck.length}
         />
         <BettingCircle
           ref={circleRef}
@@ -290,7 +324,7 @@ function SoloGame({ onBack }) {
           {state.phase === 'dealerTurn' && (
             <div className={styles.waitingMessage}>Dealer&apos;s turn...</div>
           )}
-          {state.phase === 'result' && (
+          {state.phase === 'result' && state.chipStack.length === 0 && (
             <ResultBanner
               result={state.result}
               bankroll={state.bankroll}
@@ -327,6 +361,27 @@ function SoloGame({ onBack }) {
                 BET IT
               </button>
               <button className={styles.confirmCancel} onClick={handleCancelAsset}>
+                NEVERMIND
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loan confirmation modal for split/double when broke */}
+      {pendingLoanAction && (
+        <div className={styles.confirmOverlay} onClick={handleCancelLoan}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <span className={styles.confirmEmoji}>&#x1F911;</span>
+            <span className={styles.confirmName}>Taking Out a Loan</span>
+            <span className={styles.loanSubtext}>
+              The house charges interest on every borrowed dollar.
+            </span>
+            <div className={styles.confirmButtons}>
+              <button className={styles.confirmBet} onClick={handleConfirmLoan}>
+                DO IT
+              </button>
+              <button className={styles.confirmCancel} onClick={handleCancelLoan}>
                 NEVERMIND
               </button>
             </div>

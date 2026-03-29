@@ -90,6 +90,14 @@
   color: var(--gold);
 }
 
+.loanSubtext {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.4;
+}
+
 .confirmButtons {
   display: flex;
   gap: 12px;

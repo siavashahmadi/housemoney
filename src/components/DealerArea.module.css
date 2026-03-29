@@ -31,3 +31,20 @@
   font-weight: 700;
   color: var(--text-primary);
 }
+
+.reshuffleIndicator {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  animation: reshuffleFade 1.2s ease-out forwards;
+}
+
+@keyframes reshuffleFade {
+  0% { opacity: 0; transform: translateY(4px); }
+  20% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}

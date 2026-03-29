@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { handValue, isSoft } from '../utils/cardUtils'
+import { handValue, isSoft, createDeck, shuffle } from '../utils/cardUtils'
 import { dealerDraw, resolveHand } from '../reducer/actions'
 import { DEALER_HIT_DELAY, DEALER_STAND_DELAY } from '../constants/gameConfig'
 
@@ -26,7 +26,11 @@ export function useDealerTurn(state, dispatch) {
     // Dealer hits on soft 17, stands on hard 17+
     if (dealerVal < 17 || (dealerVal === 17 && soft)) {
       const timeout = setTimeout(() => {
-        dispatch(dealerDraw(state.deck[0]))
+        if (state.deck.length === 0) {
+          dispatch(dealerDraw(null, shuffle(createDeck())))
+        } else {
+          dispatch(dealerDraw(state.deck[0]))
+        }
       }, DEALER_HIT_DELAY)
       return () => clearTimeout(timeout)
     } else {
