@@ -37,7 +37,12 @@ import FlyingChip from './FlyingChip'
 import styles from './SoloGame.module.css'
 
 const soloChipActions = {
-  shouldBlock: (s) => s.phase !== 'betting' || (s.bankroll < TABLE_LEVELS[s.tableLevel].minBet && !s.inDebtMode),
+  shouldBlock: (s, chipValue) => {
+    if (s.phase !== 'betting') return true
+    if (s.bankroll < TABLE_LEVELS[s.tableLevel].minBet && !s.inDebtMode) return true
+    if (!s.inDebtMode && chipValue && sumChipStack(s.chipStack) + chipValue > s.bankroll) return true
+    return false
+  },
   shouldBlockUndo: () => false,
   selectChip: (dispatch, value) => dispatch(selectChip(value)),
   addChip: (dispatch, value) => dispatch(addChip(value)),

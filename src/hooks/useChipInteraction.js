@@ -8,7 +8,7 @@ export function useChipInteraction(dispatch, actions, stateRef, circleRef) {
 
   const handleChipTap = useCallback((value, event) => {
     const s = stateRef.current
-    if (actions.shouldBlock?.(s)) return
+    if (actions.shouldBlock?.(s, value)) return
     navigator.vibrate?.(10)
     const isFirst = s.chipStack.length === 0
     audioManager.play(isFirst ? 'chip_place' : 'chip_stack')

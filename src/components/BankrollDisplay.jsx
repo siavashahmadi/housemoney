@@ -12,7 +12,7 @@ function getDebtClass(bankroll) {
 }
 
 function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAmount = 0, vigRate = 0 }) {
-  const isNegative = bankroll < 0
+  const isNegative = bankroll <= 0
   const isOnCredit = bankroll > 0 && currentBetTotal > bankroll
   const debtClass = getDebtClass(bankroll)
 
