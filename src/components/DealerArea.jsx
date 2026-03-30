@@ -30,7 +30,9 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
 
   return (
     <div className={styles.area}>
-      <DealerSpeechBubble message={dealerMessage} />
+      <div className={styles.speechWrapper}>
+        <DealerSpeechBubble message={dealerMessage} />
+      </div>
       {showReshuffle && (
         <span className={styles.reshuffleIndicator}>Reshuffling...</span>
       )}
