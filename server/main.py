@@ -709,7 +709,7 @@ def _start_bet_timer(room_code: str):
 
 
 async def handle_game_action(player_id: str, message: dict):
-    """Handle game actions (place_bet, hit, stand, double_down, split, bet_asset).
+    """Handle game actions (place_bet, hit, stand, double_down, split, bet_asset, remove_asset).
 
     Routes to the appropriate GameEngine method, broadcasts results.
     """
@@ -752,6 +752,9 @@ async def handle_game_action(player_id: str, message: dict):
             elif msg_type == "bet_asset":
                 asset_id = message.get("asset_id", "")
                 events = engine.bet_asset(room, player_id, asset_id)
+            elif msg_type == "remove_asset":
+                asset_id = message.get("asset_id", "")
+                events = engine.remove_asset(room, player_id, asset_id)
             elif msg_type == "take_loan":
                 events = engine.take_loan(room, player_id)
             elif msg_type == "hit":
@@ -976,7 +979,7 @@ async def handle_message(player_id: str, message: dict):
         await handle_quick_chat(player_id, message)
     elif msg_type == "view_stats":
         await handle_view_stats(player_id)
-    elif msg_type in ("place_bet", "bet_asset", "take_loan", "hit", "stand", "double_down", "split"):
+    elif msg_type in ("place_bet", "bet_asset", "remove_asset", "take_loan", "hit", "stand", "double_down", "split"):
         await handle_game_action(player_id, message)
     else:
         await manager.send_to_player(

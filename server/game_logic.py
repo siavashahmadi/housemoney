@@ -19,13 +19,13 @@ from card_engine import (
 )
 from constants import (
     ASSET_MAP,
+    ASSETS,
     BLACKJACK_PAYOUT,
     DEALER_HIT_DELAY,
     DEALER_LINES,
     DEALER_STAND_DELAY,
     MAX_BET,
     MIN_BET,
-    NEW_ROUND_DELAY,
     RESHUFFLE_THRESHOLD,
     get_vig_rate,
 )
@@ -120,7 +120,7 @@ def _determine_dealer_category(
 
 
 def _pick_commentary_target(
-    room: "GameRoom", trigger: str, prev_bankrolls: dict | None = None
+    room: "GameRoom", prev_bankrolls: dict | None = None
 ) -> tuple["PlayerState | None", int | None]:
     """Select the most interesting player for dealer to comment on.
 
@@ -185,6 +185,26 @@ def create_hand_dict(cards=None, bet=0):
 
 class GameEngine:
     """Server-side blackjack game logic."""
+
+    # --- Vig Helper ---
+
+    def _apply_vig(self, player: "PlayerState", additional_bet: int, other_committed: int = 0) -> "PlayerState":
+        """Compute and deduct vig on the borrowed portion of an additional bet.
+
+        other_committed: sum of bets already placed on other hands (for split/double)
+        that reduce the available bankroll for this new bet.
+        """
+        effective_bankroll = max(0, player.bankroll - other_committed)
+        borrowed = max(0, additional_bet - effective_bankroll)
+        if borrowed > 0:
+            rate = get_vig_rate(player.bankroll)
+            vig = math.floor(borrowed * rate)
+            if vig > 0:
+                player.bankroll -= vig
+                player.vig_amount += vig
+                player.vig_rate = rate
+                player.total_vig_paid += vig
+        return player
 
     # --- Phase Transitions ---
 
@@ -330,18 +350,33 @@ class GameEngine:
 
     def take_loan(self, room: GameRoom, player_id: str) -> list[dict]:
         """Activate debt mode for a player who is broke with no assets."""
-        if room.phase != "betting":
+        if room.phase not in ("betting", "playing"):
             raise ValueError("Cannot take a loan in this phase")
+
+        if room.phase == "playing":
+            current_pid = room.turn_order[room.current_player_idx] if room.turn_order else None
+            if current_pid != player_id:
+                raise ValueError("Not your turn")
 
         player = room.players.get(player_id)
         if not player or not player.connected:
             raise ValueError("Player not found")
         if player.bankroll > 0:
             raise ValueError("You still have money")
-        if any(player.owned_assets.values()):
-            raise ValueError("You still have assets to bet")
         if player.in_debt_mode:
             raise ValueError("Already in debt mode")
+
+        # During the playing phase the asset gate does not apply — the player
+        # may need a loan mid-hand to cover a double-down or split.
+        if room.phase == "betting":
+            has_unlocked_assets = any(
+                player.owned_assets.get(a["id"], False)
+                and player.bankroll <= a["unlock_threshold"]
+                and a["id"] not in [ba["id"] for ba in player.betted_assets]
+                for a in ASSETS
+            )
+            if has_unlocked_assets:
+                raise ValueError("You still have assets to bet")
 
         player.in_debt_mode = True
 
@@ -394,15 +429,7 @@ class GameEngine:
         for pid in active_pids:
             player = room.players[pid]
             hand = player.hands[0]
-            borrowed = max(0, hand["bet"] - max(0, player.bankroll))
-            if borrowed > 0:
-                rate = get_vig_rate(player.bankroll)
-                vig = math.floor(borrowed * rate)
-                if vig > 0:
-                    player.bankroll -= vig
-                    player.vig_amount += vig
-                    player.vig_rate = rate
-                    player.total_vig_paid += vig
+            self._apply_vig(player, hand["bet"])
 
         # Dealer trash talk on deal — pick the most interesting bettor
         deal_target = None
@@ -515,8 +542,8 @@ class GameEngine:
                 events.append({"type": "your_turn", "player_id": player_id})
             else:
                 events.extend(self._advance_turn(room))
-        elif val == 21 and len(player.hands) > 1:
-            # Auto-stand on 21 for split hands
+        elif val == 21:
+            # Auto-stand on 21
             hand["status"] = "standing"
             has_more = self._advance_hand(player)
             events.append(
@@ -583,22 +610,15 @@ class GameEngine:
             raise ValueError("Can only double down on first two cards")
         if hand["is_split_aces"]:
             raise ValueError("Cannot double down on split aces")
+        if hand["bet"] == 0:
+            raise ValueError("Cannot double down on a zero bet")
         if player.bankroll - hand["bet"] < 0 and not player.in_debt_mode:
             raise ValueError("Cannot double down — insufficient funds")
 
         # Calculate vig on the additional bet (doubling the existing bet)
         additional_bet = hand["bet"]
         total_committed = sum(h["bet"] for i, h in enumerate(player.hands) if i != hand_index)
-        effective_bankroll = max(0, player.bankroll - total_committed)
-        borrowed = max(0, additional_bet - effective_bankroll)
-        if borrowed > 0:
-            rate = get_vig_rate(player.bankroll)
-            vig = math.floor(borrowed * rate)
-            if vig > 0:
-                player.bankroll -= vig
-                player.vig_amount += vig
-                player.vig_rate = rate
-                player.total_vig_paid += vig
+        self._apply_vig(player, additional_bet, other_committed=total_committed)
 
         hand["bet"] *= 2
         hand["is_doubled_down"] = True
@@ -651,6 +671,8 @@ class GameEngine:
             raise ValueError("Cannot re-split aces")
         if hand["cards"][0]["rank"] != hand["cards"][1]["rank"]:
             raise ValueError("Can only split cards of equal rank")
+        if hand["bet"] == 0:
+            raise ValueError("Cannot split a zero bet")
 
         drawn, room.deck = draw_cards(room.deck, 2)
         is_aces = hand["cards"][0]["rank"] == "A"
@@ -658,16 +680,7 @@ class GameEngine:
 
         # Calculate vig on the new hand's bet (borrowed portion)
         total_committed = sum(h["bet"] for i, h in enumerate(player.hands) if i != hand_index)
-        effective_bankroll = max(0, player.bankroll - total_committed)
-        borrowed = max(0, original_bet - effective_bankroll)
-        if borrowed > 0:
-            rate = get_vig_rate(player.bankroll)
-            vig = math.floor(borrowed * rate)
-            if vig > 0:
-                player.bankroll -= vig
-                player.vig_amount += vig
-                player.vig_rate = rate
-                player.total_vig_paid += vig
+        self._apply_vig(player, original_bet, other_committed=total_committed)
 
         # Create two new hands from the split
         card1 = hand["cards"][0]
@@ -760,10 +773,34 @@ class GameEngine:
         if room.phase == "playing":
             current_pid = self._get_current_player_id(room)
             if current_pid == player_id:
-                # It was this player's turn — advance to next player
+                # It was this player's turn — forfeit bets then advance
+                player = room.players.get(player_id)
+                if player and player.status not in ("done", "bust"):
+                    for i, hand in enumerate(player.hands):
+                        if hand["status"] in ("playing", "standing"):
+                            hand["status"] = "bust"
+                            hand["result"] = "bust"
+                            asset_value = sum(a["value"] for a in player.betted_assets) if i == 0 else 0
+                            hand["payout"] = -(hand["bet"] + asset_value)
+                            player.bankroll += hand["payout"]
+                    player.status = "bust"
+                    player.result = "bust"
+                    player.betted_assets = []
                 return self._advance_turn(room)
-            # Not their turn — remove from turn_order to avoid dead entries
+            # Not their turn — forfeit bets and remove from turn_order to avoid dead entries
             if player_id in room.turn_order:
+                player = room.players.get(player_id)
+                if player and player.status not in ("done", "bust"):
+                    for i, hand in enumerate(player.hands):
+                        if hand["status"] in ("playing", "standing"):
+                            hand["status"] = "bust"
+                            hand["result"] = "bust"
+                            asset_value = sum(a["value"] for a in player.betted_assets) if i == 0 else 0
+                            hand["payout"] = -(hand["bet"] + asset_value)
+                            player.bankroll += hand["payout"]
+                    player.status = "bust"
+                    player.result = "bust"
+                    player.betted_assets = []
                 departed_idx = room.turn_order.index(player_id)
                 room.turn_order.remove(player_id)
                 if departed_idx < room.current_player_idx:
@@ -960,8 +997,8 @@ class GameEngine:
             player.lowest_bankroll = min(player.lowest_bankroll, player.bankroll)
             player.best_win_streak = max(player.best_win_streak, player.win_streak)
 
-            # Exit debt mode if bankroll recovered above $0
-            if player.in_debt_mode and player.bankroll > 0:
+            # Exit debt mode if bankroll recovered to at least MIN_BET
+            if player.in_debt_mode and player.bankroll >= MIN_BET:
                 player.in_debt_mode = False
 
             player.status = "done"
@@ -988,7 +1025,7 @@ class GameEngine:
         room.phase = "result"
 
         # Dealer trash talk on resolve — pick the most interesting outcome
-        target, prev_br = _pick_commentary_target(room, "resolve", prev_bankrolls)
+        target, prev_br = _pick_commentary_target(room, prev_bankrolls)
         if target:
             cat, ctx = _determine_dealer_category(target, "resolve", prev_br)
             if cat:
@@ -1037,6 +1074,36 @@ class GameEngine:
             return "win"
         return "push"
 
+    def remove_asset(self, room: GameRoom, player_id: str, asset_id: str) -> list[dict]:
+        """Remove a betted asset (undo). Valid during betting or playing phase."""
+        if room.phase not in ("betting", "playing"):
+            raise ValueError("Cannot remove assets in this phase")
+
+        player = room.players.get(player_id)
+        if not player:
+            raise ValueError("Player not found")
+
+        if room.phase == "playing":
+            current_pid = room.turn_order[room.current_player_idx] if room.turn_order else None
+            if current_pid != player_id:
+                raise ValueError("Not your turn")
+
+        asset = next((a for a in player.betted_assets if a["id"] == asset_id), None)
+        if not asset:
+            raise ValueError("Asset not currently bet")
+
+        player.betted_assets = [a for a in player.betted_assets if a["id"] != asset_id]
+        player.owned_assets[asset_id] = True
+
+        return [
+            {
+                "type": "asset_removed",
+                "player_id": player_id,
+                "asset_id": asset_id,
+                "state": self.get_room_state(room),
+            }
+        ]
+
     def _determine_aggregate_result(self, outcomes: list[str]) -> str:
         """Determine the overall result from multiple hand outcomes."""
         if len(outcomes) == 1:
@@ -1045,12 +1112,17 @@ class GameEngine:
             return "blackjack"
         has_win = any(o in ("win", "dealerBust") for o in outcomes)
         has_loss = any(o in ("lose", "bust") for o in outcomes)
+        has_push = any(o == "push" for o in outcomes)
         if has_win and has_loss:
+            return "mixed"
+        if has_win and has_push:
             return "mixed"
         if has_win:
             return "dealerBust" if "dealerBust" in outcomes else "win"
         if all(o == "push" for o in outcomes):
             return "push"
+        if has_loss and has_push:
+            return "mixed"
         if has_loss:
             return "bust" if all(o == "bust" for o in outcomes) else "lose"
         return "mixed"
