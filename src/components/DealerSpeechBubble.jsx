@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import styles from './DealerSpeechBubble.module.css'
 
 const DISPLAY_MS = 4000
@@ -37,4 +37,4 @@ function DealerSpeechBubble({ message }) {
   )
 }
 
-export default DealerSpeechBubble
+export default React.memo(DealerSpeechBubble)

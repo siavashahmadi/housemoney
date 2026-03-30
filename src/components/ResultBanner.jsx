@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { formatMoney } from '../utils/formatters'
+import { isWinResult } from '../utils/cardUtils'
 import styles from './ResultBanner.module.css'
 
 const RESULT_CONFIG = {
@@ -13,9 +14,7 @@ const RESULT_CONFIG = {
 }
 
 function getSplitResultText(playerHands) {
-  const wins = playerHands.filter(h =>
-    h.result === 'win' || h.result === 'dealerBust' || h.result === 'blackjack'
-  ).length
+  const wins = playerHands.filter(h => isWinResult(h.result)).length
   const total = playerHands.length
   if (wins === total) return `WON ALL ${total} HANDS`
   if (wins === 0) return `LOST ALL ${total} HANDS`
@@ -96,4 +95,4 @@ function ResultBanner({ result, bankroll, onNextHand, playerHands = [], autoAdva
   )
 }
 
-export default ResultBanner
+export default React.memo(ResultBanner)

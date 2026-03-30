@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import Hand from './Hand'
 import DealerSpeechBubble from './DealerSpeechBubble'
 import { handValue, cardValue } from '../utils/cardUtils'
@@ -49,4 +49,4 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
   )
 }
 
-export default DealerArea
+export default React.memo(DealerArea)

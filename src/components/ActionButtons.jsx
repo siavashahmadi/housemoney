@@ -1,3 +1,4 @@
+import React from 'react'
 import styles from './ActionButtons.module.css'
 
 function ActionButtons({ onHit, onStand, onDoubleDown, canDoubleDown, onSplit, canSplit }) {
@@ -24,4 +25,4 @@ function ActionButtons({ onHit, onStand, onDoubleDown, canDoubleDown, onSplit, c
   )
 }
 
-export default ActionButtons
+export default React.memo(ActionButtons)

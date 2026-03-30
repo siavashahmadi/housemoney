@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { TABLE_LEVELS } from '../constants/tableLevels'
 import { ASSETS } from '../constants/assets'
+import { sumChipStack } from '../utils/chipUtils'
 import ChipTray from './ChipTray'
 import AssetBetting from './AssetBetting'
 import styles from './BettingControls.module.css'
@@ -24,15 +25,21 @@ function BettingControls({
   onTakeLoan,
 }) {
   const [allInCooldown, setAllInCooldown] = useState(false)
+  const cooldownRef = useRef(null)
+
+  useEffect(() => {
+    return () => clearTimeout(cooldownRef.current)
+  }, [])
 
   const handleAllIn = useCallback(() => {
     if (allInCooldown) return
     onAllIn()
     setAllInCooldown(true)
-    setTimeout(() => setAllInCooldown(false), 3000)
+    clearTimeout(cooldownRef.current)
+    cooldownRef.current = setTimeout(() => setAllInCooldown(false), 3000)
   }, [allInCooldown, onAllIn])
 
-  const chipTotal = chipStack.reduce((sum, v) => sum + v, 0)
+  const chipTotal = sumChipStack(chipStack)
   const assetTotal = bettedAssets.reduce((sum, a) => sum + a.value, 0)
   const canDeal = (chipTotal + assetTotal) >= TABLE_LEVELS[tableLevel].minBet
 
@@ -129,4 +136,4 @@ function BettingControls({
   )
 }
 
-export default BettingControls
+export default React.memo(BettingControls)

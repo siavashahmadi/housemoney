@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { TABLE_LEVELS } from '../constants/tableLevels'
 import styles from './TableLevelToast.module.css'
 
@@ -33,4 +33,4 @@ function TableLevelToast({ levelChange, onDismiss }) {
   )
 }
 
-export default TableLevelToast
+export default memo(TableLevelToast)

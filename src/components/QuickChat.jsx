@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { QUICK_CHAT_MESSAGES } from '../constants/quickChatMessages'
 import styles from './QuickChat.module.css'
 
@@ -58,10 +58,16 @@ function QuickChat({ chatMessages, dispatch, send, playerId }) {
 }
 
 function ChatToast({ message, onDismiss }) {
+  const onDismissRef = useRef(onDismiss)
+
   useEffect(() => {
-    const timer = setTimeout(onDismiss, 3000)
+    onDismissRef.current = onDismiss
+  })
+
+  useEffect(() => {
+    const timer = setTimeout(() => onDismissRef.current(), 3000)
     return () => clearTimeout(timer)
-  }, [onDismiss])
+  }, [])
 
   return (
     <div className={styles.toast}>

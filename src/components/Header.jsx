@@ -1,18 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { TABLE_LEVELS } from '../constants/tableLevels'
 import styles from './Header.module.css'
 
 function getSubtitle(bankroll, tableLevel) {
-  if (tableLevel !== undefined && tableLevel >= 0) {
+  if (tableLevel !== undefined && tableLevel >= 0 && TABLE_LEVELS[tableLevel]) {
     return TABLE_LEVELS[tableLevel].subtitle
   }
-  if (bankroll < -1000000) return 'ECONOMIC DISASTER'
-  if (bankroll < -100000) return 'ROCK BOTTOM SPEEDRUN'
-  if (bankroll < -10000) return 'FINANCIAL RUIN SIMULATOR'
-  if (bankroll < 0) return 'DEBT ACCUMULATOR'
-  if (bankroll < 1000) return 'LAST STAND'
-  if (bankroll <= 10000) return 'HIGH STAKES'
-  return 'HIGH ROLLER'
+  return 'HIGH STAKES'
 }
 
 function Header({
@@ -132,4 +126,4 @@ function Header({
   )
 }
 
-export default Header
+export default React.memo(Header)

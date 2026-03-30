@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { formatMoney } from '../utils/formatters'
 import { CREDIT_LABEL_TIERS, getCreditTierIndex } from '../constants/creditLabels'
 import styles from './BankrollDisplay.module.css'
@@ -28,7 +28,7 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
       const roundChanged = handsPlayed !== prevHandsRef.current
       if (tierChanged || roundChanged) {
         const tier = CREDIT_LABEL_TIERS[tierIndex]
-        setCreditLabel(tier.labels[Math.floor(Math.random() * tier.labels.length)])
+        setCreditLabel(tier.labels[handsPlayed % tier.labels.length])
       }
       prevTierRef.current = tierIndex
     } else {
@@ -82,4 +82,4 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
   )
 }
 
-export default BankrollDisplay
+export default React.memo(BankrollDisplay)

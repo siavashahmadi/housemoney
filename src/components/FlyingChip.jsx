@@ -1,10 +1,9 @@
-import { CHIPS } from '../constants/chips'
+import React from 'react'
+import { CHIP_MAP } from '../constants/chips'
 import styles from './FlyingChip.module.css'
 
-const CHIP_MAP = Object.fromEntries(CHIPS.map(c => [c.value, c]))
-
 function FlyingChip({ value, from, to, onDone, reverse }) {
-  const chip = CHIP_MAP[value] || CHIPS[0]
+  const chip = CHIP_MAP[value] || CHIP_MAP[25]
   const dx = to.x - from.x
   const dy = to.y - from.y
 
@@ -27,4 +26,4 @@ function FlyingChip({ value, from, to, onDone, reverse }) {
   )
 }
 
-export default FlyingChip
+export default React.memo(FlyingChip)

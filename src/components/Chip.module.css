@@ -70,13 +70,6 @@
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.1); /* Subtle "stamped" highlight */
 }
 
-/* --- The 1M Specialty Pop --- */
-/* Target by label or value if passed as a prop/data-attribute */
-.chip[data-value="1000000"],
-.chip.million {
-  filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.4)); /* Electric Aqua ambient glow */
-}
-
 /* Click effect (Pushing into the felt) */
 .chip:active {
   transform: translateY(3px) scale(0.96);

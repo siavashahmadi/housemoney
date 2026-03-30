@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import React from 'react'
 import Hand from './Hand'
 import { handValue } from '../utils/cardUtils'
 import { formatMoney } from '../utils/formatters'
@@ -99,4 +99,4 @@ function PlayerArea({ playerHands, activeHandIndex, phase, bettedAssets }) {
   )
 }
 
-export default PlayerArea
+export default React.memo(PlayerArea)

@@ -15,66 +15,6 @@
   }
 }
 
-/* Generic slide up into view */
-@keyframes slideUp {
-  0% {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Subtle wobble for bankroll number and deal button ONLY */
-@keyframes shake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  15% {
-    transform: translateX(-3px);
-  }
-  30% {
-    transform: translateX(2px);
-  }
-  45% {
-    transform: translateX(-2px);
-  }
-  60% {
-    transform: translateX(1px);
-  }
-  75% {
-    transform: translateX(-1px);
-  }
-}
-
-/* Pulsing glow for debt states */
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 8px var(--danger-glow);
-  }
-  50% {
-    box-shadow: 0 0 20px var(--danger-glow);
-  }
-}
-
-/* Achievement toast entrance */
-@keyframes toastIn {
-  0% {
-    transform: translateY(-100%) scale(0.9);
-    opacity: 0;
-  }
-  70% {
-    transform: translateY(8px) scale(1.02);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
 /* Generic fade in */
 @keyframes fadeIn {
   0% {
@@ -104,35 +44,6 @@
   }
 }
 
-/* Chip flying from tray to betting circle with arc */
-@keyframes chipArc {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  40% {
-    transform: translate(var(--chip-dx, 0px), calc(var(--chip-dy, -80px) - 40px)) scale(1.1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--chip-dx, 0px), var(--chip-dy, -80px)) scale(1);
-    opacity: 1;
-  }
-}
-
-/* Card flip — for revealing dealer hole card */
-@keyframes cardFlip {
-  0% {
-    transform: rotateY(0deg);
-  }
-  50% {
-    transform: rotateY(90deg);
-  }
-  100% {
-    transform: rotateY(0deg);
-  }
-}
-
 /* Win chips spread */
 @keyframes chipSpread {
   0% {
@@ -159,40 +70,6 @@
     transform: translateY(-80px) scale(0.6);
     opacity: 0;
   }
-}
-
-/* ===== Animation Utility Classes ===== */
-
-.animate-card-deal {
-  animation: cardDeal 0.4s cubic-bezier(0.23, 1, 0.32, 1) both;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out both;
-}
-
-.animate-shake {
-  animation: shake 0.5s ease-in-out;
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 2s ease-in-out infinite;
-}
-
-.animate-toast-in {
-  animation: toastIn 0.4s ease-out both;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out both;
-}
-
-.animate-chip-bounce {
-  animation: chipBounce 0.3s ease-out both;
-}
-
-.animate-chip-arc {
-  animation: chipArc 0.25s ease-out both;
 }
 
 /* ===== Accessibility: Reduced Motion ===== */

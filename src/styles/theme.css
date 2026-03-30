@@ -3,8 +3,6 @@
   --felt-dark:        #0c200c;
   --felt-mid:         #143a14;
   --felt-light:       #1a5a1a;
-  --felt-highlight:   #2a7a2a;
-  --felt-texture:     #1e4e1e;
 
   --gold:             #f0c850;
   --gold-dim:         #d4a832;
@@ -53,36 +51,26 @@
   --felt-dark: #081a0a;
   --felt-mid: #0e2e12;
   --felt-light: #14501e;
-  --felt-highlight: #1c7030;
-  --felt-texture: #124218;
 }
 [data-table="highRoller"] {
   --felt-dark: #081a1a;
   --felt-mid: #0e2e2e;
   --felt-light: #145050;
-  --felt-highlight: #1c7070;
-  --felt-texture: #124242;
 }
 [data-table="penthouse"] {
   --felt-dark: #08101a;
   --felt-mid: #0e1a30;
   --felt-light: #142850;
-  --felt-highlight: #1c3870;
-  --felt-texture: #122040;
 }
 [data-table="vault"] {
   --felt-dark: #0a0a08;
   --felt-mid: #1a1a10;
   --felt-light: #2a2a18;
-  --felt-highlight: #3a3a22;
-  --felt-texture: #1e1e12;
 }
 [data-table="obsidian"] {
   --felt-dark: #0a0808;
   --felt-mid: #1a1010;
   --felt-light: #2a1818;
-  --felt-highlight: #3a2222;
-  --felt-texture: #1e1212;
 }
 
 /* iPhone SE and very small phones */
@@ -110,6 +98,7 @@
 @media (max-height: 700px) and (max-width: 480px) {
   :root {
     --card-width: 70px;
+    --card-height: 95px;
     --pip-size: 11px;
     --face-rank-size: 24px;
     --face-suit-size: 18px;
@@ -198,10 +187,6 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
 }
 
-.mono {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-}
-
 /* ===== Utility ===== */
 button {
   font-family: inherit;
@@ -214,6 +199,11 @@ button {
 
 button:active:not(:disabled) {
   opacity: 0.85;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 a {

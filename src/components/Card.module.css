@@ -17,7 +17,7 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, var(--card-white) 0%, #ede7d9 100%);
-  border-radius: 10px;
+  border-radius: inherit;
   border: 1px solid rgba(0, 0, 0, 0.12);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.15),
@@ -35,7 +35,7 @@
   width: 100%;
   height: 100%;
   background: linear-gradient(145deg, #1a1a4e 0%, #0d0d2b 50%, #1a1a4e 100%);
-  border-radius: 10px;
+  border-radius: inherit;
   border: 2px solid rgba(0, 0, 0, 0.15);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.3),
@@ -225,12 +225,12 @@
 }
 
 .medium .face {
-  border-radius: 8px;
+  border-radius: inherit;
   padding: 2px 3px;
 }
 
 .medium .back {
-  border-radius: 8px;
+  border-radius: inherit;
 }
 
 .medium .rank {
@@ -275,12 +275,12 @@
 }
 
 .small .face {
-  border-radius: 6px;
+  border-radius: inherit;
   padding: 2px 3px;
 }
 
 .small .back {
-  border-radius: 6px;
+  border-radius: inherit;
 }
 
 .small .rank {

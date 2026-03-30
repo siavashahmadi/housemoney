@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import styles from './LoanSharkPopup.module.css'
 
 function LoanSharkPopup({ message, onDismiss }) {
@@ -20,4 +20,4 @@ function LoanSharkPopup({ message, onDismiss }) {
   )
 }
 
-export default LoanSharkPopup
+export default React.memo(LoanSharkPopup)

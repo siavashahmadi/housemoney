@@ -9,6 +9,7 @@ const RESULT_LABELS = {
   bust: 'BUST',
   lose: 'LOSE',
   push: 'PUSH',
+  mixed: 'MIXED',
 }
 
 const RESULT_CLASSES = {
@@ -18,6 +19,7 @@ const RESULT_CLASSES = {
   bust: 'red',
   lose: 'red',
   push: 'dim',
+  mixed: 'mixed',
 }
 
 const STATUS_LABELS = {

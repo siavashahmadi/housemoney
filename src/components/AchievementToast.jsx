@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { memo, useEffect } from 'react'
 import { ACHIEVEMENT_MAP } from '../constants/achievements'
 import styles from './AchievementToast.module.css'
 
@@ -24,4 +24,4 @@ function AchievementToast({ achievementId, onDismiss }) {
   )
 }
 
-export default AchievementToast
+export default memo(AchievementToast)

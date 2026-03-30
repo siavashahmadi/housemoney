@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { ASSETS } from '../constants/assets'
 import { formatMoney } from '../utils/formatters'
 import styles from './AssetBetting.module.css'
@@ -47,4 +48,4 @@ function AssetBetting({
   )
 }
 
-export default AssetBetting
+export default memo(AssetBetting)

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import styles from './ModeSelect.module.css'
 
 function ModeSelect({ onSelectSolo, onSelectMultiplayer }) {
@@ -25,4 +26,4 @@ function ModeSelect({ onSelectSolo, onSelectMultiplayer }) {
   )
 }
 
-export default ModeSelect
+export default memo(ModeSelect)

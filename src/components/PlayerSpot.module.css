@@ -164,6 +164,7 @@
 .green { color: var(--success); }
 .red { color: var(--danger); }
 .dim { color: var(--text-dim); }
+.mixed { color: #e6c94a; }
 
 .status {
   font-family: 'DM Sans', sans-serif;

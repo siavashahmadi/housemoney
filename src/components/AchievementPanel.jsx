@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { ACHIEVEMENTS } from '../constants/achievements'
 import styles from './AchievementPanel.module.css'
 
@@ -42,4 +43,4 @@ function AchievementPanel({ unlockedAchievements, onClose }) {
   )
 }
 
-export default AchievementPanel
+export default memo(AchievementPanel)

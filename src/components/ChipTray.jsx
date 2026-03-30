@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { getTableChips } from '../constants/tableLevels'
 import Chip from './Chip'
 import styles from './ChipTray.module.css'
@@ -28,4 +28,4 @@ function ChipTray({ bankroll, selectedChipValue, onChipTap, disabled, tableLevel
   )
 }
 
-export default ChipTray
+export default memo(ChipTray)

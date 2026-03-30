@@ -1,14 +1,15 @@
-import { useMemo, useState, useEffect, useRef, forwardRef } from 'react'
-import { CHIPS } from '../constants/chips'
+import React, { useMemo, useState, useEffect, useRef, forwardRef } from 'react'
+import { CHIP_MAP } from '../constants/chips'
+import { isWinResult } from '../utils/cardUtils'
+import { sumChipStack } from '../utils/chipUtils'
 import { MAX_VISUAL_CHIPS } from '../constants/gameConfig'
 import { formatMoney } from '../utils/formatters'
 import Chip from './Chip'
 import styles from './BettingCircle.module.css'
 
-const CHIP_MAP = Object.fromEntries(CHIPS.map(c => [c.value, c]))
 const RESULT_ANIMATE_MS = 800
 
-const BettingCircle = forwardRef(function BettingCircle(
+const BettingCircle = React.memo(forwardRef(function BettingCircle(
   { chipStack = [], bettedAssets = [], result, onUndo, onRemoveAsset, playerHands = [] },
   ref
 ) {
@@ -39,10 +40,10 @@ const BettingCircle = forwardRef(function BettingCircle(
     }
   }, [chipStack, bettedAssets])
 
-  const isWin = result === 'win' || result === 'blackjack' || result === 'dealerBust'
+  const isWin = isWinResult(result)
 
   const { total, isEmpty, visibleChips, overflowCount } = useMemo(() => {
-    const ct = displayChips.reduce((sum, v) => sum + v, 0)
+    const ct = sumChipStack(displayChips)
     const at = displayAssets.reduce((sum, a) => sum + a.value, 0)
     return {
       total: ct + at,
@@ -58,15 +59,17 @@ const BettingCircle = forwardRef(function BettingCircle(
 
   return (
     <div className={styles.wrapper} ref={ref}>
-      <button
+      <div
         className={`${styles.circle}${isEmpty ? ` ${styles.empty}` : ''}`}
+        role="button"
+        tabIndex={0}
         onClick={isEmpty ? undefined : onUndo}
+        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isEmpty) onUndo() }}
       >
         {visibleChips.length > 0 && (
           <div className={`${styles.chipStack} ${animClass}`}>
             {visibleChips.map((value, i) => {
-              const chip = CHIP_MAP[value] || CHIPS[0]
-              const isLast = i === visibleChips.length - 1 && displayAssets.length === 0
+              const chip = CHIP_MAP[value] || CHIP_MAP[25]
               return (
                 <div
                   key={`${i}-${value}`}
@@ -128,9 +131,9 @@ const BettingCircle = forwardRef(function BettingCircle(
             <span className={styles.handCount}>{playerHands.length} HANDS</span>
           </>
         )}
-      </button>
+      </div>
     </div>
   )
-})
+}))
 
 export default BettingCircle
