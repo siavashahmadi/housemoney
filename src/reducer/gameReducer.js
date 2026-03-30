@@ -278,7 +278,6 @@ export function gameReducer(state, action) {
       // Vig on the additional bet (same amount as original hand bet)
       const additionalBet = hand.bet
       const totalCommitted = state.playerHands
-        .filter((_, i) => i !== state.activeHandIndex)
         .reduce((sum, h) => sum + h.bet, 0)
       const effectiveBankroll = Math.max(0, state.bankroll - totalCommitted)
       const borrowedAmount = Math.max(0, additionalBet - effectiveBankroll)
@@ -347,7 +346,6 @@ export function gameReducer(state, action) {
 
       // Vig on the new hand's bet (hand2 is the additional bet)
       const totalCommitted = state.playerHands
-        .filter((_, i) => i !== state.activeHandIndex)
         .reduce((sum, h) => sum + h.bet, 0)
       const effectiveBankroll = Math.max(0, state.bankroll - totalCommitted)
       const borrowedAmount = Math.max(0, splitHand.bet - effectiveBankroll)

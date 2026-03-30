@@ -62,7 +62,7 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
       <div
         className={`${styles.circle}${isEmpty ? ` ${styles.empty}` : ''}`}
         role="button"
-        tabIndex={0}
+        tabIndex={isEmpty ? -1 : 0}
         onClick={isEmpty ? undefined : onUndo}
         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isEmpty) onUndo() }}
       >

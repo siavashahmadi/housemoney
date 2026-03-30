@@ -614,13 +614,14 @@ describe('DOUBLE_DOWN', () => {
   })
 
   it('charges vig on borrowed portion of double-down bet', () => {
-    // bankroll = 50, bet = 100, double needs 100 more. effectiveBankroll = max(0, 50-0) = 50
-    // borrowedAmount = max(0, 100 - 50) = 50
-    // vigRate at bankroll 50 = 2%  → vigAmount = floor(50 * 0.02) = 1
+    // bankroll = 50, bet = 100, double needs 100 more. totalCommitted = 100 (active hand)
+    // effectiveBankroll = max(0, 50-100) = 0
+    // borrowedAmount = max(0, 100 - 0) = 100
+    // vigRate at bankroll 50 = 2%  → vigAmount = floor(100 * 0.02) = 2
     const state = playingState([card('5'), card('6')], 100, { bankroll: 50, inDebtMode: true })
     const next = gameReducer(state, { type: DOUBLE_DOWN, card: card('3') })
-    expect(next.vigAmount).toBe(1)
-    expect(next.bankroll).toBe(49)
+    expect(next.vigAmount).toBe(2)
+    expect(next.bankroll).toBe(48)
   })
 
   it('transitions to dealerTurn after doubling last hand', () => {

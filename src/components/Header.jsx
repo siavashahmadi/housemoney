@@ -73,7 +73,7 @@ function Header({
         )}
       </div>
       <div className={styles.menuWrapper} ref={menuRef}>
-        <button className={styles.hamburger} onClick={toggleMenu}>
+        <button className={styles.hamburger} onClick={toggleMenu} aria-label="Menu">
           <span className={styles.hamburgerLine} />
           <span className={styles.hamburgerLine} />
           <span className={styles.hamburgerLine} />

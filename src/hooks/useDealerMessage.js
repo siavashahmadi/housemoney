@@ -63,7 +63,7 @@ export function useDealerMessage(state, dispatch) {
       )
       dispatch(setDealerMessage(message, updatedShownLines))
     }
-  })
+  }, [state, dispatch])
 
   // Always update prevStateRef LAST so the trigger effect reads the previous state
   useEffect(() => {
