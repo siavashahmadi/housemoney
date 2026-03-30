@@ -20,132 +20,52 @@ export function useDealerMessage(state, dispatch) {
     dispatch(setDealerMessage(message, updatedShownLines))
   }, [dispatch])
 
-  // Resolve-time messages — fires when handsPlayed increments (after RESOLVE_HAND)
+  // All trigger-based messages in one effect
   useEffect(() => {
-    if (state.handsPlayed === 0) return
+    const prev = prevStateRef.current
 
-    const prevState = prevStateRef.current
-    // Only fire when handsPlayed actually incremented
-    if (state.handsPlayed <= prevState.handsPlayed && prevState.handsPlayed !== 0) return
+    // Determine which trigger fired (check in priority order)
+    let category = null
+    let context = {}
+    let trigger = null
 
-    const result = determineDealerCategory(prevState, state, 'resolve')
-    if (!result) return
+    if (state.handsPlayed > prev.handsPlayed && state.handsPlayed > 0) {
+      trigger = 'resolve'
+    } else if (state.phase === 'playing' && prev.phase === 'betting') {
+      trigger = 'deal'
+    } else if (state.bettedAssets.length > prev.bettedAssets.length && state.bettedAssets.length > 0) {
+      trigger = 'betAsset'
+    } else if (state.playerHands?.length > (prev.playerHands?.length ?? 0) && state.phase === 'playing' && state.playerHands?.length > 1) {
+      trigger = 'split'
+    } else if (state.inDebtMode && !prev.inDebtMode) {
+      category = 'debtActivated'
+    } else if (state.tableLevelChanged && !prev.tableLevelChanged) {
+      const isUpgrade = state.tableLevelChanged.to > state.tableLevelChanged.from
+      category = isUpgrade ? 'tableLevelUp' : 'tableLevelDown'
+      context = { tableName: TABLE_LEVELS[state.tableLevelChanged.to].name }
+    } else if (state.handsPlayed === 0 && prev.handsPlayed > 0) {
+      category = 'greeting'
+    }
 
-    const { category, context } = result
-    const { message, updatedShownLines } = selectDealerLine(
-      category,
-      state.shownDealerLines,
-      context
-    )
-    dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.handsPlayed, dispatch])
+    if (!category && trigger) {
+      const result = determineDealerCategory(prev, state, trigger)
+      if (result) {
+        category = result.category
+        context = result.context
+      }
+    }
 
-  // Deal-time messages — fires when phase transitions to 'playing'
-  useEffect(() => {
-    if (state.phase !== 'playing') return
+    if (category) {
+      const { message, updatedShownLines } = selectDealerLine(
+        category,
+        state.shownDealerLines,
+        context
+      )
+      dispatch(setDealerMessage(message, updatedShownLines))
+    }
+  })
 
-    const prevState = prevStateRef.current
-    if (prevState.phase !== 'betting') return
-
-    const result = determineDealerCategory(prevState, state, 'deal')
-    if (!result) return
-
-    const { category, context } = result
-    const { message, updatedShownLines } = selectDealerLine(
-      category,
-      state.shownDealerLines,
-      context
-    )
-    dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.phase, dispatch])
-
-  // Asset bet messages — fires when bettedAssets grows
-  useEffect(() => {
-    if (state.bettedAssets.length === 0) return
-
-    const prevState = prevStateRef.current
-    if (state.bettedAssets.length <= prevState.bettedAssets.length) return
-
-    const result = determineDealerCategory(prevState, state, 'betAsset')
-    if (!result) return
-
-    const { category, context } = result
-    const { message, updatedShownLines } = selectDealerLine(
-      category,
-      state.shownDealerLines,
-      context
-    )
-    dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.bettedAssets.length, dispatch])
-
-  // Split messages — fires when playerHands.length increases during playing
-  useEffect(() => {
-    if (state.phase !== 'playing') return
-    if (!state.playerHands || state.playerHands.length <= 1) return
-
-    const prevState = prevStateRef.current
-    const prevLen = prevState.playerHands?.length ?? 0
-    if (state.playerHands.length <= prevLen) return
-
-    const result = determineDealerCategory(prevState, state, 'split')
-    if (!result) return
-
-    const { category, context } = result
-    const { message, updatedShownLines } = selectDealerLine(
-      category,
-      state.shownDealerLines,
-      context
-    )
-    dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.playerHands?.length, state.phase, dispatch])
-
-  // Debt mode activated — fires when inDebtMode transitions to true
-  useEffect(() => {
-    if (!state.inDebtMode) return
-
-    const prevState = prevStateRef.current
-    if (prevState.inDebtMode) return
-
-    const { message, updatedShownLines } = selectDealerLine(
-      'debtActivated',
-      state.shownDealerLines,
-      {}
-    )
-    dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.inDebtMode, dispatch])
-
-  // Table level changed — fires when tableLevelChanged is set
-  useEffect(() => {
-    if (!state.tableLevelChanged) return
-
-    const isUpgrade = state.tableLevelChanged.to > state.tableLevelChanged.from
-    const category = isUpgrade ? 'tableLevelUp' : 'tableLevelDown'
-    const tableName = TABLE_LEVELS[state.tableLevelChanged.to].name
-
-    const { message, updatedShownLines } = selectDealerLine(
-      category,
-      state.shownDealerLines,
-      { tableName }
-    )
-    dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.tableLevelChanged, dispatch])
-
-  // Game reset — greeting when handsPlayed drops to 0
-  useEffect(() => {
-    if (state.handsPlayed !== 0) return
-
-    const prevState = prevStateRef.current
-    if (prevState.handsPlayed === 0) return
-
-    const { message, updatedShownLines } = selectDealerLine(
-      'greeting',
-      state.shownDealerLines,
-      {}
-    )
-    dispatch(setDealerMessage(message, updatedShownLines))
-  }, [state.handsPlayed, dispatch])
-
-  // Always update prevStateRef LAST so other effects read the previous state
+  // Always update prevStateRef LAST so the trigger effect reads the previous state
   useEffect(() => {
     prevStateRef.current = state
   })

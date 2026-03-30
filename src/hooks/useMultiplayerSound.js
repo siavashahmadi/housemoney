@@ -1,26 +1,11 @@
 import { useEffect, useRef } from 'react'
 import audioManager from '../utils/audioManager'
+import { useAudioInit } from './useAudioInit'
 
-/**
- * Sound effects for multiplayer mode.
- * Monitors multiplayer state transitions and triggers appropriate sounds.
- * Chip sounds during betting are handled directly in MultiplayerGame handlers.
- */
 export function useMultiplayerSound(state) {
   const prevRef = useRef(state)
-  const initRef = useRef(false)
 
-  // Initialize AudioContext on first user gesture
-  useEffect(() => {
-    if (initRef.current) return
-    const handler = () => {
-      audioManager.init()
-      initRef.current = true
-      document.removeEventListener('pointerdown', handler)
-    }
-    document.addEventListener('pointerdown', handler)
-    return () => document.removeEventListener('pointerdown', handler)
-  }, [])
+  useAudioInit()
 
   // Sync mute state
   useEffect(() => {
@@ -88,5 +73,5 @@ export function useMultiplayerSound(state) {
     }
 
     prevRef.current = state
-  }, [state])
+  }, [state.phase, state.dealerHand, state.playerStates, state.playerId])
 }

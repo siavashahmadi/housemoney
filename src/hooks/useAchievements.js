@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { isWinResult, isLossResult } from '../utils/cardUtils'
 import { unlockAchievement, loadAchievements } from '../reducer/actions'
 
 const STORAGE_KEY = 'blackjack_achievements'
@@ -23,8 +24,8 @@ function checkAchievements(prevState, state) {
     }
   }
 
-  const isWin = state.result === 'win' || state.result === 'dealerBust' || state.result === 'blackjack'
-  const isLoss = state.result === 'lose' || state.result === 'bust'
+  const isWin = isWinResult(state.result)
+  const isLoss = isLossResult(state.result)
 
   // Hands played milestones
   grant('first_hand')
@@ -56,10 +57,10 @@ function checkAchievements(prevState, state) {
 
   // Double down — check the specific doubled hand's result, not aggregate
   const doubledHandWon = state.playerHands?.some(h =>
-    h.isDoubledDown && (h.result === 'win' || h.result === 'dealerBust' || h.result === 'blackjack')
+    h.isDoubledDown && isWinResult(h.result)
   ) ?? false
   const doubledHandLost = state.playerHands?.some(h =>
-    h.isDoubledDown && (h.result === 'lose' || h.result === 'bust')
+    h.isDoubledDown && isLossResult(h.result)
   ) ?? false
   if (doubledHandWon) grant('double_down_win')
   if (doubledHandLost) grant('double_down_loss')
@@ -85,9 +86,7 @@ function checkAchievements(prevState, state) {
   if (state.playerHands && state.playerHands.length > 1) {
     grant('first_split')
     if (state.playerHands.length >= 4) grant('split_four')
-    const allWin = state.playerHands.every(h =>
-      h.result === 'win' || h.result === 'dealerBust' || h.result === 'blackjack'
-    )
+    const allWin = state.playerHands.every(h => isWinResult(h.result))
     if (allWin) grant('split_both_win')
     const allBust = state.playerHands.every(h => h.result === 'bust')
     if (allBust) grant('split_both_bust')

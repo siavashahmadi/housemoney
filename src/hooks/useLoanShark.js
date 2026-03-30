@@ -45,7 +45,7 @@ export function useLoanShark(state, dispatch) {
         dispatch(setLoanSharkMessage(allMessages, allThresholds))
       }, 1500)
     }
-  }, [state.bankroll])
+  }, [state.bankroll, dispatch])
 
   // Reset on game reset (handsPlayed drops to 0)
   useEffect(() => {

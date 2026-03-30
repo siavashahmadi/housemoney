@@ -1,21 +1,11 @@
 import { useEffect, useRef } from 'react'
 import audioManager from '../utils/audioManager'
+import { useAudioInit } from './useAudioInit'
 
 export function useSound(state) {
   const prevRef = useRef(state)
-  const initRef = useRef(false)
 
-  // Initialize AudioContext on first user gesture
-  useEffect(() => {
-    if (initRef.current) return
-    const handler = () => {
-      audioManager.init()
-      initRef.current = true
-      document.removeEventListener('pointerdown', handler)
-    }
-    document.addEventListener('pointerdown', handler)
-    return () => document.removeEventListener('pointerdown', handler)
-  }, [])
+  useAudioInit()
 
   // Sync mute state
   useEffect(() => {
@@ -78,5 +68,5 @@ export function useSound(state) {
     }
 
     prevRef.current = state
-  }, [state])
+  }, [state.phase, state.result, state.playerHands, state.dealerHand])
 }

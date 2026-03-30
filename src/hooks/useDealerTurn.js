@@ -1,19 +1,7 @@
 import { useEffect } from 'react'
-import { handValue, isSoft, createDeck, shuffle } from '../utils/cardUtils'
+import { handValue, isSoft, determineOutcome, createDeck, shuffle } from '../utils/cardUtils'
 import { dealerDraw, resolveHand } from '../reducer/actions'
 import { DEALER_HIT_DELAY, DEALER_STAND_DELAY } from '../constants/gameConfig'
-
-// Note: This function does not check isBlackjack(). Natural blackjacks
-// are resolved at DEAL time before dealer turn. Split-hand 21s correctly
-// receive 'win' (1:1 payout), not 'blackjack' (3:2), per casino rules.
-function determineOutcome(playerCards, dealerHand) {
-  const playerVal = handValue(playerCards)
-  const dealerVal = handValue(dealerHand)
-  if (dealerVal > 21) return 'dealerBust'
-  if (dealerVal > playerVal) return 'lose'
-  if (playerVal > dealerVal) return 'win'
-  return 'push'
-}
 
 export function useDealerTurn(state, dispatch) {
   // Handle dealer turn — sequential card draws

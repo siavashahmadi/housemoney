@@ -1,5 +1,6 @@
 import { DEALER_LINES } from '../constants/dealerLines'
-import { formatMoney } from './formatters'
+import { isWinResult, isLossResult } from './cardUtils'
+import { BIG_BET_THRESHOLD } from '../constants/gameConfig'
 
 /**
  * Selects a dealer line from the given category, avoiding repeats
@@ -50,8 +51,8 @@ export function determineDealerCategory(prevState, newState, trigger) {
   if (trigger === 'resolve') {
     const { result, winStreak, loseStreak, bankroll } = newState
     const anyDoubledDown = newState.playerHands?.some(h => h.isDoubledDown) ?? false
-    const isLoss = result === 'lose' || result === 'bust'
-    const isWin = result === 'win' || result === 'dealerBust' || result === 'blackjack'
+    const isLoss = isLossResult(result)
+    const isWin = isWinResult(result)
 
     // Priority order for resolve-time messages
     if (result === 'bust' && anyDoubledDown) {
@@ -104,7 +105,7 @@ export function determineDealerCategory(prevState, newState, trigger) {
       return { category: 'playerDebt', context: { debt: newState.bankroll } }
     }
     const totalBet = newState.playerHands?.reduce((sum, h) => sum + h.bet, 0) ?? 0
-    if (totalBet > 5000 && newState.bankroll >= 0) {
+    if (totalBet > BIG_BET_THRESHOLD && newState.bankroll >= 0) {
       return {
         category: 'bigBet',
         context: { betAmount: totalBet },
