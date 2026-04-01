@@ -3,6 +3,7 @@ import { MIN_BET } from '../constants/gameConfig'
 import { decomposeIntoChips, sumChipStack } from '../utils/chipUtils'
 
 const NEXT_ROUND_DELAY_MS = 5000
+let chatIdCounter = 0
 
 // --- Local-only action types ---
 export const MP_ADD_CHIP = 'MP_ADD_CHIP'
@@ -28,13 +29,13 @@ function applyServerState(state, serverState) {
 
   return {
     ...state,
-    phase: serverState.phase ?? state.phase,
-    round: serverState.round ?? state.round,
-    dealerHand: serverState.dealer_hand ?? state.dealerHand,
-    dealerValue: serverState.dealer_value ?? state.dealerValue,
-    currentPlayerId: serverState.current_player_id ?? state.currentPlayerId,
-    playerStates: serverState.players ?? state.playerStates,
-    dealerMessage: serverState.dealer_message ?? state.dealerMessage,
+    phase: 'phase' in serverState ? serverState.phase : state.phase,
+    round: 'round' in serverState ? serverState.round : state.round,
+    dealerHand: 'dealer_hand' in serverState ? serverState.dealer_hand : state.dealerHand,
+    dealerValue: 'dealer_value' in serverState ? serverState.dealer_value : state.dealerValue,
+    currentPlayerId: 'current_player_id' in serverState ? serverState.current_player_id : state.currentPlayerId,
+    playerStates: 'players' in serverState ? serverState.players : state.playerStates,
+    dealerMessage: 'dealer_message' in serverState ? serverState.dealer_message : state.dealerMessage,
   }
 }
 
@@ -62,7 +63,7 @@ export function multiplayerReducer(state, action) {
       return { ...state, connected: true, error: null }
 
     case WS_DISCONNECTED:
-      return { ...state, connected: false }
+      return { ...state, connected: false, currentPlayerId: null }
 
     // ===== Local-only: player name =====
 
@@ -150,11 +151,15 @@ export function multiplayerReducer(state, action) {
 
     case 'SERVER_GAME_STARTED': {
       const { players } = action.payload
-      return {
+      let newState = {
         ...state,
         phase: 'betting',
         ...extractPlayersInfo(state.playerId, players),
       }
+      if (action.payload.state) {
+        newState = applyServerState(newState, action.payload.state)
+      }
+      return newState
     }
 
     case 'SERVER_BETTING_PHASE': {
@@ -189,6 +194,9 @@ export function multiplayerReducer(state, action) {
     case 'SERVER_LOAN_TAKEN':
       return applyServerState(state, action.payload.state)
 
+    case 'SERVER_ASSET_REMOVED':
+      return applyServerState(state, action.payload.state)
+
     case 'SERVER_CARDS_DEALT':
       return {
         ...applyServerState(state, action.payload.state),
@@ -212,23 +220,13 @@ export function multiplayerReducer(state, action) {
       return applyServerState(state, action.payload.state)
 
     case 'SERVER_BET_TIMEOUT':
+      return { ...applyServerState(state, action.payload.state), betSubmitted: false }
+
+    case 'SERVER_DEALER_TURN_START':
       return applyServerState(state, action.payload.state)
 
-    case 'SERVER_DEALER_TURN_START': {
-      return {
-        ...applyServerState(state, action.payload.state),
-        dealerHand: action.payload.dealer_hand,
-        dealerValue: action.payload.dealer_value,
-      }
-    }
-
-    case 'SERVER_DEALER_CARD': {
-      return {
-        ...applyServerState(state, action.payload.state),
-        dealerHand: action.payload.dealer_hand,
-        dealerValue: action.payload.dealer_value,
-      }
-    }
+    case 'SERVER_DEALER_CARD':
+      return applyServerState(state, action.payload.state)
 
     case 'SERVER_ROUND_RESULT': {
       const newState = applyServerState(state, action.payload.state)
@@ -246,7 +244,16 @@ export function multiplayerReducer(state, action) {
 
     case 'SERVER_PLAYER_LEFT': {
       const { players } = action.payload
-      return { ...state, ...extractPlayersInfo(state.playerId, players) }
+      const newState = { ...state, ...extractPlayersInfo(state.playerId, players) }
+      if (newState.playerStates && players) {
+        const activeIds = new Set(players.map(p => p.player_id))
+        const filteredStates = {}
+        for (const [pid, ps] of Object.entries(newState.playerStates)) {
+          if (activeIds.has(pid)) filteredStates[pid] = ps
+        }
+        newState.playerStates = filteredStates
+      }
+      return newState
     }
 
     case 'SERVER_PLAYER_DISCONNECTED': {
@@ -265,7 +272,10 @@ export function multiplayerReducer(state, action) {
 
     case 'SERVER_PLAYER_RECONNECTED': {
       const { players } = action.payload
-      const newState = { ...state, ...extractPlayersInfo(state.playerId, players) }
+      let newState = { ...state, ...extractPlayersInfo(state.playerId, players) }
+      if (action.payload.state) {
+        newState = applyServerState(newState, action.payload.state)
+      }
       if (newState.playerStates) {
         const connectedIds = new Set(players.filter(p => p.connected).map(p => p.player_id))
         const updatedStates = {}
@@ -292,23 +302,35 @@ export function multiplayerReducer(state, action) {
         playerId: player_id,
         phase: phase || 'lobby',
         error: null,
+        chipStack: [],
+        showAssetMenu: false,
+        nextRoundAt: null,
       }
       newState = { ...newState, ...extractPlayersInfo(player_id, players) }
       if (serverState) {
         newState = applyServerState(newState, serverState)
       }
+      const reconnectedPlayer = newState.playerStates[player_id]
+      if (reconnectedPlayer) {
+        newState.betSubmitted = reconnectedPlayer.status === 'ready'
+      }
       return newState
     }
 
-    case 'SERVER_ERROR':
-      return { ...state, error: action.payload.message }
+    case 'SERVER_ERROR': {
+      const errorState = { ...state, error: action.payload.message }
+      if (state.phase === 'betting') {
+        errorState.betSubmitted = false
+      }
+      return errorState
+    }
 
     // ===== Quick Chat =====
 
     case 'SERVER_QUICK_CHAT': {
       const { player_id, player_name, message_id, message_text } = action.payload
       const chatMsg = {
-        id: `${message_id}_${Date.now()}`,
+        id: `${message_id}_${++chatIdCounter}`,
         playerId: player_id,
         playerName: player_name,
         text: message_text,
