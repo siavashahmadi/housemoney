@@ -70,6 +70,7 @@ class GameRoom:
     turn_order: list = field(default_factory=list)  # ordered player_ids
     round_number: int = 0
     dealer_turn_task: object | None = field(default=None, repr=False)
+    consecutive_afk_rounds: int = 0  # Fix #11: track consecutive AFK rounds
     _lock: object = field(default_factory=asyncio.Lock, repr=False)
 
     # Dealer trash talk
@@ -168,6 +169,9 @@ def remove_player_from_room(room: GameRoom, player_id: str) -> str | None:
             new_host_id = first_pid
 
     if not room.players:
+        # Fix #52: Cancel dealer turn task and bet timers before deletion
+        if room.dealer_turn_task and not room.dealer_turn_task.done():
+            room.dealer_turn_task.cancel()
         # Room is empty — remove from registry
         rooms.pop(room.code, None)
 
