@@ -3,11 +3,11 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  z-index: 100;
-  width: 40px;
-  height: 40px;
+  z-index: var(--z-sticky);
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--border-subtle);
   background: rgba(0, 0, 0, 0.4);
   font-size: 18px;
   cursor: pointer;
@@ -26,7 +26,7 @@
 .panelBackdrop {
   position: absolute;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
@@ -38,21 +38,21 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
-  background: rgba(10, 10, 10, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--panel-bg);
+  border: 1px solid var(--border-faint);
   border-radius: 12px;
   padding: 10px;
-  width: 260px;
+  width: min(260px, calc(100% - 16px));
   animation: panelIn 0.15s ease-out;
 }
 
 .messageButton {
   padding: 8px 6px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-faint);
+  background: var(--bg-hover);
   color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
+
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -61,7 +61,7 @@
 }
 
 .messageButton:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--bg-active);
   transform: scale(0.95);
 }
 
@@ -76,7 +76,7 @@
   top: 8px;
   left: 12px;
   right: 56px;
-  z-index: 150;
+  z-index: 150;  /* between sticky and overlay */
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -88,15 +88,15 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--overlay-bg);
+  border: 1px solid var(--border-faint);
   border-radius: 8px;
   padding: 6px 10px;
   animation: toastSlideIn 0.25s ease-out, toastFadeOut 0.3s ease-in 2.7s forwards;
 }
 
 .toastName {
-  font-family: 'DM Sans', sans-serif;
+
   font-size: 11px;
   font-weight: 700;
   color: var(--gold);
@@ -104,7 +104,7 @@
 }
 
 .toastText {
-  font-family: 'DM Sans', sans-serif;
+
   font-size: 12px;
   color: var(--text-primary);
 }

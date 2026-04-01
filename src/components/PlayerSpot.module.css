@@ -51,12 +51,12 @@
 }
 
 .youBadge {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--gold);
   letter-spacing: 1px;
-  padding: 1px 4px;
-  border-radius: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
   background: rgba(240, 200, 80, 0.15);
 }
 
@@ -90,12 +90,12 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-dim);
+  color: var(--text-secondary);
 }
 
 .handResult {
   font-family: 'Playfair Display', serif;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.5px;
 }
@@ -145,7 +145,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   font-weight: 500;
-  color: var(--text-dim);
+  color: var(--text-secondary);
 }
 
 .inDebt {
@@ -169,6 +169,6 @@
 .status {
   font-family: 'DM Sans', sans-serif;
   font-size: 10px;
-  color: var(--text-dim);
+  color: var(--text-secondary);
   letter-spacing: 1px;
 }

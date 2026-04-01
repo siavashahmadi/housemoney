@@ -1,8 +1,8 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 800;
-  background: rgba(0, 0, 0, 0.7);
+  z-index: var(--z-modal);
+  background: var(--overlay-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -106,7 +106,7 @@
   letter-spacing: 1px;
   color: var(--text-dim);
   padding: 6px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border-faint);
   text-align: left;
 }
 
@@ -124,7 +124,7 @@
 
 .table td {
   padding: 8px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);  /* intentionally lighter than --border-faint */
 }
 
 .rank {

@@ -16,12 +16,12 @@
   position: absolute;
   top: calc(env(safe-area-inset-top, 0px) + 16px);
   left: 16px;
-  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-dim);
   letter-spacing: 1px;
   padding: 8px 12px;
+  min-height: 44px;
   touch-action: manipulation;
 }
 
@@ -44,7 +44,6 @@
 }
 
 .subtitle {
-  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-dim);
@@ -52,7 +51,6 @@
 }
 
 .connecting {
-  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   color: var(--text-dim);
   animation: pulse 1.5s ease-in-out infinite;
@@ -76,10 +74,8 @@
   border: 2px solid rgba(240, 200, 80, 0.2);
   background: var(--surface);
   color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
   font-size: 16px;
   text-align: center;
-  outline: none;
   transition: border-color 0.2s;
   -webkit-appearance: none;
   appearance: none;
@@ -87,6 +83,11 @@
 
 .nameInput:focus {
   border-color: var(--gold-dim);
+}
+
+.nameInput:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .nameInput::placeholder {
@@ -128,11 +129,10 @@
 .dividerLine {
   flex: 1;
   height: 1px;
-  background: rgba(232, 224, 208, 0.15);
+  background: var(--border-subtle);
 }
 
 .dividerText {
-  font-family: 'DM Sans', sans-serif;
   font-size: 12px;
   color: var(--text-dim);
   letter-spacing: 2px;
@@ -160,7 +160,6 @@
 
 /* Join view */
 .codeLabel {
-  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-dim);
@@ -185,7 +184,6 @@
   font-weight: 700;
   text-align: center;
   text-transform: uppercase;
-  outline: none;
   transition: border-color 0.2s;
   -webkit-appearance: none;
   appearance: none;
@@ -194,6 +192,11 @@
 .codeChar:focus {
   border-color: var(--gold);
   box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.codeChar:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .joinButton {
@@ -222,11 +225,11 @@
 }
 
 .backToMain {
-  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: var(--text-dim);
   letter-spacing: 1px;
   padding: 8px 12px;
+  min-height: 44px;
   touch-action: manipulation;
 }
 
@@ -241,7 +244,6 @@
 }
 
 .waitingLabel {
-  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-dim);
@@ -264,7 +266,6 @@
 }
 
 .copyHint {
-  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   font-weight: 400;
   color: var(--text-dim);
@@ -279,11 +280,10 @@
   padding: 16px;
   border-radius: 12px;
   background: var(--surface);
-  border: 1px solid rgba(232, 224, 208, 0.08);
+  border: 1px solid var(--border-faint);
 }
 
 .playerListLabel {
-  font-family: 'DM Sans', sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-dim);
@@ -315,7 +315,6 @@
 }
 
 .playerName {
-  font-family: 'DM Sans', sans-serif;
   font-size: 15px;
   font-weight: 500;
   color: var(--text-primary);
@@ -336,7 +335,6 @@
 }
 
 .hostBadge {
-  font-family: 'DM Sans', sans-serif;
   font-size: 10px;
   font-weight: 700;
   color: var(--felt-dark);
@@ -373,7 +371,6 @@
 }
 
 .waitingHint {
-  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   color: var(--text-dim);
   animation: pulse 1.5s ease-in-out infinite;
@@ -381,11 +378,11 @@
 }
 
 .leaveButton {
-  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   color: var(--danger);
   letter-spacing: 1px;
   padding: 8px 12px;
+  min-height: 44px;
   margin-top: 4px;
   touch-action: manipulation;
 }
@@ -393,10 +390,9 @@
 .error {
   padding: 10px 16px;
   border-radius: 8px;
-  background: rgba(231, 76, 60, 0.15);
+  background: rgba(231, 76, 60, 0.15);  /* danger bg - not an overlay token */
   border: 1px solid rgba(231, 76, 60, 0.3);
   color: var(--danger);
-  font-family: 'DM Sans', sans-serif;
   font-size: 13px;
   text-align: center;
   max-width: 300px;
