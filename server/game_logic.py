@@ -413,7 +413,12 @@ class GameEngine:
         # Deal: player1-card1, player2-card1, ..., dealer-card1,
         #        player1-card2, player2-card2, ..., dealer-card2
         total_cards_needed = (num_players + 1) * 2
-        drawn, room.deck = draw_cards(room.deck, total_cards_needed)
+        # Fix #54: Handle deck exhaustion — reshuffle and retry if needed
+        try:
+            drawn, room.deck = draw_cards(room.deck, total_cards_needed)
+        except (ValueError, IndexError):
+            room.deck = shuffle_deck(create_deck())
+            drawn, room.deck = draw_cards(room.deck, total_cards_needed)
 
         # Distribute cards — create hand dicts
         for i, pid in enumerate(active_pids):
@@ -426,10 +431,17 @@ class GameEngine:
         room.dealer_hand = [drawn[num_players], drawn[num_players * 2 + 1]]
 
         # Calculate and apply vig for each player's borrowed portion
+        # Fix #4: Pass the hand bet as other_committed so vig treats it as
+        # unavailable bankroll (the bet is already committed to the hand).
         for pid in active_pids:
             player = room.players[pid]
             hand = player.hands[0]
-            self._apply_vig(player, hand["bet"])
+            self._apply_vig(player, hand["bet"], other_committed=hand["bet"])
+
+            # Fix #25: Also charge vig on asset value when bankroll < 0
+            if player.betted_assets and player.bankroll < 0:
+                asset_value = sum(a["value"] for a in player.betted_assets)
+                self._apply_vig(player, asset_value)
 
         # Dealer trash talk on deal — pick the most interesting bettor
         deal_target = None
@@ -612,7 +624,9 @@ class GameEngine:
             raise ValueError("Cannot double down on split aces")
         if hand["bet"] == 0:
             raise ValueError("Cannot double down on a zero bet")
-        if player.bankroll - hand["bet"] < 0 and not player.in_debt_mode:
+        # Fix #12: Account for bets committed on other hands when checking funds
+        committed = sum(h["bet"] for h in player.hands)
+        if player.bankroll - committed - hand["bet"] < 0 and not player.in_debt_mode:
             raise ValueError("Cannot double down — insufficient funds")
 
         # Calculate vig on the additional bet (doubling the existing bet)
@@ -782,7 +796,8 @@ class GameEngine:
                             hand["result"] = "bust"
                             asset_value = sum(a["value"] for a in player.betted_assets) if i == 0 else 0
                             hand["payout"] = -(hand["bet"] + asset_value)
-                            player.bankroll += hand["payout"]
+                            # Fix #3: Do NOT modify bankroll here — let resolve_all_hands
+                            # be the single source of truth for bankroll changes.
                     player.status = "bust"
                     player.result = "bust"
                     player.betted_assets = []
@@ -797,7 +812,8 @@ class GameEngine:
                             hand["result"] = "bust"
                             asset_value = sum(a["value"] for a in player.betted_assets) if i == 0 else 0
                             hand["payout"] = -(hand["bet"] + asset_value)
-                            player.bankroll += hand["payout"]
+                            # Fix #3: Do NOT modify bankroll here — let resolve_all_hands
+                            # be the single source of truth for bankroll changes.
                     player.status = "bust"
                     player.result = "bust"
                     player.betted_assets = []
@@ -823,6 +839,23 @@ class GameEngine:
             connected = [p for p in room.players.values() if p.connected]
             if connected and all(p.status == "ready" for p in connected):
                 return self.deal_initial_cards(room)
+            return []
+
+        # Fix #13: Handle departure during dealer_turn — mark hands as bust
+        # with appropriate payout calculations. Do NOT modify bankroll here
+        # (per Fix #3 — let resolve_all_hands handle it).
+        if room.phase == "dealer_turn":
+            player = room.players.get(player_id)
+            if player and player.status not in ("done", "bust"):
+                for i, hand in enumerate(player.hands):
+                    if hand["status"] in ("playing", "standing"):
+                        hand["status"] = "bust"
+                        hand["result"] = "bust"
+                        asset_value = sum(a["value"] for a in player.betted_assets) if i == 0 else 0
+                        hand["payout"] = -(hand["bet"] + asset_value)
+                player.status = "bust"
+                player.result = "bust"
+                player.betted_assets = []
             return []
 
         return []
