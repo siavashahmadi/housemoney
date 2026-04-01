@@ -661,11 +661,39 @@ async def test_multi_round():
                     p = state["players"][pid]
                     assert p["status"] == "betting", f"Round {round_num+1}: player status should be betting, got {p['status']}"
                     assert p["bet"] == 0
-                    assert p["hand"] == []
+                    assert p["hands"] == []
 
             print(f"  PASS - Round {round_num} completed, round {round_num+1} betting phase started")
 
         print("  PASS - Multi-round play works correctly")
+    finally:
+        await ws1.close()
+        await ws2.close()
+
+
+async def test_bet_timeout():
+    """Test that bet timer auto-skips AFK players who don't bet."""
+    uri = "ws://localhost:8000/ws"
+    print("\n[Test G8] Bet timeout")
+    ws1, ws2, code, p1_id, p2_id = await setup_game(uri)
+
+    try:
+        # Only P1 bets — P2 does not bet
+        await ws1.send(json.dumps({"type": "place_bet", "amount": 100}))
+        await drain(ws1, timeout=1)
+        await drain(ws2, timeout=1)
+
+        # Wait for the bet timeout to fire (BET_TIMEOUT is 30s on server)
+        # The server should send a bet_timeout message when P2 is auto-skipped
+        timeout_msg = await drain_until(ws1, "bet_timeout", timeout=35)
+        assert timeout_msg["type"] == "bet_timeout"
+        assert "Bob" in timeout_msg["sat_out"]
+        print("  PASS - Bet timeout fired, AFK player sat out")
+
+        # After timeout, cards should be dealt to P1 only
+        cards_msg = await drain_until(ws1, "cards_dealt", timeout=5)
+        assert cards_msg["type"] == "cards_dealt"
+        print("  PASS - Cards dealt to active player after timeout")
     finally:
         await ws1.close()
         await ws2.close()

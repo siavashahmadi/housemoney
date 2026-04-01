@@ -1455,11 +1455,14 @@ class TestVigOnDeal(unittest.TestCase):
         bankroll_before = p.bankroll
         eng.place_bet(room, "player0", 100)
 
-        # Bankroll=50, bet=100 → borrowed=max(0, 100-50)=50
+        # Fix #4: Committed bets reduce effective bankroll for vig calculation.
+        # Bankroll=50, bet=100, other_committed=100 (the bet itself)
+        # effective_bankroll = max(0, 50 - 100) = 0
+        # borrowed = max(0, 100 - 0) = 100
         # Vig rate at +50 bankroll = 0.02
         expected_rate = get_vig_rate(50)
         self.assertEqual(expected_rate, 0.02)
-        expected_vig = math.floor(50 * expected_rate)  # floor(1.0) = 1
+        expected_vig = math.floor(100 * expected_rate)  # floor(2.0) = 2
         self.assertEqual(p.vig_amount, expected_vig)
         self.assertEqual(p.bankroll, bankroll_before - expected_vig)
 
@@ -1669,7 +1672,11 @@ class TestPlayerDepartureForfeits(unittest.TestCase):
         return room, eng
 
     def test_departure_debits_bet_from_bankroll(self):
-        """When a player departs mid-round their bet is deducted from their bankroll."""
+        """When a player departs mid-round their hands are forfeited and payout set.
+
+        Fix #3: bankroll is NOT modified by handle_player_departure — deduction
+        happens later in resolve_all_hands to avoid double-counting.
+        """
         room, eng = self._setup_playing_room_with_bets()
         self.assertEqual(room.phase, "playing")
 
@@ -1684,13 +1691,17 @@ class TestPlayerDepartureForfeits(unittest.TestCase):
         departing_player.connected = False
         eng.handle_player_departure(room, departing_pid)
 
-        # Bankroll should have been reduced by the bet amount
-        self.assertEqual(departing_player.bankroll, bankroll_before - bet)
+        # Hands should be marked bust with payout set, but bankroll unchanged
         self.assertEqual(departing_player.hands[0]["status"], "bust")
+        self.assertEqual(departing_player.hands[0]["payout"], -bet)
         self.assertEqual(departing_player.status, "bust")
+        self.assertEqual(departing_player.bankroll, bankroll_before)  # Not yet deducted
 
     def test_current_player_departure_debits_bet(self):
-        """When the current-turn player departs their bet is also debited."""
+        """When the current-turn player departs their hands are forfeited.
+
+        Fix #3: bankroll deduction deferred to resolve_all_hands.
+        """
         room, eng = self._setup_playing_room_with_bets()
         self.assertEqual(room.phase, "playing")
 
@@ -1702,9 +1713,10 @@ class TestPlayerDepartureForfeits(unittest.TestCase):
         current_player.connected = False
         eng.handle_player_departure(room, current_pid)
 
-        self.assertEqual(current_player.bankroll, bankroll_before - bet)
         self.assertEqual(current_player.hands[0]["status"], "bust")
+        self.assertEqual(current_player.hands[0]["payout"], -bet)
         self.assertEqual(current_player.status, "bust")
+        self.assertEqual(current_player.bankroll, bankroll_before)  # Not yet deducted
 
 
 class TestAggregateResultWinAndPush(unittest.TestCase):
