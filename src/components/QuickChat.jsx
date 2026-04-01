@@ -2,16 +2,31 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { QUICK_CHAT_MESSAGES } from '../constants/quickChatMessages'
 import styles from './QuickChat.module.css'
 
-function QuickChat({ chatMessages, dispatch, send, playerId }) {
+function QuickChat({ chatMessages, dispatch, send }) {
   const [panelOpen, setPanelOpen] = useState(false)
   const [isCooldown, setIsCooldown] = useState(false)
+  const cooldownTimerRef = useRef(null)
+
+  useEffect(() => {
+    return () => clearTimeout(cooldownTimerRef.current)
+  }, [])
+
+  useEffect(() => {
+    if (!panelOpen) return
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setPanelOpen(false)
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [panelOpen])
 
   const handleSend = useCallback((messageId) => {
     if (isCooldown) return
     send({ type: 'quick_chat', message_id: messageId })
     setPanelOpen(false)
     setIsCooldown(true)
-    setTimeout(() => setIsCooldown(false), 2000)
+    clearTimeout(cooldownTimerRef.current)
+    cooldownTimerRef.current = setTimeout(() => setIsCooldown(false), 2000)
   }, [send, isCooldown])
 
   return (
@@ -28,7 +43,7 @@ function QuickChat({ chatMessages, dispatch, send, playerId }) {
       {/* Message panel */}
       {panelOpen && (
         <div className={styles.panelBackdrop} onClick={() => setPanelOpen(false)}>
-          <div className={styles.panel} onClick={e => e.stopPropagation()}>
+          <div className={styles.panel} role="dialog" aria-label="Quick chat messages" onClick={e => e.stopPropagation()}>
             {QUICK_CHAT_MESSAGES.map(msg => (
               <button
                 key={msg.id}

@@ -1,12 +1,21 @@
+import { useEffect } from 'react'
 import { formatMoney } from '../utils/formatters'
 import styles from './SessionLeaderboard.module.css'
 
 function SessionLeaderboard({ stats, onDismiss }) {
-  const { leaderboard, awards } = stats
+  const { leaderboard = [], awards = [] } = stats || {}
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'Escape') onDismiss()
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [onDismiss])
 
   return (
     <div className={styles.overlay} onClick={onDismiss}>
-      <div className={styles.panel} onClick={e => e.stopPropagation()}>
+      <div className={styles.panel} role="dialog" aria-label="Session statistics" onClick={e => e.stopPropagation()}>
         <h2 className={styles.title}>SESSION STATS</h2>
 
         {awards.length > 0 && (

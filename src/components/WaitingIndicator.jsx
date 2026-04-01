@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import styles from './WaitingIndicator.module.css'
 
 function WaitingIndicator({ playerName }) {
@@ -15,4 +16,4 @@ function WaitingIndicator({ playerName }) {
   )
 }
 
-export default WaitingIndicator
+export default memo(WaitingIndicator)

@@ -12,7 +12,7 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
   const [showReshuffle, setShowReshuffle] = useState(false)
 
   useEffect(() => {
-    if (phase === 'dealerTurn' && deckLength - prevDeckRef.current > 200) {
+    if (deckLength != null && phase === 'dealerTurn' && deckLength - prevDeckRef.current > 200) {
       setShowReshuffle(true)
       const timer = setTimeout(() => setShowReshuffle(false), 1200)
       return () => clearTimeout(timer)
@@ -25,7 +25,9 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
     if (hideHoleCard) {
       return hand.length > 1 ? cardValue(hand[1]) : ''
     }
-    return handValue(hand)
+    const visibleCards = hand.filter(c => c.rank !== '?')
+    if (visibleCards.length === 0) return ''
+    return handValue(visibleCards)
   }, [hand, hasCards, hideHoleCard])
 
   return (

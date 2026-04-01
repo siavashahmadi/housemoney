@@ -20,7 +20,10 @@ import QuickChat from './QuickChat'
 import SessionLeaderboard from './SessionLeaderboard'
 import DebtTracker from './DebtTracker'
 import { STARTING_BANKROLL } from '../constants/gameConfig'
+import { getTableLevel } from '../constants/tableLevels'
 import styles from './MultiplayerGame.module.css'
+
+const noop = () => {}
 
 const mpChipActions = {
   shouldBlock: (s) => s.betSubmitted,
@@ -49,6 +52,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
   const bettedAssets = localPlayer.betted_assets || []
   const inDebtMode = localPlayer.in_debt_mode || false
   const localResult = localPlayer.result
+  const tableLevel = useMemo(() => getTableLevel(bankroll), [bankroll])
 
   // Is it my turn?
   const isMyTurn = state.currentPlayerId === state.playerId
@@ -61,6 +65,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
   // Server already hides the hole card by sending rank:'?' — don't double-hide
   const hideHoleCard = false
 
+  const handleToggleMute = useCallback(() => dispatch({ type: MP_TOGGLE_MUTE }), [dispatch])
   const handleClear = useCallback(() => dispatch({ type: MP_CLEAR_CHIPS }), [dispatch])
   const handleAllIn = useCallback(() => dispatch({ type: MP_ALL_IN }), [dispatch])
   const handleToggleAssetMenu = useCallback(() => dispatch({ type: MP_TOGGLE_ASSET_MENU }), [dispatch])
@@ -95,7 +100,9 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
   useEffect(() => {
     actionPendingRef.current = false
     clearTimeout(actionTimeoutRef.current)
-  }, [state.playerStates, state.phase, state.currentPlayerId])
+  }, [localPlayer.status, localPlayer.hands, state.phase, state.currentPlayerId])
+
+  useEffect(() => () => clearTimeout(actionTimeoutRef.current), [])
 
   // Game actions — send to server
   const handleHit = useCallback(() => guardedSend({ type: 'hit' }), [guardedSend])
@@ -140,7 +147,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
         roomCode={state.roomCode}
         onLeave={handleLeave}
         muted={state.muted}
-        onToggleMute={() => dispatch({ type: MP_TOGGLE_MUTE })}
+        onToggleMute={handleToggleMute}
         isHost={state.isHost}
         onViewStats={handleViewStats}
         onToggleDebtTracker={handleToggleDebtTracker}
@@ -169,7 +176,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
             bettedAssets={bettedAssets}
             result={null}
             onUndo={handleUndo}
-            onRemoveAsset={() => {}}
+            onRemoveAsset={noop}
           />
         )}
 
@@ -183,16 +190,8 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
           chatMessages={state.chatMessages}
           dispatch={dispatch}
           send={send}
-          playerId={state.playerId}
         />
 
-        {state.phase === 'result' && localResult && (
-          <ResultBanner
-            result={localResult}
-            playerHands={localPlayer?.hands || []}
-            displayOnly
-          />
-        )}
       </div>
 
       <div className={styles.controlsArea}>
@@ -206,6 +205,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
               bettedAssets={bettedAssets}
               showAssetMenu={state.showAssetMenu}
               inDebtMode={inDebtMode}
+              tableLevel={tableLevel}
               onChipTap={handleChipTap}
               onUndo={handleUndo}
               onClear={handleClear}

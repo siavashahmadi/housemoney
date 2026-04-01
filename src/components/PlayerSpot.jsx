@@ -32,6 +32,24 @@ const STATUS_LABELS = {
   sitting_out: 'Sat Out',
 }
 
+function arePlayerSpotPropsEqual(prev, next) {
+  if (prev.isLocal !== next.isLocal) return false
+  if (prev.isActive !== next.isActive) return false
+  if (prev.compact !== next.compact) return false
+  const pp = prev.player
+  const np = next.player
+  if (pp.status !== np.status) return false
+  if (pp.bankroll !== np.bankroll) return false
+  if (pp.name !== np.name) return false
+  if (pp.result !== np.result) return false
+  if (pp.bet !== np.bet) return false
+  if (pp.connected !== np.connected) return false
+  if (pp.active_hand_index !== np.active_hand_index) return false
+  if (pp.hands !== np.hands) return false
+  if (pp.betted_assets !== np.betted_assets) return false
+  return true
+}
+
 const PlayerSpot = memo(function PlayerSpot({ player, isLocal, isActive, compact = false }) {
   const hands = player.hands || []
   const hasCards = hands.length > 0 && hands[0]?.cards?.length > 0
@@ -108,6 +126,6 @@ const PlayerSpot = memo(function PlayerSpot({ player, isLocal, isActive, compact
       )}
     </div>
   )
-})
+}, arePlayerSpotPropsEqual)
 
 export default PlayerSpot

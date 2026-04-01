@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { FORCE_LEAVE } from '../reducer/multiplayerReducer'
+import { FORCE_LEAVE, CLEAR_ERROR } from '../reducer/multiplayerReducer'
 import styles from './Lobby.module.css'
 
 function Lobby({ state, send, dispatch, onBack }) {
@@ -15,19 +15,22 @@ function Lobby({ state, send, dispatch, onBack }) {
   }, [dispatch])
 
   const handleCreate = useCallback(() => {
+    dispatch({ type: CLEAR_ERROR })
     if (!state.playerName.trim()) return
     send({ type: 'create_room', player_name: state.playerName.trim() })
-  }, [send, state.playerName])
+  }, [send, state.playerName, dispatch])
 
   const handleJoin = useCallback(() => {
+    dispatch({ type: CLEAR_ERROR })
     const code = roomCodeInput.join('').toUpperCase()
     if (code.length !== 4 || !state.playerName.trim()) return
     send({ type: 'join_room', code, player_name: state.playerName.trim() })
-  }, [send, roomCodeInput, state.playerName])
+  }, [send, roomCodeInput, state.playerName, dispatch])
 
   const handleStart = useCallback(() => {
+    dispatch({ type: CLEAR_ERROR })
     send({ type: 'start_game' })
-  }, [send])
+  }, [send, dispatch])
 
   const handleLeave = useCallback(() => {
     if (state.connected) {
