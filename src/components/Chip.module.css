@@ -65,7 +65,7 @@
 .label {
   position: relative;
   z-index: 1;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-weight: 700;
   color: var(--chip-text);
   text-shadow: 0 1px 1px rgba(255, 255, 255, 0.1); /* Subtle "stamped" highlight */

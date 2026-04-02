@@ -83,7 +83,7 @@ function drawStatRow(ctx, label, value, y, isPositive, isNegative) {
   let valueColor = '#e8e0d0'
   if (isPositive) valueColor = '#f0c850'
   if (isNegative) valueColor = '#e74c3c'
-  drawText(ctx, value, rightX, y, '700 14px "JetBrains Mono", monospace', valueColor, 'right')
+  drawText(ctx, value, rightX, y, '700 14px "Outfit", sans-serif', valueColor, 'right')
 }
 
 export function renderShareCard(state) {
