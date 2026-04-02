@@ -15,6 +15,7 @@ function PlayerArea({ playerHands, activeHandIndex, phase, bettedAssets }) {
   const handCount = playerHands.length
   const hasCards = handCount > 0 && playerHands.some(h => h.cards.length > 0)
   const cardSize = getCardSize(handCount)
+  const dealType = phase === 'playing' ? 'hit' : 'deal'
 
   if (!hasCards) {
     return (
@@ -37,7 +38,7 @@ function PlayerArea({ playerHands, activeHandIndex, phase, bettedAssets }) {
           <span className={styles.value}>{value}</span>
         )}
         <div className={styles.handWrapper}>
-          <Hand cards={hand.cards} />
+          <Hand cards={hand.cards} dealType={dealType} />
         </div>
         <span className={styles.label}>YOUR HAND</span>
       </div>
@@ -63,7 +64,7 @@ function PlayerArea({ playerHands, activeHandIndex, phase, bettedAssets }) {
                 <span className={styles.handValue}>{value}</span>
                 {hand.isDoubledDown && <span className={styles.ddBadge}>2x</span>}
               </div>
-              <Hand cards={hand.cards} size={cardSize} />
+              <Hand cards={hand.cards} size={cardSize} dealType={dealType} />
               {phase === 'playing' && (
                 isDone ? (
                   <span className={`${styles.statusBadge} ${styles[`status_${hand.status}`]}`}>

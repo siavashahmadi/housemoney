@@ -22,7 +22,7 @@ function getCardMargin(cardCount, cardIndex, size) {
   return -35
 }
 
-const Hand = memo(function Hand({ cards = [], hideFirst = false, animate = true, size = 'normal' }) {
+const Hand = memo(function Hand({ cards = [], hideFirst = false, animate = true, size = 'normal', dealType = 'deal', flipIndex = -1 }) {
   const cardCount = cards.length
 
   return (
@@ -42,6 +42,7 @@ const Hand = memo(function Hand({ cards = [], hideFirst = false, animate = true,
             index={i}
             animate={animate}
             size={size}
+            dealType={i === flipIndex ? 'flip' : dealType}
           />
         </div>
       ))}

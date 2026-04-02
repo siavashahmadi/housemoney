@@ -12,4 +12,5 @@
 .handCard {
   position: relative;
   transition: margin-left 0.2s ease;
+  perspective: 600px;
 }

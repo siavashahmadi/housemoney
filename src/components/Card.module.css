@@ -295,8 +295,20 @@
   font-size: 20px;
 }
 
-/* ===== Deal Animation ===== */
+/* ===== Deal Animations ===== */
 .dealing {
-  animation: cardDeal 0.4s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: cardDeal 0.45s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.hitting {
+  animation: cardHit 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.dealerDraw {
+  animation: cardDealerDraw 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.flipping {
+  animation: holeCardFlip 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 

@@ -11,6 +11,32 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
   const prevDeckRef = useRef(deckLength)
   const [showReshuffle, setShowReshuffle] = useState(false)
 
+  // Track phase transitions for hole card flip
+  const prevPhaseRef = useRef(phase)
+  const [flipHoleCard, setFlipHoleCard] = useState(false)
+
+  useEffect(() => {
+    if (prevPhaseRef.current === 'playing' && phase === 'dealerTurn') {
+      setFlipHoleCard(true)
+      const timer = setTimeout(() => setFlipHoleCard(false), 600)
+      return () => clearTimeout(timer)
+    }
+    prevPhaseRef.current = phase
+  }, [phase])
+
+  // Track hand size to detect dealer draws
+  const prevHandLenRef = useRef(hand.length)
+  const [dealerDrawing, setDealerDrawing] = useState(false)
+
+  useEffect(() => {
+    if (phase === 'dealerTurn' && hand.length > prevHandLenRef.current) {
+      setDealerDrawing(true)
+      const timer = setTimeout(() => setDealerDrawing(false), 300)
+      return () => clearTimeout(timer)
+    }
+    prevHandLenRef.current = hand.length
+  }, [hand.length, phase])
+
   useEffect(() => {
     if (deckLength != null && phase === 'dealerTurn' && deckLength - prevDeckRef.current > 200) {
       setShowReshuffle(true)
@@ -41,7 +67,12 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
       <span className={styles.label}>DEALER</span>
       <div className={styles.handWrapper}>
         {hasCards ? (
-          <Hand cards={hand} hideFirst={hideHoleCard} />
+          <Hand
+            cards={hand}
+            hideFirst={hideHoleCard}
+            dealType={dealerDrawing ? 'dealerDraw' : 'deal'}
+            flipIndex={flipHoleCard ? 0 : -1}
+          />
         ) : (
           <div className={styles.empty} />
         )}
