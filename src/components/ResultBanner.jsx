@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { formatMoney } from '../utils/formatters'
 import { isWinResult } from '../utils/cardUtils'
+import { RESULTS } from '../constants/results'
 import styles from './ResultBanner.module.css'
 
 const RESULT_CONFIG = {
-  blackjack: { text: 'BLACKJACK!', colorClass: 'gold' },
-  win: { text: 'YOU WIN!', colorClass: 'green' },
-  dealerBust: { text: 'DEALER BUSTS!', colorClass: 'green' },
-  bust: { text: 'BUST!', colorClass: 'red' },
-  lose: { text: 'YOU LOSE', colorClass: 'red' },
-  push: { text: 'PUSH', colorClass: 'dim' },
-  mixed: { text: 'SPLIT RESULT', colorClass: 'dim' },
+  [RESULTS.BLACKJACK]: { text: 'BLACKJACK!', colorClass: 'gold' },
+  [RESULTS.WIN]: { text: 'YOU WIN!', colorClass: 'green' },
+  [RESULTS.DEALER_BUST]: { text: 'DEALER BUSTS!', colorClass: 'green' },
+  [RESULTS.BUST]: { text: 'BUST!', colorClass: 'red' },
+  [RESULTS.LOSE]: { text: 'YOU LOSE', colorClass: 'red' },
+  [RESULTS.PUSH]: { text: 'PUSH', colorClass: 'dim' },
+  [RESULTS.MIXED]: { text: 'SPLIT RESULT', colorClass: 'dim' },
 }
 
 function getSplitResultText(playerHands) {
@@ -55,10 +56,10 @@ function ResultBanner({ result, bankroll, onNextHand, playerHands = [], autoAdva
     return (
       <div className={styles.modal}>
         <span className={`${styles.resultText} ${styles[config.colorClass]}`}>
-          {isSplit && result === 'mixed' ? getSplitResultText(playerHands) : config.text}
+          {isSplit && result === RESULTS.MIXED ? getSplitResultText(playerHands) : config.text}
         </span>
 
-        {result !== 'push' && (
+        {result !== RESULTS.PUSH && (
           <span className={`${styles.payout} ${netPayout >= 0 ? styles.payoutWin : styles.payoutLoss}`}>
             {netPayout >= 0 ? '+' : ''}{formatMoney(Math.abs(netPayout))}
           </span>

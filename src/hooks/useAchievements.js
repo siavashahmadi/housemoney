@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { isWinResult, isLossResult } from '../utils/cardUtils'
 import { unlockAchievement, loadAchievements } from '../reducer/actions'
+import { RESULTS } from '../constants/results'
 
 const STORAGE_KEY = 'blackjack_achievements'
 
@@ -43,8 +44,8 @@ function checkAchievements(prevState, state) {
 
   // Net payout for mixed-result awareness (splits)
   const netPayout = state.playerHands?.reduce((sum, h) => sum + (h.payout || 0), 0) ?? 0
-  const effectiveWin = isWin || (state.result === 'mixed' && netPayout > 0)
-  const effectiveLoss = isLoss || (state.result === 'mixed' && netPayout < 0)
+  const effectiveWin = isWin || (state.result === RESULTS.MIXED && netPayout > 0)
+  const effectiveLoss = isLoss || (state.result === RESULTS.MIXED && netPayout < 0)
 
   // Comeback: win while previously in debt (net-positive mixed counts)
   if (effectiveWin && prevState.bankroll < 0) grant('comeback')
@@ -66,7 +67,7 @@ function checkAchievements(prevState, state) {
   if (doubledHandLost) grant('double_down_loss')
 
   // Blackjack
-  if (state.result === 'blackjack') grant('blackjack')
+  if (state.result === RESULTS.BLACKJACK) grant('blackjack')
 
   // All-in (net-positive mixed counts as win, net-negative as loss)
   if (state.isAllIn && effectiveWin) grant('all_in_win')
@@ -88,7 +89,7 @@ function checkAchievements(prevState, state) {
     if (state.playerHands.length >= 4) grant('split_four')
     const allWin = state.playerHands.every(h => isWinResult(h.result))
     if (allWin) grant('split_both_win')
-    const allBust = state.playerHands.every(h => h.result === 'bust')
+    const allBust = state.playerHands.every(h => h.result === RESULTS.BUST)
     if (allBust) grant('split_both_bust')
   }
 

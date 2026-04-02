@@ -860,6 +860,47 @@ class GameEngine:
 
     # --- Dealer Turn ---
 
+    def dealer_draw_one(self, room: "GameRoom") -> tuple[bool, list[dict]]:
+        """Draw one dealer card if the dealer should still hit.
+
+        Returns (should_continue, events):
+          - (True, [dealer_card event]) if a card was drawn and dealer may need more
+          - (False, []) if the dealer stands (hand >= 17 hard, or all players busted)
+        """
+        if room.phase != "dealer_turn":
+            return False, []
+
+        active_pids = [pid for pid in room.turn_order if pid in room.players]
+        all_busted = all(room.players[pid].status == "bust" for pid in active_pids)
+        if all_busted:
+            return False, []
+
+        dv = hand_value(room.dealer_hand)
+        dealer_should_hit = dv < 17 or (dv == 17 and is_soft(room.dealer_hand))
+        if not dealer_should_hit:
+            return False, []
+
+        try:
+            drawn, room.deck = draw_cards(room.deck, 1)
+        except ValueError:
+            room.deck = create_deck()
+            shuffle_deck(room.deck)
+            drawn, room.deck = draw_cards(room.deck, 1)
+
+        room.dealer_hand.append(drawn[0])
+
+        new_dv = hand_value(room.dealer_hand)
+        should_continue = new_dv < 17 or (new_dv == 17 and is_soft(room.dealer_hand))
+
+        event = {
+            "type": "dealer_card",
+            "card": drawn[0],
+            "dealer_hand": room.dealer_hand,
+            "dealer_value": new_dv,
+            "state": self.get_room_state(room, hide_dealer_hole=False),
+        }
+        return should_continue, [event]
+
     async def run_dealer_turn(self, room: GameRoom, broadcast_fn) -> list[dict]:
         """Run the dealer's turn with async delays for animation pacing.
 

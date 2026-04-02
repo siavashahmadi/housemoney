@@ -1,5 +1,6 @@
 import { SUITS, RANKS } from '../constants/cards'
 import { DECK_COUNT } from '../constants/gameConfig'
+import { RESULTS } from '../constants/results'
 
 /**
  * Returns the numeric value of a single card.
@@ -97,14 +98,14 @@ export function isBlackjack(hand) {
  * Returns true if the result represents a player win.
  */
 export function isWinResult(result) {
-  return result === 'win' || result === 'dealerBust' || result === 'blackjack'
+  return result === RESULTS.WIN || result === RESULTS.DEALER_BUST || result === RESULTS.BLACKJACK
 }
 
 /**
  * Returns true if the result represents a player loss.
  */
 export function isLossResult(result) {
-  return result === 'lose' || result === 'bust'
+  return result === RESULTS.LOSE || result === RESULTS.BUST
 }
 
 /**
@@ -113,8 +114,8 @@ export function isLossResult(result) {
 export function determineOutcome(playerCards, dealerHand) {
   const playerVal = handValue(playerCards)
   const dealerVal = handValue(dealerHand)
-  if (dealerVal > 21) return 'dealerBust'
-  if (dealerVal > playerVal) return 'lose'
-  if (playerVal > dealerVal) return 'win'
-  return 'push'
+  if (dealerVal > 21) return RESULTS.DEALER_BUST
+  if (dealerVal > playerVal) return RESULTS.LOSE
+  if (playerVal > dealerVal) return RESULTS.WIN
+  return RESULTS.PUSH
 }

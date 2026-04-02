@@ -1869,5 +1869,132 @@ class TestRemoveAsset(unittest.TestCase):
             self.eng.remove_asset(self.room, "player0", "watch")
 
 
+# =============================================================================
+# Fix 9 — dealer_draw_one and resolve_all_hands tests
+# =============================================================================
+
+
+class TestDealerDrawOne(unittest.TestCase):
+    """Tests for the new synchronous dealer_draw_one and resolve_all_hands methods."""
+
+    def _setup_dealer_room(self, dealer_cards, player_cards=None, player_status="standing", deck_cards=None):
+        """Create a room in dealer_turn phase with one player."""
+        eng = GameEngine()
+        room = make_room_with_players(1)
+        eng.start_game(room)
+
+        p = room.players["player0"]
+        p.hands = [create_hand_dict(
+            player_cards or [make_card("10"), make_card("9")],  # 19
+            100
+        )]
+        p.hands[0]["status"] = player_status
+        if player_status == "bust":
+            p.hands[0]["result"] = "bust"
+            p.status = "bust"
+            p.result = "bust"
+        else:
+            p.status = "standing"
+        p.bankroll = STARTING_BANKROLL
+
+        room.dealer_hand = list(dealer_cards)
+        room.deck = (deck_cards or []) + [make_card("2")] * 50
+        room.turn_order = ["player0"]
+        room.phase = "dealer_turn"
+
+        return room, eng
+
+    def test_dealer_hits_soft_17(self):
+        """dealer_draw_one should draw a card when dealer has A+6 (soft 17)."""
+        room, eng = self._setup_dealer_room(
+            dealer_cards=[make_card("A"), make_card("6")],
+            deck_cards=[make_card("4")],  # A+6+4=21
+        )
+        should_continue, events = eng.dealer_draw_one(room)
+
+        self.assertEqual(len(room.dealer_hand), 3)
+        self.assertEqual(hand_value(room.dealer_hand), 21)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["type"], "dealer_card")
+        # 21 is not < 17, so should_continue should be False
+        self.assertFalse(should_continue)
+
+    def test_dealer_stands_hard_17(self):
+        """dealer_draw_one should return (False, []) when dealer has 10+7 (hard 17)."""
+        room, eng = self._setup_dealer_room(
+            dealer_cards=[make_card("10"), make_card("7")],
+            deck_cards=[make_card("3")],
+        )
+        should_continue, events = eng.dealer_draw_one(room)
+
+        # No card drawn
+        self.assertEqual(len(room.dealer_hand), 2)
+        self.assertFalse(should_continue)
+        self.assertEqual(events, [])
+
+    def test_dealer_skips_when_all_bust(self):
+        """dealer_draw_one should return (False, []) without drawing when all players bust."""
+        room, eng = self._setup_dealer_room(
+            dealer_cards=[make_card("10"), make_card("6")],  # 16 — would normally hit
+            player_cards=[make_card("10"), make_card("10"), make_card("5")],  # 25
+            player_status="bust",
+            deck_cards=[make_card("K")],
+        )
+        should_continue, events = eng.dealer_draw_one(room)
+
+        # Dealer should not draw even though hand value is 16
+        self.assertEqual(len(room.dealer_hand), 2)
+        self.assertFalse(should_continue)
+        self.assertEqual(events, [])
+
+    def test_dealer_draws_until_stands(self):
+        """Call dealer_draw_one in a loop until it returns False; final value >= 17."""
+        room, eng = self._setup_dealer_room(
+            dealer_cards=[make_card("2"), make_card("3")],  # 5
+            deck_cards=[make_card("4"), make_card("5"), make_card("6")],  # 5+4+5+6=20
+        )
+        iterations = 0
+        while True:
+            should_continue, events = eng.dealer_draw_one(room)
+            iterations += 1
+            if not should_continue:
+                break
+            self.assertGreater(len(events), 0, "Expected event when drawing a card")
+            if iterations > 20:
+                self.fail("dealer_draw_one never returned False — infinite loop guard")
+
+        final_value = hand_value(room.dealer_hand)
+        self.assertGreaterEqual(final_value, 17)
+        self.assertGreater(len(room.dealer_hand), 2)
+
+    def test_resolve_all_hands_transitions_to_result(self):
+        """resolve_all_hands sets phase to 'result' and returns round_result event."""
+        room, eng = self._setup_dealer_room(
+            dealer_cards=[make_card("10"), make_card("7")],  # 17
+            player_cards=[make_card("10"), make_card("9")],  # 19 — player wins
+        )
+        events = eng.resolve_all_hands(room)
+
+        self.assertEqual(room.phase, "result")
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["type"], "round_result")
+        p = room.players["player0"]
+        self.assertEqual(p.result, "win")
+        self.assertEqual(p.bankroll, STARTING_BANKROLL + 100)
+
+    def test_resolve_all_hands_dealer_bust_pays_out(self):
+        """When dealer busts, all standing players win."""
+        room, eng = self._setup_dealer_room(
+            dealer_cards=[make_card("10"), make_card("6"), make_card("K")],  # 26
+            player_cards=[make_card("10"), make_card("8")],  # 18
+        )
+        events = eng.resolve_all_hands(room)
+
+        p = room.players["player0"]
+        self.assertEqual(p.result, "dealerBust")
+        self.assertEqual(p.bankroll, STARTING_BANKROLL + 100)
+        self.assertEqual(events[0]["dealer_bust"], True)
+
+
 if __name__ == "__main__":
     unittest.main()

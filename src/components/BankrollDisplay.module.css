@@ -24,7 +24,7 @@
 }
 
 .credit {
-  color: #e67e22;
+  color: var(--credit);
   animation: creditPulse 1.5s ease-in-out infinite;
 }
 
@@ -32,7 +32,7 @@
   font-family: 'DM Sans', sans-serif;
   font-size: 10px;
   font-weight: 700;
-  color: #e67e22;
+  color: var(--credit);
   letter-spacing: 1.5px;
   text-transform: uppercase;
   text-align: center;

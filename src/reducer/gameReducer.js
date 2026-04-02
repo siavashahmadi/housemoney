@@ -15,8 +15,16 @@ import { handValue, isBlackjack, isWinResult, isLossResult } from '../utils/card
 import { decomposeIntoChips, sumChipStack } from '../utils/chipUtils'
 import { getVigRate } from '../constants/vigRates'
 import { ASSETS } from '../constants/assets'
+import { RESULTS } from '../constants/results'
 
 const MAX_BANKROLL_HISTORY = 500
+
+function computeVig(additionalBet, bankroll, committedBets = 0) {
+  const effectiveBankroll = Math.max(0, bankroll - committedBets)
+  const borrowedAmount = Math.max(0, additionalBet - effectiveBankroll)
+  const vigRate = borrowedAmount > 0 ? getVigRate(bankroll) : 0
+  return { vigAmount: Math.floor(borrowedAmount * vigRate), vigRate }
+}
 
 // --- playerHands helpers ---
 
@@ -36,12 +44,11 @@ function advanceToNextHand(currentIndex, playerHands) {
     nextIndex++
   }
   if (nextIndex >= playerHands.length) {
-    // All hands done
-    const allBust = playerHands.every(h => h.status === 'bust')
+    const allBust = playerHands.every(h => h.status === RESULTS.BUST)
     return {
       activeHandIndex: currentIndex,
       phase: allBust ? 'result' : 'dealerTurn',
-      result: allBust ? 'bust' : null,
+      result: allBust ? RESULTS.BUST : null,
     }
   }
   return {
@@ -53,17 +60,46 @@ function advanceToNextHand(currentIndex, playerHands) {
 
 function determineAggregateResult(outcomes) {
   if (outcomes.length === 1) return outcomes[0]
-  if (outcomes.includes('blackjack')) return 'blackjack'
-  const hasWin = outcomes.some(o => o === 'win' || o === 'dealerBust')
-  const hasLoss = outcomes.some(o => o === 'lose' || o === 'bust')
-  const hasPush = outcomes.some(o => o === 'push')
-  if (hasWin && hasLoss) return 'mixed'
-  if (hasWin && hasPush) return 'mixed'
-  if (hasWin) return outcomes.includes('dealerBust') ? 'dealerBust' : 'win'
-  if (outcomes.every(o => o === 'push')) return 'push'
-  if (hasLoss && hasPush) return 'mixed'
-  if (hasLoss) return outcomes.every(o => o === 'bust') ? 'bust' : 'lose'
-  return 'mixed'
+  if (outcomes.includes(RESULTS.BLACKJACK)) return RESULTS.BLACKJACK
+  const hasWin = outcomes.some(o => o === RESULTS.WIN || o === RESULTS.DEALER_BUST)
+  const hasLoss = outcomes.some(o => o === RESULTS.LOSE || o === RESULTS.BUST)
+  const hasPush = outcomes.some(o => o === RESULTS.PUSH)
+  if (hasWin && hasLoss) return RESULTS.MIXED
+  if (hasWin && hasPush) return RESULTS.MIXED
+  if (hasWin) return outcomes.includes(RESULTS.DEALER_BUST) ? RESULTS.DEALER_BUST : RESULTS.WIN
+  if (outcomes.every(o => o === RESULTS.PUSH)) return RESULTS.PUSH
+  if (hasLoss && hasPush) return RESULTS.MIXED
+  if (hasLoss) return outcomes.every(o => o === RESULTS.BUST) ? RESULTS.BUST : RESULTS.LOSE
+  return RESULTS.MIXED
+}
+
+function createSplitHandPair(splitHand, splitCards, isAces) {
+  const hand1 = createHandObject([splitHand.cards[0], splitCards[0]], splitHand.bet)
+  const hand2 = createHandObject([splitHand.cards[1], splitCards[1]], splitHand.bet)
+
+  if (isAces) {
+    hand1.isSplitAces = true
+    hand2.isSplitAces = true
+    hand1.status = 'standing'
+    hand2.status = 'standing'
+  } else {
+    if (handValue(hand1.cards) === 21) hand1.status = 'standing'
+    if (handValue(hand2.cards) === 21) hand2.status = 'standing'
+  }
+  return [hand1, hand2]
+}
+
+function advanceAfterSplit(hands, activeIndex) {
+  if (hands[activeIndex].status === 'playing') {
+    return { phase: 'playing', result: null, activeHandIndex: activeIndex }
+  }
+  let idx = activeIndex
+  while (idx < hands.length && hands[idx].status !== 'playing') idx++
+  if (idx >= hands.length) {
+    const allBust = hands.every(h => h.status === RESULTS.BUST)
+    return { phase: allBust ? 'result' : 'dealerTurn', result: allBust ? RESULTS.BUST : null, activeHandIndex: activeIndex }
+  }
+  return { phase: 'playing', result: null, activeHandIndex: idx }
 }
 
 /*
@@ -141,9 +177,7 @@ export function gameReducer(state, action) {
       const betAmount = sumChipStack(state.chipStack)
 
       // Vig calculation — charge interest on borrowed portion of cash bet
-      const borrowedAmount = Math.max(0, betAmount - Math.max(0, state.bankroll))
-      const vigRate = borrowedAmount > 0 ? getVigRate(state.bankroll) : 0
-      const vigAmount = Math.floor(borrowedAmount * vigRate)
+      const { vigAmount, vigRate } = computeVig(betAmount, state.bankroll)
 
       const playerCards = [action.cards[0], action.cards[2]]
       const dealerHand = [action.cards[1], action.cards[3]]
@@ -158,16 +192,16 @@ export function gameReducer(state, action) {
 
       if (playerBJ && dealerBJ) {
         phase = 'result'
-        result = 'push'
-        handResult = 'push'
+        result = RESULTS.PUSH
+        handResult = RESULTS.PUSH
       } else if (playerBJ) {
         phase = 'result'
-        result = 'blackjack'
-        handResult = 'blackjack'
+        result = RESULTS.BLACKJACK
+        handResult = RESULTS.BLACKJACK
       } else if (dealerBJ) {
         phase = 'result'
-        result = 'lose'
-        handResult = 'lose'
+        result = RESULTS.LOSE
+        handResult = RESULTS.LOSE
       }
 
       const hand = createHandObject(playerCards, betAmount)
@@ -233,8 +267,8 @@ export function gameReducer(state, action) {
 
       const playerHands = updateActiveHand(state, {
         cards: newCards,
-        status: isBust ? 'bust' : 'playing',
-        result: isBust ? 'bust' : null,
+        status: isBust ? RESULTS.BUST : 'playing',
+        result: isBust ? RESULTS.BUST : null,
       })
 
       if (isBust) {
@@ -276,13 +310,8 @@ export function gameReducer(state, action) {
       const ddDeck = action.card ? state.deck.slice(1) : action.freshDeck.slice(1)
 
       // Vig on the additional bet (same amount as original hand bet)
-      const additionalBet = hand.bet
-      const totalCommitted = state.playerHands
-        .reduce((sum, h) => sum + h.bet, 0)
-      const effectiveBankroll = Math.max(0, state.bankroll - totalCommitted)
-      const borrowedAmount = Math.max(0, additionalBet - effectiveBankroll)
-      const vigRate = borrowedAmount > 0 ? getVigRate(state.bankroll) : 0
-      const vigAmount = Math.floor(borrowedAmount * vigRate)
+      const totalCommitted = state.playerHands.reduce((sum, h) => sum + h.bet, 0)
+      const { vigAmount } = computeVig(hand.bet, state.bankroll, totalCommitted)
 
       const newCards = [...hand.cards, ddCard]
       const value = handValue(newCards)
@@ -292,8 +321,8 @@ export function gameReducer(state, action) {
         cards: newCards,
         bet: hand.bet * 2,
         isDoubledDown: true,
-        status: isBust ? 'bust' : 'standing',
-        result: isBust ? 'bust' : null,
+        status: isBust ? RESULTS.BUST : 'standing',
+        result: isBust ? RESULTS.BUST : null,
       })
 
       const advancement = advanceToNextHand(state.activeHandIndex, playerHands)
@@ -320,56 +349,14 @@ export function gameReducer(state, action) {
 
       const splitHand = activeHand(state)
       if (!splitHand || splitHand.cards.length !== 2) return state
-
-      // Cards must have same rank (K-K splittable, but K-Q is not)
       if (splitHand.cards[0].rank !== splitHand.cards[1].rank) return state
-
-      const isAces = splitHand.cards[0].rank === 'A' && splitHand.cards[1].rank === 'A'
-
-      // Cannot re-split aces
       if (splitHand.isSplitAces) return state
-
-      // Block splitting a pure asset bet — there are no chips to match for the second hand
       if (splitHand.bet === 0) return state
-      // Debt gate: block split when additional bet would go negative without debt mode
       if (state.bankroll - splitHand.bet < 0 && !state.inDebtMode) return state
 
-      // Create two new hands — each gets one original card + one new dealt card
-      const hand1 = createHandObject(
-        [splitHand.cards[0], splitCards[0]],
-        splitHand.bet
-      )
-      const hand2 = createHandObject(
-        [splitHand.cards[1], splitCards[1]],
-        splitHand.bet
-      )
+      const isAces = splitHand.cards[0].rank === 'A' && splitHand.cards[1].rank === 'A'
+      const [hand1, hand2] = createSplitHandPair(splitHand, splitCards, isAces)
 
-      // Vig on the new hand's bet (hand2 is the additional bet)
-      const totalCommitted = state.playerHands
-        .reduce((sum, h) => sum + h.bet, 0)
-      const effectiveBankroll = Math.max(0, state.bankroll - totalCommitted)
-      const borrowedAmount = Math.max(0, splitHand.bet - effectiveBankroll)
-      const vigRate = borrowedAmount > 0 ? getVigRate(state.bankroll) : 0
-      const vigAmount = Math.floor(borrowedAmount * vigRate)
-
-      if (isAces) {
-        hand1.isSplitAces = true
-        hand2.isSplitAces = true
-        // Split aces: each gets exactly one card, auto-stands
-        hand1.status = handValue(hand1.cards) > 21 ? 'bust' : 'standing'
-        hand1.result = handValue(hand1.cards) > 21 ? 'bust' : null
-        hand2.status = handValue(hand2.cards) > 21 ? 'bust' : 'standing'
-        hand2.result = handValue(hand2.cards) > 21 ? 'bust' : null
-      } else {
-        if (handValue(hand1.cards) === 21) {
-          hand1.status = 'standing'
-        }
-        if (handValue(hand2.cards) === 21) {
-          hand2.status = 'standing'
-        }
-      }
-
-      // Replace active hand with two new hands
       const newHands = [
         ...state.playerHands.slice(0, state.activeHandIndex),
         hand1,
@@ -377,36 +364,18 @@ export function gameReducer(state, action) {
         ...state.playerHands.slice(state.activeHandIndex + 1),
       ]
 
-      // Determine phase and active hand index after split
-      let newActiveIndex = state.activeHandIndex
-      let phase = 'playing'
-      let result = null
-
-      // If the first new hand can't be played (standing/bust), advance
-      if (newHands[newActiveIndex].status !== 'playing') {
-        let nextIdx = newActiveIndex
-        while (nextIdx < newHands.length && newHands[nextIdx].status !== 'playing') {
-          nextIdx++
-        }
-        if (nextIdx >= newHands.length) {
-          const allBust = newHands.every(h => h.status === 'bust')
-          phase = allBust ? 'result' : 'dealerTurn'
-          result = allBust ? 'bust' : null
-        } else {
-          newActiveIndex = nextIdx
-        }
-      }
+      const totalCommitted = state.playerHands.reduce((sum, h) => sum + h.bet, 0)
+      const { vigAmount } = computeVig(splitHand.bet, state.bankroll, totalCommitted)
+      const advancement = advanceAfterSplit(newHands, state.activeHandIndex)
 
       return {
         ...state,
         playerHands: newHands,
-        activeHandIndex: newActiveIndex,
         deck: splitDeck,
         bankroll: state.bankroll - vigAmount,
         vigAmount: state.vigAmount + vigAmount,
         totalVigPaid: state.totalVigPaid + vigAmount,
-        phase,
-        result,
+        ...advancement,
       }
     }
 
@@ -439,24 +408,24 @@ export function gameReducer(state, action) {
       // Process each hand
       let totalDelta = 0
       const resolvedHands = state.playerHands.map((hand, i) => {
-        const outcome = outcomes[i] || 'push'
+        const outcome = outcomes[i] || RESULTS.PUSH
         // Assets only apply to first hand's payout
         const handBet = hand.bet + (i === 0 ? assetValue : 0)
 
         let delta = 0
         switch (outcome) {
-          case 'blackjack':
+          case RESULTS.BLACKJACK:
             delta = Math.floor(BLACKJACK_PAYOUT * handBet)
             break
-          case 'win':
-          case 'dealerBust':
+          case RESULTS.WIN:
+          case RESULTS.DEALER_BUST:
             delta = handBet
             break
-          case 'push':
+          case RESULTS.PUSH:
             delta = 0
             break
-          case 'lose':
-          case 'bust':
+          case RESULTS.LOSE:
+          case RESULTS.BUST:
             delta = -handBet
             break
         }
@@ -468,8 +437,8 @@ export function gameReducer(state, action) {
 
       // Handle assets: tied to hand[0], return if hand[0] wins/pushes
       const hand0Result = outcomes[0]
-      const hand0Win = hand0Result === 'win' || hand0Result === 'dealerBust' ||
-        hand0Result === 'blackjack' || hand0Result === 'push'
+      const hand0Win = hand0Result === RESULTS.WIN || hand0Result === RESULTS.DEALER_BUST ||
+        hand0Result === RESULTS.BLACKJACK || hand0Result === RESULTS.PUSH
       const newOwnedAssets = { ...state.ownedAssets }
       if (hand0Win) {
         for (const asset of state.bettedAssets) {
@@ -480,7 +449,7 @@ export function gameReducer(state, action) {
       const aggregateResult = determineAggregateResult(outcomes)
       const isWin = isWinResult(aggregateResult)
       const isLoss = isLossResult(aggregateResult)
-      const isMixed = aggregateResult === 'mixed'
+      const isMixed = aggregateResult === RESULTS.MIXED
 
       // Table level progression
       const computedLevel = getTableLevel(newBankroll)

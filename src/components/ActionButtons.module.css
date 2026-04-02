@@ -26,15 +26,15 @@
 }
 
 .stand {
-  background: linear-gradient(135deg, var(--danger), #c0392b);
+  background: linear-gradient(135deg, var(--danger), var(--danger-dark));
 }
 
 .split {
-  background: linear-gradient(135deg, #2d6b8b, #1d4a6a);
+  background: linear-gradient(135deg, var(--split), var(--split-dark));
 }
 
 .doubleDown {
-  background: linear-gradient(135deg, #7b2d8b, #5a1d6a);
+  background: linear-gradient(135deg, var(--double-down), var(--double-down-dark));
 }
 
 .disabled {

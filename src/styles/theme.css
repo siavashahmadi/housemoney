@@ -13,10 +13,20 @@
   --card-black:       #1a1a2e;
 
   --danger:           #e74c3c;
+  --danger-dark:      #c0392b;
   --danger-glow:      rgba(231, 76, 60, 0.4);
   --success:          #27ae60;
+  --credit:           #e67e22;
+
+  --purple:           #9b59b6;
+  --purple-dark:      #8e44ad;
+  --double-down:      #7b2d8b;
+  --double-down-dark: #5a1d6a;
+  --split:            #2d6b8b;
+  --split-dark:       #1d4a6a;
 
   --text-primary:     #e8e0d0;
+  --text-secondary:   rgba(232, 224, 208, 0.65);
   --text-dim:         rgba(232, 224, 208, 0.5);
   --surface:          rgba(0, 0, 0, 0.25);
 

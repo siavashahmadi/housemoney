@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { handValue, isSoft, determineOutcome, createDeck, shuffle } from '../utils/cardUtils'
 import { dealerDraw, resolveHand } from '../reducer/actions'
 import { DEALER_HIT_DELAY, DEALER_STAND_DELAY } from '../constants/gameConfig'
+import { RESULTS } from '../constants/results'
 
 export function useDealerTurn(state, dispatch) {
   // Handle dealer turn — sequential card draws
@@ -25,7 +26,7 @@ export function useDealerTurn(state, dispatch) {
       // Dealer stands — resolve all player hands
       const timeout = setTimeout(() => {
         const outcomes = state.playerHands.map(hand => {
-          if (hand.result === 'bust') return 'bust'
+          if (hand.result === RESULTS.BUST) return RESULTS.BUST
           return determineOutcome(hand.cards, state.dealerHand)
         })
         dispatch(resolveHand(outcomes))
