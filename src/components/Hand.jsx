@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useRef, useMemo, useEffect } from 'react'
 import Card from './Card'
 import styles from './Hand.module.css'
 
@@ -24,28 +24,50 @@ function getCardMargin(cardCount, cardIndex, size) {
 
 const Hand = memo(function Hand({ cards = [], hideFirst = false, animate = true, size = 'normal', dealType = 'deal', flipIndex = -1 }) {
   const cardCount = cards.length
+  // Track cards already rendered so only new cards get deal animations
+  const knownCardsRef = useRef(new Set())
+
+  const newCardIds = useMemo(() => {
+    const ids = new Set()
+    cards.forEach(c => {
+      if (!knownCardsRef.current.has(c.id)) ids.add(c.id)
+    })
+    return ids
+  }, [cards])
+
+  useEffect(() => {
+    if (cards.length === 0) {
+      knownCardsRef.current.clear()
+    } else {
+      cards.forEach(c => knownCardsRef.current.add(c.id))
+    }
+  }, [cards])
 
   return (
     <div className={styles.hand}>
-      {cards.map((card, i) => (
-        <div
-          key={card.id}
-          className={styles.handCard}
-          style={{
-            marginLeft: getCardMargin(cardCount, i, size),
-            zIndex: i,
-          }}
-        >
-          <Card
-            card={card}
-            faceDown={hideFirst && i === 0}
-            index={i}
-            animate={animate}
-            size={size}
-            dealType={i === flipIndex ? 'flip' : dealType}
-          />
-        </div>
-      ))}
+      {cards.map((card, i) => {
+        const isNew = newCardIds.has(card.id)
+        const isFlipping = i === flipIndex
+        return (
+          <div
+            key={card.id}
+            className={styles.handCard}
+            style={{
+              marginLeft: getCardMargin(cardCount, i, size),
+              zIndex: i,
+            }}
+          >
+            <Card
+              card={card}
+              faceDown={hideFirst && i === 0}
+              index={isNew ? i : 0}
+              animate={animate && (isNew || isFlipping)}
+              size={size}
+              dealType={isFlipping ? 'flip' : dealType}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 })
