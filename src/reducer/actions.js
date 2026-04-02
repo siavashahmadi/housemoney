@@ -31,6 +31,7 @@ export const TAKE_LOAN = 'TAKE_LOAN'
 export const DISMISS_TABLE_TOAST = 'DISMISS_TABLE_TOAST'
 export const ACCEPT_TABLE_UPGRADE = 'ACCEPT_TABLE_UPGRADE'
 export const DECLINE_TABLE_UPGRADE = 'DECLINE_TABLE_UPGRADE'
+export const TOGGLE_HAND_HISTORY = 'TOGGLE_HAND_HISTORY'
 
 // Action creators for actions with payloads
 export const addChip = (value) => ({ type: ADD_CHIP, value })

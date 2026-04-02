@@ -49,13 +49,25 @@ export function createInitialState() {
 
     // Stats
     handsPlayed: 0,
+    handsWon: 0,
+    blackjackCount: 0,
     winStreak: 0,
     loseStreak: 0,
+    bestWinStreak: 0,
+    bestLoseStreak: 0,
+    biggestWin: 0,
+    biggestLoss: 0,
+    totalWagered: 0,
+    doublesWon: 0,
+    doublesLost: 0,
+    splitsWon: 0,
+    splitsLost: 0,
     totalWon: 0,
     totalLost: 0,
     peakBankroll: STARTING_BANKROLL,
     lowestBankroll: STARTING_BANKROLL,
     bankrollHistory: [],
+    handHistory: [],
 
     // Systems
     unlockedAchievements: [],
@@ -66,6 +78,7 @@ export function createInitialState() {
     showAssetMenu: false,
     showAchievements: false,
     showDebtTracker: false,
+    showHandHistory: false,
     achievementQueue: [],
     loanSharkQueue: [],
     muted: false,

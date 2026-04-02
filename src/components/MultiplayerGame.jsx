@@ -18,7 +18,6 @@ import ResultBanner from './ResultBanner'
 import FlyingChip from './FlyingChip'
 import QuickChat from './QuickChat'
 import SessionLeaderboard from './SessionLeaderboard'
-import DebtTracker from './DebtTracker'
 import { STARTING_BANKROLL } from '../constants/gameConfig'
 import { getTableLevel } from '../constants/tableLevels'
 import styles from './MultiplayerGame.module.css'
@@ -270,16 +269,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
         />
       )}
 
-      {showDebtTracker && (
-        <DebtTracker
-          bankrollHistory={state.bankrollHistory}
-          peakBankroll={localPlayer?.stats?.peak_bankroll || STARTING_BANKROLL}
-          lowestBankroll={localPlayer?.stats?.lowest_bankroll || STARTING_BANKROLL}
-          handsPlayed={localPlayer?.stats?.hands_played || 0}
-          totalVigPaid={localPlayer?.stats?.total_vig_paid || 0}
-          onClose={handleToggleDebtTracker}
-        />
-      )}
+      {/* TODO: Stats panel for multiplayer */}
     </div>
   )
 }

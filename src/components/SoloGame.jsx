@@ -10,7 +10,7 @@ import {
   takeLoan, newRound, resetGame,
   UNDO_CHIP, CLEAR_CHIPS, ALL_IN, STAND,
   TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK, TOGGLE_ACHIEVEMENTS, DISMISS_ACHIEVEMENT,
-  TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, DISMISS_TABLE_TOAST,
+  TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY, DISMISS_TABLE_TOAST,
   ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE,
 } from '../reducer/actions'
 import { useDealerTurn } from '../hooks/useDealerTurn'
@@ -32,7 +32,8 @@ import ResultBanner from './ResultBanner'
 import LoanSharkPopup from './LoanSharkPopup'
 import AchievementToast from './AchievementToast'
 import AchievementPanel from './AchievementPanel'
-import DebtTracker from './DebtTracker'
+import StatsPanel from './StatsPanel'
+import HandHistory from './HandHistory'
 import TableLevelToast from './TableLevelToast'
 import TableUpgradeModal from './TableUpgradeModal'
 import FlyingChip from './FlyingChip'
@@ -60,8 +61,9 @@ function SoloGame({ onBack }) {
   stateRef.current = state
 
   const circleRef = useRef(null)
+  const trayRef = useRef(null)
   const { flyingChips, handleChipTap, handleUndo, removeFlyingChip } = useChipInteraction(
-    dispatch, soloChipActions, stateRef, circleRef
+    dispatch, soloChipActions, stateRef, circleRef, trayRef
   )
 
   // Dealer turn automation
@@ -167,6 +169,7 @@ function SoloGame({ onBack }) {
   const handleDismissLoanShark = useCallback(() => dispatch({ type: DISMISS_LOAN_SHARK }), [])
   const handleToggleAchievements = useCallback(() => dispatch({ type: TOGGLE_ACHIEVEMENTS }), [])
   const handleToggleDebtTracker = useCallback(() => dispatch({ type: TOGGLE_DEBT_TRACKER }), [])
+  const handleToggleHandHistory = useCallback(() => dispatch({ type: TOGGLE_HAND_HISTORY }), [])
   const handleDismissAchievement = useCallback(() => dispatch({ type: DISMISS_ACHIEVEMENT }), [])
   const handleToggleMute = useCallback(() => dispatch({ type: TOGGLE_MUTE }), [])
   const handleToggleNotifications = useCallback(() => dispatch({ type: TOGGLE_NOTIFICATIONS }), [])
@@ -204,6 +207,7 @@ function SoloGame({ onBack }) {
         unlockedCount={state.unlockedAchievements.length}
         onToggleAchievements={handleToggleAchievements}
         onToggleDebtTracker={handleToggleDebtTracker}
+        onToggleHandHistory={handleToggleHandHistory}
         muted={state.muted}
         onToggleMute={handleToggleMute}
         notificationsEnabled={state.notificationsEnabled}
@@ -265,6 +269,7 @@ function SoloGame({ onBack }) {
               showAssetMenu={state.showAssetMenu}
               inDebtMode={state.inDebtMode}
               tableLevel={state.tableLevel}
+              trayRef={trayRef}
               onChipTap={handleChipTap}
               onUndo={handleUndo}
               onClear={handleClear}
@@ -391,14 +396,11 @@ function SoloGame({ onBack }) {
       )}
 
       {state.showDebtTracker && (
-        <DebtTracker
-          bankrollHistory={state.bankrollHistory}
-          peakBankroll={state.peakBankroll}
-          lowestBankroll={state.lowestBankroll}
-          handsPlayed={state.handsPlayed}
-          totalVigPaid={state.totalVigPaid}
-          onClose={handleToggleDebtTracker}
-        />
+        <StatsPanel state={state} onClose={handleToggleDebtTracker} />
+      )}
+
+      {state.showHandHistory && (
+        <HandHistory handHistory={state.handHistory} onClose={handleToggleHandHistory} />
       )}
     </div>
   )

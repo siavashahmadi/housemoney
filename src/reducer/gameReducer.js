@@ -5,7 +5,8 @@ import {
   ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE,
   TOGGLE_ASSET_MENU, TOGGLE_ACHIEVEMENTS,
   DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT, LOAD_ACHIEVEMENTS,
-  TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, SET_DEALER_MESSAGE, SET_LOAN_SHARK_MESSAGE,
+  TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY,
+  SET_DEALER_MESSAGE, SET_LOAN_SHARK_MESSAGE,
   LOAD_HIGHEST_DEBT,
 } from './actions'
 import { createInitialState, createHandObject } from './initialState'
@@ -451,6 +452,51 @@ export function gameReducer(state, action) {
       const isLoss = isLossResult(aggregateResult)
       const isMixed = aggregateResult === RESULTS.MIXED
 
+      // --- New stats tracking ---
+      const totalBet = resolvedHands.reduce((sum, h) => sum + h.bet, 0) + assetValue
+      const newWinStreak = isWin ? state.winStreak + 1 : (isLoss || isMixed ? 0 : state.winStreak)
+      const newLoseStreak = isLoss ? state.loseStreak + 1 : (isWin || isMixed ? 0 : state.loseStreak)
+
+      // Double down tracking
+      let newDoublesWon = state.doublesWon
+      let newDoublesLost = state.doublesLost
+      for (const hand of resolvedHands) {
+        if (hand.isDoubledDown) {
+          if (isWinResult(hand.result)) newDoublesWon++
+          if (isLossResult(hand.result)) newDoublesLost++
+        }
+      }
+
+      // Split tracking
+      let newSplitsWon = state.splitsWon
+      let newSplitsLost = state.splitsLost
+      if (state.playerHands.length > 1) {
+        for (const hand of resolvedHands) {
+          if (isWinResult(hand.result)) newSplitsWon++
+          if (isLossResult(hand.result)) newSplitsLost++
+        }
+      }
+
+      // Hand history entry
+      const historyEntry = {
+        handNumber: state.handsPlayed + 1,
+        playerHands: resolvedHands.map(h => ({
+          cards: h.cards,
+          value: handValue(h.cards),
+          result: h.result,
+          bet: h.bet,
+          payout: h.payout,
+          isDoubledDown: h.isDoubledDown,
+        })),
+        dealerCards: state.dealerHand,
+        dealerValue: handValue(state.dealerHand),
+        result: aggregateResult,
+        totalBet,
+        totalDelta,
+        bankrollAfter: newBankroll,
+      }
+      const newHandHistory = [historyEntry, ...state.handHistory].slice(0, 30)
+
       // Table level progression
       const computedLevel = getTableLevel(newBankroll)
       let newTableLevel = state.tableLevel
@@ -501,8 +547,19 @@ export function gameReducer(state, action) {
         declinedTableUpgrade,
         selectedChipValue,
         handsPlayed: state.handsPlayed + 1,
-        winStreak: isWin ? state.winStreak + 1 : (isLoss || isMixed ? 0 : state.winStreak),
-        loseStreak: isLoss ? state.loseStreak + 1 : (isWin || isMixed ? 0 : state.loseStreak),
+        handsWon: isWin ? state.handsWon + 1 : state.handsWon,
+        blackjackCount: aggregateResult === RESULTS.BLACKJACK ? state.blackjackCount + 1 : state.blackjackCount,
+        winStreak: newWinStreak,
+        loseStreak: newLoseStreak,
+        bestWinStreak: Math.max(state.bestWinStreak, newWinStreak),
+        bestLoseStreak: Math.max(state.bestLoseStreak, newLoseStreak),
+        biggestWin: totalDelta > 0 ? Math.max(state.biggestWin, totalDelta) : state.biggestWin,
+        biggestLoss: totalDelta < 0 ? Math.max(state.biggestLoss, Math.abs(totalDelta)) : state.biggestLoss,
+        totalWagered: state.totalWagered + totalBet,
+        doublesWon: newDoublesWon,
+        doublesLost: newDoublesLost,
+        splitsWon: newSplitsWon,
+        splitsLost: newSplitsLost,
         totalWon: totalDelta > 0 ? state.totalWon + totalDelta : state.totalWon,
         totalLost: totalDelta < 0 ? state.totalLost + Math.abs(totalDelta) : state.totalLost,
         peakBankroll: Math.max(state.peakBankroll, newBankroll),
@@ -510,6 +567,7 @@ export function gameReducer(state, action) {
         bankrollHistory: state.bankrollHistory.length >= MAX_BANKROLL_HISTORY
           ? [...state.bankrollHistory.slice(-(MAX_BANKROLL_HISTORY - 1)), newBankroll]
           : [...state.bankrollHistory, newBankroll],
+        handHistory: newHandHistory,
       }
     }
 
@@ -583,6 +641,10 @@ export function gameReducer(state, action) {
 
     case TOGGLE_DEBT_TRACKER: {
       return { ...state, showDebtTracker: !state.showDebtTracker }
+    }
+
+    case TOGGLE_HAND_HISTORY: {
+      return { ...state, showHandHistory: !state.showHandHistory }
     }
 
     case TAKE_LOAN: {

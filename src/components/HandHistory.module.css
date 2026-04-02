@@ -1,0 +1,253 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgba(0, 0, 0, 0.85);
+  animation: fadeIn 0.3s ease-out both;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.panel {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--gold-dim);
+  padding-bottom: 12px;
+}
+
+.title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 2px;
+}
+
+.closeButton {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.closeButton:active {
+  transform: scale(0.9);
+}
+
+.scrollArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.emptyMessage {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.entry {
+  background: var(--surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.entryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.handNumber {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badgeWin {
+  background: rgba(39, 174, 96, 0.2);
+  color: var(--success);
+}
+
+.badgeLose {
+  background: rgba(231, 76, 60, 0.2);
+  color: var(--danger);
+}
+
+.badgePush {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+}
+
+.badgeMixed {
+  background: rgba(240, 200, 80, 0.2);
+  color: var(--gold);
+}
+
+.handRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.handLabel {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 52px;
+  flex-shrink: 0;
+}
+
+.cards {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.cardRed {
+  color: var(--card-red);
+}
+
+.cardWhite {
+  color: var(--text-primary);
+}
+
+.handTotal {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-left: 2px;
+}
+
+.entryFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.betInfo {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.payoutPositive {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.payoutNegative {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.runningTotal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 0;
+  margin-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.runningLabel {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.runningPositive {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.runningNegative {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.closeFooter {
+  padding-top: 16px;
+  text-align: center;
+}
+
+.closeFooterButton {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px 32px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.closeFooterButton:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
