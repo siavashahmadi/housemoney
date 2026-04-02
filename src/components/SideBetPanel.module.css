@@ -1,0 +1,128 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px;
+  animation: panelSlideIn 0.2s ease-out;
+}
+
+@keyframes panelSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface);
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s ease, opacity 0.15s ease;
+  text-align: left;
+  touch-action: manipulation;
+  min-height: 44px;
+}
+
+.card:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Jinx bet spans full width */
+.jinx {
+  grid-column: 1 / -1;
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.jinx .name {
+  color: var(--danger);
+}
+
+.active {
+  border-color: var(--gold);
+  background: rgba(240, 200, 80, 0.08);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.disabled:active {
+  transform: none;
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--felt-dark);
+  background: var(--gold);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.description {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  color: var(--text-dim);
+  line-height: 1.3;
+}
+
+.payout {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gold-dim);
+  margin-top: 2px;
+}

@@ -12,6 +12,7 @@ import {
   TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK, TOGGLE_ACHIEVEMENTS, DISMISS_ACHIEVEMENT,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY, DISMISS_TABLE_TOAST,
   ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE, DISMISS_COMP,
+  PLACE_SIDE_BET, REMOVE_SIDE_BET, TOGGLE_SIDE_BETS,
 } from '../reducer/actions'
 import { useDealerTurn } from '../hooks/useDealerTurn'
 import { useDealerMessage } from '../hooks/useDealerMessage'
@@ -39,6 +40,8 @@ import HandHistory from './HandHistory'
 import TableLevelToast from './TableLevelToast'
 import TableUpgradeModal from './TableUpgradeModal'
 import LoanSharkFigures from './LoanSharkFigures'
+import SideBetPanel from './SideBetPanel'
+import SideBetResults from './SideBetResults'
 import FlyingChip from './FlyingChip'
 import styles from './SoloGame.module.css'
 
@@ -178,6 +181,9 @@ function SoloGame({ onBack }) {
   const handleDismissAchievement = useCallback(() => dispatch({ type: DISMISS_ACHIEVEMENT }), [])
   const handleToggleMute = useCallback(() => dispatch({ type: TOGGLE_MUTE }), [])
   const handleToggleNotifications = useCallback(() => dispatch({ type: TOGGLE_NOTIFICATIONS }), [])
+  const handlePlaceSideBet = useCallback((betType) => dispatch({ type: PLACE_SIDE_BET, betType }), [])
+  const handleRemoveSideBet = useCallback((betType) => dispatch({ type: REMOVE_SIDE_BET, betType }), [])
+  const handleToggleSideBets = useCallback(() => dispatch({ type: TOGGLE_SIDE_BETS }), [])
 
   // --- Derived state ---
   const currentBetTotal = useMemo(() =>
@@ -254,6 +260,9 @@ function SoloGame({ onBack }) {
           phase={state.phase}
           bettedAssets={state.bettedAssets}
         />
+        {state.sideBetResults.length > 0 && (
+          <SideBetResults results={state.sideBetResults} />
+        )}
         {state.phase === 'result' && state.result && (
           <ResultBanner
             result={state.result}
@@ -266,25 +275,40 @@ function SoloGame({ onBack }) {
       <div className={styles.controlsArea}>
         <div key={state.phase} className={styles.phaseContent}>
           {state.phase === 'betting' && (
-            <BettingControls
-              bankroll={state.bankroll}
-              selectedChipValue={state.selectedChipValue}
-              chipStack={state.chipStack}
-              ownedAssets={state.ownedAssets}
-              bettedAssets={state.bettedAssets}
-              showAssetMenu={state.showAssetMenu}
-              inDebtMode={state.inDebtMode}
-              tableLevel={state.tableLevel}
-              trayRef={trayRef}
-              onChipTap={handleChipTap}
-              onUndo={handleUndo}
-              onClear={handleClear}
-              onAllIn={handleAllIn}
-              onDeal={handleDeal}
-              onBetAsset={handleBetAsset}
-              onToggleAssetMenu={handleToggleAssetMenu}
-              onTakeLoan={handleTakeLoan}
-            />
+            <>
+              <BettingControls
+                bankroll={state.bankroll}
+                selectedChipValue={state.selectedChipValue}
+                chipStack={state.chipStack}
+                ownedAssets={state.ownedAssets}
+                bettedAssets={state.bettedAssets}
+                showAssetMenu={state.showAssetMenu}
+                inDebtMode={state.inDebtMode}
+                tableLevel={state.tableLevel}
+                trayRef={trayRef}
+                onChipTap={handleChipTap}
+                onUndo={handleUndo}
+                onClear={handleClear}
+                onAllIn={handleAllIn}
+                onDeal={handleDeal}
+                onBetAsset={handleBetAsset}
+                onToggleAssetMenu={handleToggleAssetMenu}
+                onTakeLoan={handleTakeLoan}
+                onToggleSideBets={handleToggleSideBets}
+                showSideBets={state.showSideBets}
+                activeSideBetCount={state.activeSideBets.length}
+              />
+              {state.showSideBets && (
+                <SideBetPanel
+                  activeSideBets={state.activeSideBets}
+                  onPlace={handlePlaceSideBet}
+                  onRemove={handleRemoveSideBet}
+                  minBet={TABLE_LEVELS[state.tableLevel].minBet}
+                  bankroll={state.bankroll}
+                  inDebtMode={state.inDebtMode}
+                />
+              )}
+            </>
           )}
           {state.phase === 'playing' && (
             <ActionButtons

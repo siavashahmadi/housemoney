@@ -3,6 +3,7 @@ import {
   DEAL, BET_ASSET, REMOVE_ASSET, HIT, STAND, DOUBLE_DOWN, SPLIT, DEALER_DRAW,
   RESOLVE_HAND, NEW_ROUND, RESET_GAME, TAKE_LOAN, DISMISS_TABLE_TOAST,
   ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE,
+  PLACE_SIDE_BET, REMOVE_SIDE_BET, TOGGLE_SIDE_BETS,
   TOGGLE_ASSET_MENU, TOGGLE_ACHIEVEMENTS,
   DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT, LOAD_ACHIEVEMENTS,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY,
@@ -17,6 +18,7 @@ import { decomposeIntoChips, sumChipStack } from '../utils/chipUtils'
 import { getVigRate } from '../constants/vigRates'
 import { ASSETS } from '../constants/assets'
 import { RESULTS } from '../constants/results'
+import { SIDE_BET_MAP, SIDE_BET_TYPES, MAX_SIDE_BETS, resolvePerfectPair, resolveColorMatch, resolveLuckyLucky } from '../constants/sideBets'
 
 const MAX_BANKROLL_HISTORY = 500
 
@@ -169,6 +171,25 @@ export function gameReducer(state, action) {
       return { ...state, chipStack, isAllIn: true }
     }
 
+    case PLACE_SIDE_BET: {
+      if (state.phase !== 'betting') return state
+      if (state.activeSideBets.length >= MAX_SIDE_BETS) return state
+      if (state.activeSideBets.some(sb => sb.type === action.betType)) return state
+      const sbDef = SIDE_BET_MAP[action.betType]
+      if (!sbDef) return state
+      const sbAmount = TABLE_LEVELS[state.tableLevel].minBet
+      if (!state.inDebtMode && state.bankroll < sbAmount) return state
+      return { ...state, activeSideBets: [...state.activeSideBets, { type: action.betType, amount: sbAmount }] }
+    }
+
+    case REMOVE_SIDE_BET: {
+      if (state.phase !== 'betting') return state
+      return { ...state, activeSideBets: state.activeSideBets.filter(sb => sb.type !== action.betType) }
+    }
+
+    case TOGGLE_SIDE_BETS:
+      return { ...state, showSideBets: !state.showSideBets }
+
     case DEAL: {
       if (state.phase !== 'betting') return state
       const assetValue = state.bettedAssets.reduce((sum, a) => sum + a.value, 0)
@@ -211,18 +232,51 @@ export function gameReducer(state, action) {
         hand.result = handResult
       }
 
+      // Resolve deal-time side bets
+      const dealerUpCard = dealerHand[0]
+      let sideBetDelta = 0
+      const resolvedSideBets = []
+      const deferredSideBets = []
+
+      for (const sb of state.activeSideBets) {
+        const def = SIDE_BET_MAP[sb.type]
+        if (def.resolveAt === 'deal') {
+          let won = false
+          let payoutMultiplier = 0
+          if (sb.type === SIDE_BET_TYPES.PERFECT_PAIR) {
+            won = resolvePerfectPair(playerCards)
+            payoutMultiplier = won ? def.payout : 0
+          } else if (sb.type === SIDE_BET_TYPES.COLOR_MATCH) {
+            won = resolveColorMatch(playerCards)
+            payoutMultiplier = won ? def.payout : 0
+          } else if (sb.type === SIDE_BET_TYPES.LUCKY_LUCKY) {
+            const lp = resolveLuckyLucky(playerCards, dealerUpCard)
+            won = lp > 0
+            payoutMultiplier = lp
+          }
+          const payout = won ? sb.amount * payoutMultiplier : -sb.amount
+          sideBetDelta += payout
+          resolvedSideBets.push({ type: sb.type, amount: sb.amount, won, payout })
+        } else {
+          deferredSideBets.push(sb)
+        }
+      }
+
       return {
         ...state,
         deck,
         playerHands: [hand],
         activeHandIndex: 0,
         dealerHand,
-        bankroll: state.bankroll - vigAmount,
+        bankroll: state.bankroll - vigAmount + sideBetDelta,
         vigAmount,
         vigRate,
         totalVigPaid: state.totalVigPaid + vigAmount,
         phase,
         result,
+        activeSideBets: deferredSideBets,
+        sideBetResults: resolvedSideBets,
+        showSideBets: false,
         bankrollHistory: state.bankrollHistory.length === 0
           ? [state.bankroll]
           : state.bankrollHistory,
@@ -434,8 +488,6 @@ export function gameReducer(state, action) {
         return { ...hand, result: outcome, status: 'done', payout: delta }
       })
 
-      const newBankroll = state.bankroll + totalDelta
-
       // Handle assets: tied to hand[0], return if hand[0] wins/pushes
       const hand0Result = outcomes[0]
       const hand0Win = hand0Result === RESULTS.WIN || hand0Result === RESULTS.DEALER_BUST ||
@@ -452,7 +504,26 @@ export function gameReducer(state, action) {
       const isLoss = isLossResult(aggregateResult)
       const isMixed = aggregateResult === RESULTS.MIXED
 
-      // --- New stats tracking ---
+      // Resolve deferred side bets
+      let deferredSideBetDelta = 0
+      const deferredResults = []
+      const dealerBusted = outcomes.some(o => o === RESULTS.DEALER_BUST)
+
+      for (const sb of state.activeSideBets) {
+        const def = SIDE_BET_MAP[sb.type]
+        if (def && def.resolveAt === 'resolve') {
+          let won = false
+          if (sb.type === SIDE_BET_TYPES.DEALER_BUST) won = dealerBusted
+          else if (sb.type === SIDE_BET_TYPES.JINX_BET) won = isLoss
+          const payout = won ? sb.amount * def.payout : -sb.amount
+          deferredSideBetDelta += payout
+          deferredResults.push({ type: sb.type, amount: sb.amount, won, payout })
+        }
+      }
+
+      const newBankroll = state.bankroll + totalDelta + deferredSideBetDelta
+
+      // --- Stats tracking ---
       const totalBet = resolvedHands.reduce((sum, h) => sum + h.bet, 0) + assetValue
       const newWinStreak = isWin ? state.winStreak + 1 : (isLoss || isMixed ? 0 : state.winStreak)
       const newLoseStreak = isLoss ? state.loseStreak + 1 : (isWin || isMixed ? 0 : state.loseStreak)
@@ -539,6 +610,8 @@ export function gameReducer(state, action) {
         ownedAssets: newOwnedAssets,
         bettedAssets: [],
         chipStack: [],
+        activeSideBets: [],
+        sideBetResults: [...state.sideBetResults, ...deferredResults],
         phase: 'result',
         result: aggregateResult,
         tableLevel: newTableLevel,
@@ -586,6 +659,9 @@ export function gameReducer(state, action) {
         dealerHand: [],
         chipStack: [],
         bettedAssets: [],
+        activeSideBets: [],
+        sideBetResults: [],
+        showSideBets: false,
         phase: 'betting',
         result: null,
         isAllIn: false,
