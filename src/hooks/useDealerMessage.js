@@ -19,6 +19,7 @@ export function useDealerMessage(state, dispatch) {
       state.currentDealer
     )
     dispatch(setDealerMessage(message, updatedShownLines))
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fire-once greeting via hasInitRef guard
   }, [dispatch])
 
   // All trigger-based messages in one effect
