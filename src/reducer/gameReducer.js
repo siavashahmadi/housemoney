@@ -7,7 +7,7 @@ import {
   DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT, LOAD_ACHIEVEMENTS,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY,
   SET_DEALER_MESSAGE, SET_LOAN_SHARK_MESSAGE,
-  LOAD_HIGHEST_DEBT,
+  LOAD_HIGHEST_DEBT, SET_COMP_MESSAGE, DISMISS_COMP,
 } from './actions'
 import { createInitialState, createHandObject } from './initialState'
 import { BLACKJACK_PAYOUT, RESHUFFLE_THRESHOLD, MAX_SPLIT_HANDS } from '../constants/gameConfig'
@@ -678,6 +678,18 @@ export function gameReducer(state, action) {
         loanSharkQueue: [...state.loanSharkQueue, ...action.messages],
         seenLoanThresholds: action.seenThresholds,
       }
+    }
+
+    case SET_COMP_MESSAGE: {
+      return {
+        ...state,
+        compQueue: [...state.compQueue, ...action.messages],
+        seenCompThresholds: action.seenThresholds,
+      }
+    }
+
+    case DISMISS_COMP: {
+      return { ...state, compQueue: state.compQueue.slice(1) }
     }
 
     case UNLOCK_ACHIEVEMENT: {

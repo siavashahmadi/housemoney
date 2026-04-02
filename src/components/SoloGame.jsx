@@ -11,11 +11,12 @@ import {
   UNDO_CHIP, CLEAR_CHIPS, ALL_IN, STAND,
   TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK, TOGGLE_ACHIEVEMENTS, DISMISS_ACHIEVEMENT,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY, DISMISS_TABLE_TOAST,
-  ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE,
+  ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE, DISMISS_COMP,
 } from '../reducer/actions'
 import { useDealerTurn } from '../hooks/useDealerTurn'
 import { useDealerMessage } from '../hooks/useDealerMessage'
 import { useLoanShark } from '../hooks/useLoanShark'
+import { useCasinoComps } from '../hooks/useCasinoComps'
 import { useAchievements } from '../hooks/useAchievements'
 import { useSound } from '../hooks/useSound'
 import { useSessionPersistence } from '../hooks/useSessionPersistence'
@@ -30,6 +31,7 @@ import BettingControls from './BettingControls'
 import ActionButtons from './ActionButtons'
 import ResultBanner from './ResultBanner'
 import LoanSharkPopup from './LoanSharkPopup'
+import CompToast from './CompToast'
 import AchievementToast from './AchievementToast'
 import AchievementPanel from './AchievementPanel'
 import StatsPanel from './StatsPanel'
@@ -71,6 +73,7 @@ function SoloGame({ onBack }) {
   useDealerTurn(state, dispatch)
   useDealerMessage(state, dispatch)
   useLoanShark(state, dispatch)
+  useCasinoComps(state, dispatch)
   useAchievements(state, dispatch)
   useSound(state)
   useSessionPersistence(state, dispatch)
@@ -168,6 +171,7 @@ function SoloGame({ onBack }) {
   const handleToggleAssetMenu = useCallback(() => dispatch({ type: TOGGLE_ASSET_MENU }), [])
   const handleTakeLoan = useCallback(() => dispatch(takeLoan()), [])
   const handleDismissLoanShark = useCallback(() => dispatch({ type: DISMISS_LOAN_SHARK }), [])
+  const handleDismissComp = useCallback(() => dispatch({ type: DISMISS_COMP }), [])
   const handleToggleAchievements = useCallback(() => dispatch({ type: TOGGLE_ACHIEVEMENTS }), [])
   const handleToggleDebtTracker = useCallback(() => dispatch({ type: TOGGLE_DEBT_TRACKER }), [])
   const handleToggleHandHistory = useCallback(() => dispatch({ type: TOGGLE_HAND_HISTORY }), [])
@@ -364,6 +368,13 @@ function SoloGame({ onBack }) {
         <LoanSharkPopup
           message={state.loanSharkQueue[0] || null}
           onDismiss={handleDismissLoanShark}
+        />
+      )}
+
+      {state.notificationsEnabled && state.compQueue.length > 0 && (
+        <CompToast
+          comp={state.compQueue[0]}
+          onDismiss={handleDismissComp}
         />
       )}
 
