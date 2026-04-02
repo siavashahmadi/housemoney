@@ -23,6 +23,9 @@ function BettingControls({
   onBetAsset,
   onToggleAssetMenu,
   onTakeLoan,
+  onToggleSideBets,
+  showSideBets,
+  activeSideBetCount = 0,
 }) {
   const [allInCooldown, setAllInCooldown] = useState(false)
   const cooldownRef = useRef(null)
@@ -111,6 +114,12 @@ function BettingControls({
           disabled={chipStack.length === 0}
         >
           CLEAR
+        </button>
+        <button
+          className={`${styles.smallButton} ${showSideBets ? styles.sideBetsActive : ''}`}
+          onClick={onToggleSideBets}
+        >
+          SIDE BETS{activeSideBetCount > 0 && <span className={styles.sideBetBadge}>{activeSideBetCount}</span>}
         </button>
         <button className={allInClasses} onClick={handleAllIn} disabled={allInCooldown || isChipTrayBlocked}>
           {bankroll < 0 ? 'HAIL MARY' : 'ALL IN'}

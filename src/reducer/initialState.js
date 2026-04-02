@@ -62,6 +62,11 @@ export function createInitialState() {
     seenLoanThresholds: [],
     shownDealerLines: {},
 
+    // Side bets
+    activeSideBets: [],    // [{ type, amount }] placed during betting
+    sideBetResults: [],    // [{ type, amount, won, payout }] resolved
+    showSideBets: false,   // UI toggle
+
     // UI
     showAssetMenu: false,
     showAchievements: false,

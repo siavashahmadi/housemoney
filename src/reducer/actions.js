@@ -31,6 +31,9 @@ export const TAKE_LOAN = 'TAKE_LOAN'
 export const DISMISS_TABLE_TOAST = 'DISMISS_TABLE_TOAST'
 export const ACCEPT_TABLE_UPGRADE = 'ACCEPT_TABLE_UPGRADE'
 export const DECLINE_TABLE_UPGRADE = 'DECLINE_TABLE_UPGRADE'
+export const PLACE_SIDE_BET = 'PLACE_SIDE_BET'
+export const REMOVE_SIDE_BET = 'REMOVE_SIDE_BET'
+export const TOGGLE_SIDE_BETS = 'TOGGLE_SIDE_BETS'
 
 // Action creators for actions with payloads
 export const addChip = (value) => ({ type: ADD_CHIP, value })

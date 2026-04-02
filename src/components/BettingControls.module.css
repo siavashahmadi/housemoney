@@ -171,3 +171,27 @@
   color: var(--text-dim);
   letter-spacing: 0.5px;
 }
+
+/* ===== Side Bets Toggle ===== */
+
+.sideBetsActive {
+  color: var(--gold) !important;
+  border: 1px solid var(--gold-dim);
+  background: rgba(240, 200, 80, 0.1);
+}
+
+.sideBetBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--felt-dark);
+  background: var(--gold);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-left: 4px;
+  vertical-align: middle;
+}
