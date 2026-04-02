@@ -5,6 +5,7 @@ import { createDeck, shuffle } from '../utils/cardUtils'
 import { sumChipStack } from '../utils/chipUtils'
 import { drawFromDeck } from '../utils/deckUtils'
 import { TABLE_LEVELS } from '../constants/tableLevels'
+import audioManager from '../utils/audioManager'
 import {
   addChip, selectChip, deal, hit, doubleDown, split, betAsset, removeAsset,
   takeLoan, newRound, resetGame,
@@ -99,7 +100,10 @@ function SoloGame({ onBack }) {
   }, [])
 
   const handleClear = useCallback(() => dispatch({ type: CLEAR_CHIPS }), [])
-  const handleAllIn = useCallback(() => dispatch({ type: ALL_IN }), [])
+  const handleAllIn = useCallback(() => {
+    audioManager.play('all_in')
+    dispatch({ type: ALL_IN })
+  }, [])
 
   const handleDeal = useCallback(() => {
     const { cards, deck, reshuffled } = drawFromDeck(stateRef.current.deck, 4)

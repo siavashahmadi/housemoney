@@ -10,8 +10,12 @@ export function useChipInteraction(dispatch, actions, stateRef, circleRef, trayR
     const s = stateRef.current
     if (actions.shouldBlock?.(s, value)) return
     navigator.vibrate?.(10)
-    const isFirst = s.chipStack.length === 0
-    audioManager.play(isFirst ? 'chip_place' : 'chip_stack')
+    const stackLen = s.chipStack.length
+    if (stackLen === 0) {
+      audioManager.play('chip_place')
+    } else {
+      audioManager.play('chip_stack', stackLen - 1)
+    }
     actions.selectChip(dispatch, value)
     actions.addChip(dispatch, value)
 

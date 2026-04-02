@@ -16,7 +16,7 @@ function createNoiseBuffer() {
   return buffer
 }
 
-function playNoise(duration, filterType, frequency, filterQ = 1) {
+function playNoise(duration, filterType, frequency, filterQ = 1, volume = 0.3) {
   const source = ctx.createBufferSource()
   source.buffer = noiseBuffer
 
@@ -27,7 +27,7 @@ function playNoise(duration, filterType, frequency, filterQ = 1) {
 
   const gain = ctx.createGain()
   const now = ctx.currentTime
-  gain.gain.setValueAtTime(0.3, now)
+  gain.gain.setValueAtTime(volume, now)
   gain.gain.exponentialRampToValueAtTime(0.001, now + duration)
 
   source.connect(filter)
@@ -66,13 +66,14 @@ const sounds = {
     playNoise(0.035, 'bandpass', 800, 1)
   },
 
-  // Chip stacking — slightly muted, like chip landing on chips
-  chip_stack() {
-    playNoise(0.02, 'bandpass', 3800, 3)
-    playNoise(0.035, 'bandpass', 1800, 2)
-    // Tiny delayed click for the "settle" sound
+  // Chip stacking — pitch builds as stack grows
+  chip_stack(stackIndex = 0) {
+    const n = Math.min(stackIndex, 7)
+    playNoise(0.02, 'bandpass', 3800 + n * 200, 3)
+    playNoise(0.035, 'bandpass', 1800 + n * 120, 2, 0.12 + n * 0.02)
+    playNoise(0.035, 'bandpass', 700 - n * 40, 1)
     setTimeout(() => {
-      if (ctx && !muted) playNoise(0.015, 'bandpass', 5000, 4)
+      if (ctx && !muted) playNoise(0.015, 'bandpass', 5000 + n * 150, 4)
     }, 25)
   },
 
@@ -192,6 +193,66 @@ const sounds = {
       osc.stop(start + 0.15)
     })
   },
+
+  // All-in — rapid cascade of chips then a resonant clack
+  all_in() {
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        if (ctx && !muted) {
+          playNoise(0.02, 'bandpass', 3800 + i * 300, 3, 0.15 + i * 0.03)
+        }
+      }, i * 50)
+    }
+    setTimeout(() => {
+      if (ctx && !muted) {
+        playNoise(0.04, 'bandpass', 3000, 2, 0.35)
+        playNoise(0.05, 'bandpass', 1200, 1.5, 0.25)
+        playNoise(0.06, 'lowpass', 600, 1, 0.2)
+      }
+    }, 320)
+  },
+
+  // Win chip collect — descending rake of chips sliding toward player
+  chip_collect() {
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        if (ctx && !muted) {
+          playNoise(0.025, 'bandpass', 4200 - i * 250, 3, 0.12 + i * 0.02)
+          playNoise(0.03, 'bandpass', 1800 - i * 100, 2, 0.1)
+        }
+      }, i * 60)
+    }
+    // Final satisfying thud as stack lands
+    setTimeout(() => {
+      if (ctx && !muted) playNoise(0.04, 'bandpass', 900, 1, 0.2)
+    }, 340)
+  },
+
+  // Loss chip sweep — harsh scrape as dealer takes chips
+  chip_sweep() {
+    const source = ctx.createBufferSource()
+    source.buffer = noiseBuffer
+
+    const filter = ctx.createBiquadFilter()
+    filter.type = 'bandpass'
+    const now = ctx.currentTime
+    filter.frequency.setValueAtTime(1500, now)
+    filter.frequency.exponentialRampToValueAtTime(4500, now + 0.15)
+    filter.frequency.exponentialRampToValueAtTime(800, now + 0.3)
+    filter.Q.value = 1.5
+
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0.2, now)
+    gain.gain.linearRampToValueAtTime(0.25, now + 0.1)
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
+
+    source.connect(filter)
+    filter.connect(gain)
+    gain.connect(ctx.destination)
+
+    source.start(now)
+    source.stop(now + 0.4)
+  },
 }
 
 const audioManager = {
@@ -209,7 +270,7 @@ const audioManager = {
     }
   },
 
-  play(soundName) {
+  play(soundName, ...args) {
     if (muted || !initialized || !ctx) return
     if (ctx.state === 'suspended') {
       ctx.resume()
@@ -217,7 +278,7 @@ const audioManager = {
     const fn = sounds[soundName]
     if (fn) {
       try {
-        fn()
+        fn(...args)
       } catch {
         // Swallow audio errors — sounds are optional
       }

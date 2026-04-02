@@ -62,18 +62,23 @@ export function useSound(state) {
       audioManager.play('card_flip')
     }
 
-    // Result sounds
+    // Result sounds — musical cue then chip movement audio
     if (state.result && !prev.result) {
       if (state.result === RESULTS.BLACKJACK) {
         audioManager.play('blackjack')
+        setTimeout(() => audioManager.play('chip_collect'), 400)
       } else if (state.result === RESULTS.WIN || state.result === RESULTS.DEALER_BUST) {
         audioManager.play('win')
+        setTimeout(() => audioManager.play('chip_collect'), 300)
       } else if (state.result === RESULTS.BUST) {
         audioManager.play('bust')
+        setTimeout(() => audioManager.play('chip_sweep'), 350)
       } else if (state.result === RESULTS.LOSE) {
         audioManager.play('lose')
+        setTimeout(() => audioManager.play('chip_sweep'), 300)
       } else if (state.result === RESULTS.MIXED) {
         audioManager.play('win')
+        setTimeout(() => audioManager.play('chip_collect'), 300)
       } else if (state.result === RESULTS.PUSH) {
         audioManager.play('card_flip')
       }
