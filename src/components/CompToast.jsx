@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { formatMoney } from '../utils/formatters'
 import styles from './CompToast.module.css'
 
 function CompToast({ comp, onDismiss }) {
@@ -16,6 +17,9 @@ function CompToast({ comp, onDismiss }) {
         <span className={styles.label}>CASINO COMP</span>
         <h3 className={styles.title}>{comp.title}</h3>
         <p className={styles.message}>{comp.message}</p>
+        {comp.value > 0 && (
+          <span className={styles.compValue}>+{formatMoney(comp.value)} added to your balance</span>
+        )}
         <span className={styles.dismiss}>Tap to dismiss</span>
       </div>
     </div>

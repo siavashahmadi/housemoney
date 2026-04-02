@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import Hand from './Hand'
 import DealerSpeechBubble from './DealerSpeechBubble'
-import DealerChip from './DealerChip'
 import { handValue, cardValue } from '../utils/cardUtils'
 import styles from './DealerArea.module.css'
 
@@ -80,11 +79,6 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
       )}
       <span className={styles.label}>DEALER</span>
       <div className={styles.handRow}>
-        {dealer && (
-          <div className={styles.chipWrapper}>
-            <DealerChip dealer={dealer} />
-          </div>
-        )}
         <div className={styles.handWrapper}>
           {hasCards ? (
             <Hand

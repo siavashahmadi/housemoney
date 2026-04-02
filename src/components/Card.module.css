@@ -312,3 +312,67 @@
   animation: holeCardFlip 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+/* Card dealing — slides in from shoe (top-right) with arc and rotation */
+@keyframes cardDeal {
+  0% {
+    transform: translate(120px, -80px) rotate(15deg) scale(0.7);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    transform: translate(-4px, 3px) rotate(-2deg) scale(1.02);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Hit card — slides in from right edge, faster than deal */
+@keyframes cardHit {
+  0% {
+    transform: translateX(80px) rotate(8deg) scale(0.85);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  75% {
+    transform: translateX(-2px) rotate(-1deg) scale(1.01);
+  }
+  100% {
+    transform: translateX(0) rotate(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Dealer draw — faster, subtler slide from right */
+@keyframes cardDealerDraw {
+  0% {
+    transform: translateX(60px) scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 3D hole card flip — reveals face from card back */
+@keyframes holeCardFlip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+

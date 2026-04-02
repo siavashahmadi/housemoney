@@ -18,13 +18,13 @@ export function useCasinoComps(state, dispatch) {
     const newMessages = []
     const newThresholds = []
 
-    for (const { threshold, title, message } of COMP_THRESHOLDS) {
+    for (const { threshold, value, title, message } of COMP_THRESHOLDS) {
       if (
         state.totalLost >= threshold &&
         !state.seenCompThresholds.includes(threshold) &&
         !pendingRef.current.thresholds.includes(threshold)
       ) {
-        newMessages.push({ title, message })
+        newMessages.push({ title, message, value })
         newThresholds.push(threshold)
       }
     }
@@ -39,8 +39,9 @@ export function useCasinoComps(state, dispatch) {
       timerRef.current = setTimeout(() => {
         const allMessages = pendingRef.current.messages
         const allThresholds = [...state.seenCompThresholds, ...pendingRef.current.thresholds]
+        const totalCompValue = allMessages.reduce((sum, m) => sum + (m.value || 0), 0)
         pendingRef.current = { messages: [], thresholds: [] }
-        dispatch(setCompMessage(allMessages, allThresholds))
+        dispatch(setCompMessage(allMessages, allThresholds, totalCompValue))
       }, 1500)
     }
   }, [state.totalLost, dispatch])

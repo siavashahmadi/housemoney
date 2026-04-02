@@ -72,7 +72,7 @@ function drawStatRow(ctx, label, value, y, isPositive, isNegative) {
   const leftX = PAD + 8
   const rightX = CARD_W - PAD - 8
 
-  drawText(ctx, label, leftX, y, '13px "DM Sans", sans-serif', 'rgba(232, 224, 208, 0.6)')
+  drawText(ctx, label, leftX, y, '13px "DM Sans", sans-serif', 'rgba(232, 224, 208, 0.85)')
 
   let valueColor = '#e8e0d0'
   if (isPositive) valueColor = '#f0c850'
@@ -115,7 +115,7 @@ export function renderShareCard(state) {
 
   // Tagline
   const tagline = getTagline(state.bankroll)
-  drawText(ctx, tagline, CARD_W / 2, 84, 'italic 12px "DM Sans", sans-serif', 'rgba(232, 224, 208, 0.5)', 'center', CARD_W - 80)
+  drawText(ctx, tagline, CARD_W / 2, 84, 'italic 12px "DM Sans", sans-serif', 'rgba(232, 224, 208, 0.75)', 'center', CARD_W - 80)
 
   // Grade
   const grade = getGrade(state.bankroll)
@@ -177,7 +177,7 @@ export function renderShareCard(state) {
   ctx.stroke()
 
   // Footer
-  drawText(ctx, 'blackjack.siaahmadi.com', CARD_W / 2, CARD_H - 28, '600 12px "DM Sans", sans-serif', 'rgba(232, 224, 208, 0.4)', 'center')
+  drawText(ctx, 'blackjack.siaahmadi.com', CARD_W / 2, CARD_H - 28, '600 12px "DM Sans", sans-serif', 'rgba(232, 224, 208, 0.55)', 'center')
 
   return canvas
 }

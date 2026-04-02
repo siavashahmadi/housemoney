@@ -55,6 +55,15 @@
   margin: 0 0 14px;
 }
 
+.compValue {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7FFFD4;
+  margin-bottom: 10px;
+}
+
 .dismiss {
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;

@@ -767,6 +767,7 @@ export function gameReducer(state, action) {
         ...state,
         compQueue: [...state.compQueue, ...action.messages],
         seenCompThresholds: action.seenThresholds,
+        bankroll: state.bankroll + (action.totalCompValue || 0),
       }
     }
 

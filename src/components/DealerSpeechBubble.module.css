@@ -4,7 +4,7 @@
   border: 1px solid rgba(232, 224, 208, 0.12);
   border-radius: 12px;
   padding: 5px 12px;
-  max-width: 280px;
+  max-width: 360px;
   text-align: center;
   animation: speechFadeIn 0.4s ease-out both;
 }
@@ -23,13 +23,13 @@
 
 .text {
   font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-primary);
   line-height: 1.4;
   margin: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

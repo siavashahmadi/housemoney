@@ -62,10 +62,11 @@ export const setLoanSharkMessage = (messages, seenThresholds) => ({
   messages,
   seenThresholds,
 })
-export const setCompMessage = (messages, seenThresholds) => ({
+export const setCompMessage = (messages, seenThresholds, totalCompValue = 0) => ({
   type: SET_COMP_MESSAGE,
   messages,
   seenThresholds,
+  totalCompValue,
 })
 export const takeLoan = () => ({ type: TAKE_LOAN })
 export const newRound = (freshDeck) => ({ type: NEW_ROUND, freshDeck })
