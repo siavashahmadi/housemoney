@@ -12,9 +12,19 @@ createRoot(document.getElementById('root')).render(
 )
 
 if ('serviceWorker' in navigator) {
+  const firstInstall = !navigator.serviceWorker.controller
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then((registration) => {
       setInterval(() => registration.update(), 60 * 60 * 1000)
     })
+
+    // First install: SW missed the initial resource loads, so reload
+    // once it claims this client to cache JS/CSS through the fetch handler
+    if (firstInstall) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload()
+      })
+    }
   })
 }

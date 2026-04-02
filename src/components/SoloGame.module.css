@@ -18,7 +18,6 @@
   gap: 2px;
   padding: 0 16px;
   min-height: 0;
-  overflow: hidden;
 }
 
 .feltWatermark {
@@ -27,9 +26,9 @@
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 48px;
+  font-size: clamp(28px, 8vw, 48px);
   font-weight: 900;
-  letter-spacing: 6px;
+  letter-spacing: clamp(3px, 1vw, 6px);
   color: var(--text-primary);
   opacity: 0.06;
   pointer-events: none;
@@ -42,13 +41,6 @@
 @keyframes watermarkFadeIn {
   from { opacity: 0; }
   to { opacity: 0.06; }
-}
-
-@media (max-width: 375px) {
-  .feltWatermark {
-    font-size: 36px;
-    letter-spacing: 4px;
-  }
 }
 
 .controlsArea {

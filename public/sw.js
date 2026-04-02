@@ -7,6 +7,9 @@ const SHELL_URLS = [
   '/favicon.svg',
   '/icon-192.png',
   '/icon-512.png',
+  '/fonts/dm-sans-latin.woff2',
+  '/fonts/outfit-latin.woff2',
+  '/fonts/playfair-display-latin.woff2',
 ];
 
 self.addEventListener('install', (event) => {
