@@ -41,8 +41,13 @@ function getGrade(bankroll) {
 }
 
 // Deterministic grain pattern using simple hash
+// Uses a temp canvas because putImageData replaces pixels instead of compositing
 function drawGrain(ctx) {
-  const imageData = ctx.createImageData(CARD_W, CARD_H)
+  const tmp = document.createElement('canvas')
+  tmp.width = CARD_W
+  tmp.height = CARD_H
+  const tmpCtx = tmp.getContext('2d')
+  const imageData = tmpCtx.createImageData(CARD_W, CARD_H)
   const data = imageData.data
   for (let i = 0; i < data.length; i += 4) {
     const px = (i / 4) | 0
@@ -54,7 +59,8 @@ function drawGrain(ctx) {
     data[i + 2] = 255
     data[i + 3] = alpha
   }
-  ctx.putImageData(imageData, 0, 0)
+  tmpCtx.putImageData(imageData, 0, 0)
+  ctx.drawImage(tmp, 0, 0)
 }
 
 function drawText(ctx, text, x, y, font, color, align = 'left', maxWidth) {
