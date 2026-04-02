@@ -1,6 +1,7 @@
 import { DEALER_LINES } from '../constants/dealerLines'
 import { isWinResult, isLossResult } from './cardUtils'
 import { BIG_BET_THRESHOLD } from '../constants/gameConfig'
+import { RESULTS } from '../constants/results'
 
 /**
  * Selects a dealer line from the given category, avoiding repeats
@@ -55,13 +56,13 @@ export function determineDealerCategory(prevState, newState, trigger) {
     const isWin = isWinResult(result)
 
     // Priority order for resolve-time messages
-    if (result === 'bust' && anyDoubledDown) {
+    if (result === RESULTS.BUST && anyDoubledDown) {
       return { category: 'doubleDownLoss', context: {} }
     }
-    if (result === 'bust') {
+    if (result === RESULTS.BUST) {
       return { category: 'playerBust', context: {} }
     }
-    if (result === 'blackjack') {
+    if (result === RESULTS.BLACKJACK) {
       return { category: 'playerBlackjack', context: {} }
     }
     // Asset lost — check prevState since bettedAssets is cleared by RESOLVE_HAND

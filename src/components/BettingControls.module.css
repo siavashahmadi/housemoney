@@ -45,7 +45,7 @@
   font-weight: 700;
   letter-spacing: 1px;
   color: #fff;
-  background: linear-gradient(135deg, var(--danger), #c0392b);
+  background: linear-gradient(135deg, var(--danger), var(--danger-dark));
   padding: 6px 14px;
   border-radius: 6px;
   margin-left: auto;
@@ -58,7 +58,7 @@
 }
 
 .hailMary {
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
   letter-spacing: 0.5px;
 }
 
@@ -138,7 +138,7 @@
   font-size: 14px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
   padding: 8px 20px;
   border-radius: 8px;
   letter-spacing: 1px;
@@ -154,7 +154,7 @@
   font-size: 14px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, var(--danger), #c0392b);
+  background: linear-gradient(135deg, var(--danger), var(--danger-dark));
   padding: 8px 20px;
   border-radius: 8px;
   letter-spacing: 1px;

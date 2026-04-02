@@ -2,6 +2,7 @@ import React from 'react'
 import Hand from './Hand'
 import { handValue } from '../utils/cardUtils'
 import { formatMoney } from '../utils/formatters'
+import { RESULTS } from '../constants/results'
 import styles from './PlayerArea.module.css'
 
 function getCardSize(handCount) {
@@ -74,7 +75,7 @@ function PlayerArea({ playerHands, activeHandIndex, phase, bettedAssets }) {
               )}
               {showResult && (
                 <span className={`${styles.resultBadge} ${styles[`result_${hand.result}`]}`}>
-                  {hand.result === 'dealerBust' ? 'WIN' : hand.result.toUpperCase()}
+                  {hand.result === RESULTS.DEALER_BUST ? 'WIN' : hand.result.toUpperCase()}
                 </span>
               )}
               <span className={styles.handBet}>

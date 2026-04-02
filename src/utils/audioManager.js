@@ -58,7 +58,6 @@ function playTone(freq, duration, type = 'sine', volume = 0.15, startTime = 0) {
 const sounds = {
   // Ceramic chip toss — layered click with resonance
   chip_place() {
-    const now = ctx.currentTime
     // Sharp high-freq click (the initial impact)
     playNoise(0.025, 'bandpass', 4500, 4)
     // Mid-freq body (ceramic resonance)

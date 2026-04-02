@@ -38,7 +38,7 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
       setDisplayAssets(bettedAssets)
       setAnimatingOut(false)
     }
-  }, [chipStack, bettedAssets])
+  }, [chipStack, bettedAssets, result])
 
   const isWin = isWinResult(result)
 

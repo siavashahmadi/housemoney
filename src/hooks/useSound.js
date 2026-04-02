@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import audioManager from '../utils/audioManager'
 import { useAudioInit } from './useAudioInit'
+import { RESULTS } from '../constants/results'
 
 export function useSound(state) {
   const prevRef = useRef(state)
@@ -52,17 +53,17 @@ export function useSound(state) {
 
     // Result sounds
     if (state.result && !prev.result) {
-      if (state.result === 'blackjack') {
+      if (state.result === RESULTS.BLACKJACK) {
         audioManager.play('blackjack')
-      } else if (state.result === 'win' || state.result === 'dealerBust') {
+      } else if (state.result === RESULTS.WIN || state.result === RESULTS.DEALER_BUST) {
         audioManager.play('win')
-      } else if (state.result === 'bust') {
+      } else if (state.result === RESULTS.BUST) {
         audioManager.play('bust')
-      } else if (state.result === 'lose') {
+      } else if (state.result === RESULTS.LOSE) {
         audioManager.play('lose')
-      } else if (state.result === 'mixed') {
+      } else if (state.result === RESULTS.MIXED) {
         audioManager.play('win')
-      } else if (state.result === 'push') {
+      } else if (state.result === RESULTS.PUSH) {
         audioManager.play('card_flip')
       }
     }

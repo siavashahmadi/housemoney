@@ -63,7 +63,17 @@ export function useDealerMessage(state, dispatch) {
       )
       dispatch(setDealerMessage(message, updatedShownLines))
     }
-  }, [state, dispatch])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally narrow: only fire on specific state transitions, not every dispatch
+  }, [
+    state.handsPlayed,
+    state.phase,
+    state.bettedAssets,
+    state.playerHands,
+    state.inDebtMode,
+    state.tableLevelChanged,
+    state.shownDealerLines,
+    dispatch,
+  ])
 
   // Always update prevStateRef LAST so the trigger effect reads the previous state
   useEffect(() => {

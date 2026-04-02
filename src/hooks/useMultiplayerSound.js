@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import audioManager from '../utils/audioManager'
 import { useAudioInit } from './useAudioInit'
+import { RESULTS } from '../constants/results'
 
 export function useMultiplayerSound(state) {
   const prevRef = useRef(state)
@@ -65,10 +66,10 @@ export function useMultiplayerSound(state) {
       const localPlayer = state.playerStates[state.playerId]
       if (localPlayer?.result) {
         const r = localPlayer.result
-        if (r === 'blackjack') audioManager.play('blackjack')
-        else if (r === 'win' || r === 'dealerBust') audioManager.play('win')
-        else if (r === 'bust') audioManager.play('bust')
-        else if (r === 'lose') audioManager.play('lose')
+        if (r === RESULTS.BLACKJACK) audioManager.play('blackjack')
+        else if (r === RESULTS.WIN || r === RESULTS.DEALER_BUST) audioManager.play('win')
+        else if (r === RESULTS.BUST) audioManager.play('bust')
+        else if (r === RESULTS.LOSE) audioManager.play('lose')
       }
     }
 

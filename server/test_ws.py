@@ -537,7 +537,23 @@ async def test_reconnect_during_turn():
     """Test that reconnecting during your turn sends your_turn notification."""
     uri = "ws://localhost:8000/ws"
     print("\n[Test G6] Reconnect during turn")
-    ws1, ws2, code, p1_id, p2_id = await setup_game(uri)
+
+    # Create room and capture session tokens for both players
+    ws1 = await websockets.connect(uri)
+    resp1 = await send_and_recv(ws1, {"type": "create_room", "player_name": "Alice"})
+    code = resp1["code"]
+    p1_id = resp1["player_id"]
+    p1_session_token = resp1["session_token"]
+
+    ws2 = await websockets.connect(uri)
+    resp2 = await send_and_recv(ws2, {"type": "join_room", "code": code, "player_name": "Bob"})
+    p2_id = resp2["player_id"]
+    p2_session_token = resp2["session_token"]
+    await drain(ws1)  # drain player_joined notification
+
+    await ws1.send(json.dumps({"type": "start_game"}))
+    await drain_until(ws1, "betting_phase")
+    await drain_until(ws2, "betting_phase")
 
     try:
         # Both bet
@@ -556,40 +572,33 @@ async def test_reconnect_during_turn():
 
         current = state["current_player_id"]
 
-        # Current player has two players, the non-current stands so current is still up
-        if current == p1_id:
-            # p2 stands first (if it's p1's turn, p2 can't act yet anyway)
-            pass
-        else:
-            pass
-
-        # Disconnect the current player
+        # Disconnect the current player and select the matching session token
         if current == p1_id:
             await ws1.close()
             disconnect_pid = p1_id
+            disconnect_token = p1_session_token
         else:
             await ws2.close()
             disconnect_pid = p2_id
+            disconnect_token = p2_session_token
 
         # The remaining player gets notified
         remaining_ws = ws2 if current == p1_id else ws1
         msgs = await drain(remaining_ws, timeout=3)
 
         # Since current player disconnected, turn should advance.
-        # The reconnect-during-turn test is only meaningful if we have 3+ players
-        # where disconnecting doesn't immediately advance. Let's verify the disconnect
-        # is handled and then reconnect.
         # For 2 players: disconnect advances turn to other player.
         # Reconnect should still send state correctly.
 
-        # Reconnect
+        # Reconnect with session_token
         ws_new = await websockets.connect(uri)
         resp = await send_and_recv(ws_new, {
             "type": "reconnect",
             "player_id": disconnect_pid,
             "code": code,
+            "session_token": disconnect_token,
         })
-        assert resp["type"] == "reconnected"
+        assert resp["type"] == "reconnected", f"Expected reconnected, got {resp}"
         assert resp["phase"] in ("playing", "dealer_turn", "result")
         assert "state" in resp
         print(f"  PASS - Reconnected during game, phase={resp['phase']}, got full state")

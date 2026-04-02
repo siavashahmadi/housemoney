@@ -119,9 +119,10 @@ CHAT_COOLDOWN_SECONDS = 2.0
 action_cooldowns: dict[str, float] = {}
 ACTION_COOLDOWN_SECONDS = 0.2
 
-# Room creation rate limiting: player_id -> last create timestamp
-room_create_cooldowns: dict[str, float] = {}
+# Room creation limits
+MAX_ROOMS = 100
 ROOM_CREATE_COOLDOWN_SECONDS = 5.0
+room_create_cooldowns: dict[str, float] = {}
 
 # Turn timers: player_id -> asyncio.Task that auto-stands after TURN_TIMEOUT
 turn_timers: dict[str, asyncio.Task] = {}
@@ -220,6 +221,19 @@ async def health():
 
 
 async def handle_create_room(player_id: str, message: dict):
+    if len(rooms) >= MAX_ROOMS:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Server is full. Try again later."}
+        )
+        return
+    now = time.monotonic()
+    if now - room_create_cooldowns.get(player_id, 0) < ROOM_CREATE_COOLDOWN_SECONDS:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Please wait before creating another room."}
+        )
+        return
+    room_create_cooldowns[player_id] = now
+
     # Validate player is not already in a room
     if player_id in manager.player_rooms:
         await manager.send_to_player(
@@ -471,24 +485,38 @@ async def handle_disconnect(player_id: str, websocket: WebSocket = None, generat
         if manager.get_generation(player_id) != generation:
             logger.debug(f"Skipping disconnect for {player_id} — generation mismatch")
             return
-    manager.disconnect(player_id)
-    chat_cooldowns.pop(player_id, None)
-    action_cooldowns.pop(player_id, None)
-    _cancel_turn_timer(player_id)
 
     room_code = manager.player_rooms.get(player_id)
     if not room_code:
+        # No room — clean up connection state and return
+        manager.disconnect(player_id)
+        chat_cooldowns.pop(player_id, None)
+        action_cooldowns.pop(player_id, None)
+        room_create_cooldowns.pop(player_id, None)
+        _cancel_turn_timer(player_id)
         return
 
     room = get_room(room_code)
     if not room or player_id not in room.players:
         manager.player_rooms.pop(player_id, None)
+        manager.disconnect(player_id)
+        chat_cooldowns.pop(player_id, None)
+        action_cooldowns.pop(player_id, None)
+        room_create_cooldowns.pop(player_id, None)
+        _cancel_turn_timer(player_id)
         return
 
     async with room._lock:
         player = room.players[player_id]
         player.connected = False
         player.disconnected_at = datetime.now(timezone.utc)
+
+        # Clean up connection tracking now that player.connected is False
+        manager.disconnect(player_id)
+        chat_cooldowns.pop(player_id, None)
+        action_cooldowns.pop(player_id, None)
+        room_create_cooldowns.pop(player_id, None)
+        _cancel_turn_timer(player_id)
 
         logger.info(f"{player.name} ({player_id}) disconnected from room {room_code}")
 
@@ -792,16 +820,6 @@ async def handle_game_action(player_id: str, message: dict):
         )
         return
 
-    # Rate limit: 200ms cooldown per player
-    now = time.monotonic()
-    last_action = action_cooldowns.get(player_id, 0)
-    if now - last_action < ACTION_COOLDOWN_SECONDS:
-        await manager.send_to_player(
-            player_id, {"type": "error", "message": "Too fast — slow down"}
-        )
-        return
-    action_cooldowns[player_id] = now
-
     async with room._lock:
         msg_type = message.get("type")
 
@@ -871,23 +889,45 @@ def _start_dealer_turn_if_needed(room: GameRoom, room_code: str):
 
 
 async def _run_dealer_and_advance(room: GameRoom, room_code: str):
-    """Run dealer turn with broadcasting, then auto-advance to next round."""
+    """Run dealer turn with broadcasting, then auto-advance to next round.
+
+    Releases the room lock between each dealer card draw so other actions
+    (e.g., reconnect, heartbeat) are not blocked for the full dealer turn.
+    """
     try:
         # Fix #28: Cancel any lingering turn timers for this room
         for pid in list(room.turn_order):
             _cancel_turn_timer(pid)
 
-        # Phase 1: Run dealer turn (lock for state mutations + broadcasts)
+        # Check upfront whether all players busted (dealer skips drawing)
         async with room._lock:
-            async def broadcast_fn(event: dict):
+            active_pids = [pid for pid in room.turn_order if pid in room.players]
+            all_busted = all(room.players[pid].status == "bust" for pid in active_pids)
+
+        if not all_busted:
+            # Draw dealer cards one at a time, releasing the lock between draws
+            while True:
+                await asyncio.sleep(DEALER_HIT_DELAY)
+                async with room._lock:
+                    should_continue, events = engine.dealer_draw_one(room)
+                    for event in events:
+                        await manager.broadcast_to_room(room_code, event)
+                    if not should_continue:
+                        break
+
+        # Brief pause before resolution so clients can render the final card
+        await asyncio.sleep(DEALER_STAND_DELAY)
+
+        # Resolve all hands under lock
+        async with room._lock:
+            events = engine.resolve_all_hands(room)
+            for event in events:
                 await manager.broadcast_to_room(room_code, event)
 
-            await engine.run_dealer_turn(room, broadcast_fn)
-
-        # Phase 2: Wait for result display (NO lock — players can interact)
+        # Wait for result display before starting next round
         await asyncio.sleep(NEW_ROUND_DELAY)
 
-        # Phase 3: Advance to next round (re-acquire lock for state transition)
+        # Advance to next betting round
         async with room._lock:
             r = get_room(room_code)
             if r and r.phase == "result":
@@ -895,6 +935,18 @@ async def _run_dealer_and_advance(room: GameRoom, room_code: str):
                 for event in events:
                     await manager.broadcast_to_room(room_code, event)
                 _start_bet_timer(room_code)
+    except Exception as e:
+        logger.error(f"Dealer turn error in room {room_code}: {e}")
+        # Recovery: attempt to advance to betting phase so the game is not stuck
+        try:
+            async with room._lock:
+                r = get_room(room_code)
+                if r and r.phase in ("dealer_turn", "result"):
+                    events = engine.start_betting_phase(r)
+                    for event in events:
+                        await manager.broadcast_to_room(room_code, event)
+        except Exception:
+            pass
     finally:
         room.dealer_turn_task = None
 
@@ -1037,6 +1089,17 @@ async def handle_view_stats(player_id: str):
 async def handle_message(player_id: str, message: dict):
     msg_type = message.get("type")
 
+    # Rate limit all messages except heartbeat responses
+    if msg_type != "pong":
+        now = time.monotonic()
+        last_action = action_cooldowns.get(player_id, 0)
+        if now - last_action < ACTION_COOLDOWN_SECONDS:
+            await manager.send_to_player(
+                player_id, {"type": "error", "message": "Too fast — slow down"}
+            )
+            return
+        action_cooldowns[player_id] = now
+
     if msg_type == "create_room":
         await handle_create_room(player_id, message)
     elif msg_type == "join_room":
@@ -1127,11 +1190,12 @@ async def websocket_endpoint(websocket: WebSocket):
         if player_id:
             await handle_disconnect(player_id, websocket, generation=conn_gen)
     except json.JSONDecodeError:
-        # First message was invalid JSON
+        # First message was invalid JSON — send error and close
         try:
             await websocket.send_text(
                 json.dumps({"type": "error", "message": "Invalid JSON"})
             )
+            await websocket.close()
         except Exception:
             pass
     except Exception as e:
