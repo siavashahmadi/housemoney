@@ -82,7 +82,7 @@
 }
 
 .awardValue {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 10px;
   color: var(--text-dim);
 }
@@ -128,7 +128,7 @@
 }
 
 .rank {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--gold-dim);
@@ -142,7 +142,7 @@
 }
 
 .num {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 12px;
   color: var(--text-primary);
   text-align: right;

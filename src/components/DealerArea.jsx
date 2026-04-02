@@ -24,19 +24,6 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
     prevPhaseRef.current = phase
   }, [phase])
 
-  // Track hand size to detect dealer draws
-  const prevHandLenRef = useRef(hand.length)
-  const [dealerDrawing, setDealerDrawing] = useState(false)
-
-  useEffect(() => {
-    if (phase === 'dealerTurn' && hand.length > prevHandLenRef.current) {
-      setDealerDrawing(true)
-      const timer = setTimeout(() => setDealerDrawing(false), 300)
-      return () => clearTimeout(timer)
-    }
-    prevHandLenRef.current = hand.length
-  }, [hand.length, phase])
-
   useEffect(() => {
     // Detect reshuffle: deck jumps from near-empty to full during any phase
     if (deckLength != null && prevDeckRef.current != null && deckLength - prevDeckRef.current > 200) {
@@ -84,7 +71,7 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
             <Hand
               cards={hand}
               hideFirst={hideHoleCard}
-              dealType={dealerDrawing ? 'dealerDraw' : 'deal'}
+              dealType={phase === 'dealerTurn' ? 'dealerDraw' : 'deal'}
               flipIndex={flipHoleCard ? 0 : -1}
             />
           ) : (

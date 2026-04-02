@@ -32,7 +32,7 @@ python -m unittest discover
 - **React 19 with Vite 8** — no Next.js, no Astro. Minimal vite.config (just `react()` plugin).
 - **No Tailwind, no component libraries** (no MUI, no shadcn) — CSS variables in `theme.css` + CSS Modules (`.module.css`) for component-scoped styles. NOT inline style objects. Every component has a matching `.module.css` file.
 - **No external state management** (no Redux, no Zustand) — `useReducer` for ALL game state. `useState` only for local component UI concerns (animation triggers, transient visual states).
-- **Fonts:** Playfair Display (headings), DM Sans (body), JetBrains Mono (numbers/money) via Google Fonts.
+- **Fonts:** Playfair Display (headings), DM Sans (body), Outfit (numbers/money) via Google Fonts.
 - **Dependencies:** Only `react` and `react-dom`. Everything else (ESLint, Vite, types) is devDependencies.
 - **Phase 2 backend:** Python FastAPI with native WebSocket support (not Socket.IO).
 

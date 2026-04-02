@@ -26,7 +26,7 @@
 }
 
 .value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
@@ -66,21 +66,21 @@
 }
 
 .handValue {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
 }
 
 .ddBadge {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 9px;
   font-weight: 700;
   color: var(--gold);
 }
 
 .handBet {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 10px;
   font-weight: 500;
   color: var(--text-dim);

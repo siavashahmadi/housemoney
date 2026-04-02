@@ -70,7 +70,7 @@
   right: 4px;
   background: var(--gold);
   color: var(--felt-dark);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 10px;
   font-weight: 700;
   padding: 1px 5px;
@@ -91,7 +91,7 @@
   bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Outfit', sans-serif;
   font-size: 13px;
   font-weight: 700;
   color: var(--gold);
