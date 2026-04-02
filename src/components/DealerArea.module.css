@@ -42,19 +42,86 @@
   color: var(--text-primary);
 }
 
-.reshuffleIndicator {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--gold);
-  animation: reshuffleFade 1.2s ease-out forwards;
+/* Shuffle riffle animation container */
+.reshuffleAnimation {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  height: 36px;
+  animation: reshuffleFadeInOut 1.5s ease-out forwards;
 }
 
-@keyframes reshuffleFade {
-  0% { opacity: 0; transform: translateY(4px); }
-  20% { opacity: 1; transform: translateY(0); }
-  70% { opacity: 1; }
+.reshuffleLabel {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+/* Half-deck containers */
+.deckHalf {
+  display: flex;
+  position: relative;
+  width: 24px;
+  height: 32px;
+}
+
+.deckLeft {
+  animation: riffleSplitLeft 1.5s ease-in-out forwards;
+}
+
+.deckRight {
+  animation: riffleSplitRight 1.5s ease-in-out forwards;
+}
+
+/* Mini card backs in the riffle */
+.cardBack {
+  position: absolute;
+  width: 22px;
+  height: 30px;
+  border-radius: 3px;
+  background: linear-gradient(145deg, #1a1a4e 0%, #0d0d2b 50%, #1a1a4e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Stack the cards with slight offsets */
+.cardBack:nth-child(1) { top: 0; left: 0; z-index: 3; }
+.cardBack:nth-child(2) { top: 1px; left: 1px; z-index: 2; }
+.cardBack:nth-child(3) { top: 2px; left: 2px; z-index: 1; }
+
+/* Left half: slide left, tilt, then merge back */
+@keyframes riffleSplitLeft {
+  0% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-12px) rotate(-8deg); }
+  50% { transform: translateX(-8px) rotate(-4deg); }
+  80% { transform: translateX(-2px) rotate(-1deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+/* Right half: slide right, tilt, then merge back */
+@keyframes riffleSplitRight {
+  0% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(12px) rotate(8deg); }
+  50% { transform: translateX(8px) rotate(4deg); }
+  80% { transform: translateX(2px) rotate(1deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+/* Fade in/out the whole animation */
+@keyframes reshuffleFadeInOut {
+  0% { opacity: 0; transform: scale(0.9); }
+  10% { opacity: 1; transform: scale(1); }
+  75% { opacity: 1; }
   100% { opacity: 0; }
 }

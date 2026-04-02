@@ -13,6 +13,17 @@ export function useSound(state) {
     audioManager.setMuted(state.muted)
   }, [state.muted])
 
+  // Detect mid-round reshuffle (deck size jumps by >200)
+  const prevDeckLenRef = useRef(state.deck?.length ?? 0)
+  useEffect(() => {
+    const prevLen = prevDeckLenRef.current
+    const curLen = state.deck?.length ?? 0
+    if (prevLen > 0 && curLen - prevLen > 200) {
+      audioManager.play('shuffle')
+    }
+    prevDeckLenRef.current = curLen
+  }, [state.deck?.length])
+
   // Trigger sounds on state transitions
   useEffect(() => {
     const prev = prevRef.current

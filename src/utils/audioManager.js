@@ -129,6 +129,44 @@ const sounds = {
     })
   },
 
+  // Shuffle — two overlapping riffles (filtered noise with frequency sweep)
+  shuffle() {
+    // Each riffle: noise burst with bandpass sweep simulating cards meshing
+    for (let r = 0; r < 2; r++) {
+      const offset = r * 0.25
+      const source = ctx.createBufferSource()
+      source.buffer = noiseBuffer
+
+      const filter = ctx.createBiquadFilter()
+      filter.type = 'bandpass'
+      filter.Q.value = 1.5
+      const now = ctx.currentTime + offset
+      // Frequency sweeps up then back down — the "frrrrp" of a riffle
+      filter.frequency.setValueAtTime(1500, now)
+      filter.frequency.linearRampToValueAtTime(6000, now + 0.12)
+      filter.frequency.linearRampToValueAtTime(2000, now + 0.25)
+
+      const gain = ctx.createGain()
+      gain.gain.setValueAtTime(0, now)
+      gain.gain.linearRampToValueAtTime(0.18, now + 0.03)
+      gain.gain.setValueAtTime(0.18, now + 0.15)
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
+
+      source.connect(filter)
+      filter.connect(gain)
+      gain.connect(ctx.destination)
+
+      source.start(now)
+      source.stop(now + 0.35)
+    }
+    // Final soft thud — cards settling on felt
+    setTimeout(() => {
+      if (ctx && !muted) {
+        playNoise(0.04, 'lowpass', 600, 1)
+      }
+    }, 550)
+  },
+
   // Bust — descending chromatic E4→D4→C#4→C4
   bust() {
     const notes = [330, 294, 277, 262]

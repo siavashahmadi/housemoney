@@ -12,13 +12,14 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
   const [showReshuffle, setShowReshuffle] = useState(false)
 
   useEffect(() => {
-    if (deckLength != null && phase === 'dealerTurn' && deckLength - prevDeckRef.current > 200) {
+    // Detect reshuffle: deck jumps from near-empty to full during any phase
+    if (deckLength != null && prevDeckRef.current != null && deckLength - prevDeckRef.current > 200) {
       setShowReshuffle(true)
-      const timer = setTimeout(() => setShowReshuffle(false), 1200)
+      const timer = setTimeout(() => setShowReshuffle(false), 1500)
       return () => clearTimeout(timer)
     }
     prevDeckRef.current = deckLength
-  }, [deckLength, phase])
+  }, [deckLength])
 
   const displayValue = useMemo(() => {
     if (!hasCards) return ''
@@ -36,7 +37,19 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
         <DealerSpeechBubble message={dealerMessage} />
       </div>
       {showReshuffle && (
-        <span className={styles.reshuffleIndicator}>Reshuffling...</span>
+        <div className={styles.reshuffleAnimation}>
+          <div className={styles.deckHalf + ' ' + styles.deckLeft}>
+            <div className={styles.cardBack} />
+            <div className={styles.cardBack} />
+            <div className={styles.cardBack} />
+          </div>
+          <div className={styles.deckHalf + ' ' + styles.deckRight}>
+            <div className={styles.cardBack} />
+            <div className={styles.cardBack} />
+            <div className={styles.cardBack} />
+          </div>
+          <span className={styles.reshuffleLabel}>SHUFFLE</span>
+        </div>
       )}
       <span className={styles.label}>DEALER</span>
       <div className={styles.handWrapper}>
