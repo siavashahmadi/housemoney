@@ -137,6 +137,29 @@
 .closeFooter {
   padding-top: 16px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.shareButton {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--felt-dark);
+  background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+  border-radius: 8px;
+  padding: 12px 32px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  width: 100%;
+  max-width: 280px;
+}
+
+.shareButton:active {
+  transform: scale(0.96);
+  opacity: 0.9;
 }
 
 .closeFooterButton {

@@ -36,6 +36,7 @@ import StatsPanel from './StatsPanel'
 import HandHistory from './HandHistory'
 import TableLevelToast from './TableLevelToast'
 import TableUpgradeModal from './TableUpgradeModal'
+import LoanSharkFigures from './LoanSharkFigures'
 import FlyingChip from './FlyingChip'
 import styles from './SoloGame.module.css'
 
@@ -226,6 +227,7 @@ function SoloGame({ onBack }) {
         <span className={styles.feltWatermark} key={TABLE_LEVELS[state.tableLevel].id}>
           {TABLE_LEVELS[state.tableLevel].subtitle}
         </span>
+        <LoanSharkFigures bankroll={state.bankroll} />
         <DealerArea
           hand={state.dealerHand}
           phase={state.phase}

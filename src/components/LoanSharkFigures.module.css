@@ -1,0 +1,152 @@
+.container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* ===== Base Figure (CSS-only silhouette) ===== */
+
+.figure {
+  position: absolute;
+  width: 24px;
+  height: 60px;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+/* Head */
+.figure::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, var(--fig-opacity, 0.3));
+}
+
+/* Body / torso */
+.figure::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 42px;
+  border-radius: 4px 4px 2px 2px;
+  background: rgba(0, 0, 0, var(--fig-opacity, 0.3));
+}
+
+/* ===== Opacity per stage ===== */
+
+[data-stage="1"] { --fig-opacity: 0.15; }
+[data-stage="2"] { --fig-opacity: 0.3; }
+[data-stage="3"] { --fig-opacity: 0.45; }
+[data-stage="4"] { --fig-opacity: 0.6; }
+[data-stage="5"] { --fig-opacity: 0.7; }
+[data-stage="6"] { --fig-opacity: 0.8; }
+[data-stage="7"] { --fig-opacity: 0.85; }
+[data-stage="8"] { --fig-opacity: 0.9; }
+
+/* ===== Positioned figures ===== */
+
+.figureRight {
+  right: 4px;
+  bottom: 30%;
+}
+
+/* Stage 2: move closer */
+[data-stage="2"] .figureRight,
+[data-stage="3"] .figureRight,
+[data-stage="4"] .figureRight,
+[data-stage="5"] .figureRight,
+[data-stage="6"] .figureRight,
+[data-stage="7"] .figureRight,
+[data-stage="8"] .figureRight {
+  right: 12px;
+}
+
+.figureLeft {
+  left: 4px;
+  bottom: 30%;
+}
+
+[data-stage="4"] .figureLeft,
+[data-stage="5"] .figureLeft,
+[data-stage="6"] .figureLeft,
+[data-stage="7"] .figureLeft,
+[data-stage="8"] .figureLeft {
+  left: 12px;
+}
+
+.figureCenter {
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.figureRightBack {
+  right: 20px;
+  top: 30%;
+}
+
+/* Armed figure: wider body to suggest holding something */
+.armed::after {
+  width: 24px;
+  border-radius: 4px;
+}
+
+/* Boss: larger figure */
+.figureBoss {
+  left: 50%;
+  bottom: 10%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 72px;
+}
+
+.figureBoss::before {
+  width: 18px;
+  height: 18px;
+}
+
+.figureBoss::after {
+  top: 18px;
+  width: 24px;
+  height: 50px;
+}
+
+/* Boss cigar — small line element */
+.figureBoss::before {
+  box-shadow: 10px 6px 0 1px rgba(200, 100, 30, var(--fig-opacity, 0.5));
+}
+
+.figureTopLeft {
+  top: 10%;
+  left: 8px;
+}
+
+.figureTopRight {
+  top: 10%;
+  right: 8px;
+}
+
+/* ===== Felt tint (Stage 8) ===== */
+
+.feltTint {
+  position: absolute;
+  inset: 0;
+  background: rgba(120, 20, 20, 0.12);
+  pointer-events: none;
+  z-index: 0;
+  animation: tintPulse 4s ease-in-out infinite;
+}
+
+@keyframes tintPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}

@@ -1,6 +1,7 @@
-import { memo, useMemo } from 'react'
+import { memo, useMemo, useCallback } from 'react'
 import { formatMoney } from '../utils/formatters'
 import { getVigRate } from '../constants/vigRates'
+import { shareStats } from '../utils/shareCard'
 import styles from './StatsPanel.module.css'
 
 function getFinancialGrade(bankroll) {
@@ -30,6 +31,7 @@ function getSubtitle(lowestBankroll) {
 function StatsPanel({ state, onClose }) {
   const { grade, label } = useMemo(() => getFinancialGrade(state.bankroll), [state.bankroll])
   const subtitle = useMemo(() => getSubtitle(state.lowestBankroll), [state.lowestBankroll])
+  const handleShare = useCallback(() => shareStats(state), [state])
 
   const winRate = state.handsPlayed > 0
     ? ((state.handsWon / state.handsPlayed) * 100).toFixed(1) + '%'
@@ -161,6 +163,9 @@ function StatsPanel({ state, onClose }) {
         </div>
 
         <div className={styles.closeFooter}>
+          <button className={styles.shareButton} onClick={handleShare}>
+            SHARE YOUR SHAME
+          </button>
           <button className={styles.closeFooterButton} onClick={onClose}>
             CLOSE
           </button>
