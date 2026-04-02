@@ -31,6 +31,8 @@ export const TAKE_LOAN = 'TAKE_LOAN'
 export const DISMISS_TABLE_TOAST = 'DISMISS_TABLE_TOAST'
 export const ACCEPT_TABLE_UPGRADE = 'ACCEPT_TABLE_UPGRADE'
 export const DECLINE_TABLE_UPGRADE = 'DECLINE_TABLE_UPGRADE'
+export const SET_COMP_MESSAGE = 'SET_COMP_MESSAGE'
+export const DISMISS_COMP = 'DISMISS_COMP'
 
 // Action creators for actions with payloads
 export const addChip = (value) => ({ type: ADD_CHIP, value })
@@ -53,6 +55,11 @@ export const setDealerMessage = (message, shownDealerLines) => ({
 })
 export const setLoanSharkMessage = (messages, seenThresholds) => ({
   type: SET_LOAN_SHARK_MESSAGE,
+  messages,
+  seenThresholds,
+})
+export const setCompMessage = (messages, seenThresholds) => ({
+  type: SET_COMP_MESSAGE,
   messages,
   seenThresholds,
 })

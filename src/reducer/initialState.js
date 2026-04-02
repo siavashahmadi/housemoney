@@ -60,6 +60,8 @@ export function createInitialState() {
     // Systems
     unlockedAchievements: [],
     seenLoanThresholds: [],
+    seenCompThresholds: [],
+    compQueue: [],
     shownDealerLines: {},
 
     // UI
