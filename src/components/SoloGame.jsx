@@ -5,6 +5,7 @@ import { createDeck, shuffle } from '../utils/cardUtils'
 import { sumChipStack } from '../utils/chipUtils'
 import { drawFromDeck } from '../utils/deckUtils'
 import { TABLE_LEVELS } from '../constants/tableLevels'
+import { getDealerForLevel } from '../constants/dealers'
 import audioManager from '../utils/audioManager'
 import {
   addChip, selectChip, deal, hit, doubleDown, split, betAsset, removeAsset,
@@ -248,6 +249,7 @@ function SoloGame({ onBack }) {
           hideHoleCard={hideHoleCard}
           dealerMessage={state.dealerMessage}
           deckLength={state.deck.length}
+          dealer={getDealerForLevel(state.tableLevel)}
         />
         <BettingCircle
           ref={circleRef}

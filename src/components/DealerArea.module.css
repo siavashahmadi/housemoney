@@ -24,6 +24,17 @@
   color: var(--text-dim);
 }
 
+.handRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.chipWrapper {
+  flex-shrink: 0;
+}
+
 .handWrapper {
   min-height: var(--hand-min-height);
   display: flex;

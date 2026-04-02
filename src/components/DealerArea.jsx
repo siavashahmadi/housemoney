@@ -1,10 +1,11 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import Hand from './Hand'
 import DealerSpeechBubble from './DealerSpeechBubble'
+import DealerChip from './DealerChip'
 import { handValue, cardValue } from '../utils/cardUtils'
 import styles from './DealerArea.module.css'
 
-function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
+function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, dealer }) {
   const hasCards = hand.length > 0
 
   // Detect mid-round reshuffle (deck jumps from near-0 to full)
@@ -60,7 +61,7 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
   return (
     <div className={styles.area}>
       <div className={styles.speechWrapper}>
-        <DealerSpeechBubble message={dealerMessage} />
+        <DealerSpeechBubble message={dealerMessage} dealerName={dealer?.name} />
       </div>
       {showReshuffle && (
         <div className={styles.reshuffleAnimation}>
@@ -78,17 +79,24 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength }) {
         </div>
       )}
       <span className={styles.label}>DEALER</span>
-      <div className={styles.handWrapper}>
-        {hasCards ? (
-          <Hand
-            cards={hand}
-            hideFirst={hideHoleCard}
-            dealType={dealerDrawing ? 'dealerDraw' : 'deal'}
-            flipIndex={flipHoleCard ? 0 : -1}
-          />
-        ) : (
-          <div className={styles.empty} />
+      <div className={styles.handRow}>
+        {dealer && (
+          <div className={styles.chipWrapper}>
+            <DealerChip dealer={dealer} />
+          </div>
         )}
+        <div className={styles.handWrapper}>
+          {hasCards ? (
+            <Hand
+              cards={hand}
+              hideFirst={hideHoleCard}
+              dealType={dealerDrawing ? 'dealerDraw' : 'deal'}
+              flipIndex={flipHoleCard ? 0 : -1}
+            />
+          ) : (
+            <div className={styles.empty} />
+          )}
+        </div>
       </div>
       {hasCards && (
         <span className={styles.value}>{displayValue}</span>
