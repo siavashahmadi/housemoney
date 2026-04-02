@@ -18,6 +18,7 @@ import { decomposeIntoChips, sumChipStack } from '../utils/chipUtils'
 import { getVigRate } from '../constants/vigRates'
 import { ASSETS } from '../constants/assets'
 import { RESULTS } from '../constants/results'
+import { LEVEL_TO_DEALER } from '../constants/dealers'
 import { SIDE_BET_MAP, SIDE_BET_TYPES, MAX_SIDE_BETS, resolvePerfectPair, resolveColorMatch, resolveLuckyLucky } from '../constants/sideBets'
 
 const MAX_BANKROLL_HISTORY = 500
@@ -598,6 +599,9 @@ export function gameReducer(state, action) {
         }
       }
 
+      // Track highest table level reached and current dealer
+      const newHighestTableLevel = Math.max(state.highestTableLevel, newTableLevel)
+
       // Exit debt mode if bankroll recovered to >= minBet
       const resolveMinBet = TABLE_LEVELS[newTableLevel].minBet
       const newInDebtMode = state.inDebtMode && newBankroll < resolveMinBet
@@ -619,6 +623,8 @@ export function gameReducer(state, action) {
         pendingTableUpgrade,
         declinedTableUpgrade,
         selectedChipValue,
+        currentDealer: LEVEL_TO_DEALER[newTableLevel],
+        highestTableLevel: newHighestTableLevel,
         handsPlayed: state.handsPlayed + 1,
         handsWon: isWin ? state.handsWon + 1 : state.handsWon,
         blackjackCount: aggregateResult === RESULTS.BLACKJACK ? state.blackjackCount + 1 : state.blackjackCount,
