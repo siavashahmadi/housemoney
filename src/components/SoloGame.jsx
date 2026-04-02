@@ -41,7 +41,6 @@ import StatsPanel from './StatsPanel'
 import HandHistory from './HandHistory'
 import TableLevelToast from './TableLevelToast'
 import TableUpgradeModal from './TableUpgradeModal'
-import LoanSharkFigures from './LoanSharkFigures'
 import SideBetPanel from './SideBetPanel'
 import SideBetResults from './SideBetResults'
 import FlyingChip from './FlyingChip'
@@ -67,6 +66,9 @@ function SoloGame({ onBack }) {
   }))
   const stateRef = useRef(state)
   stateRef.current = state
+
+  // Debug: expose game state and dispatch for console testing
+  if (typeof window !== 'undefined') window.$game = { state, dispatch }
 
   const circleRef = useRef(null)
   const trayRef = useRef(null)
@@ -242,7 +244,6 @@ function SoloGame({ onBack }) {
         <span className={styles.feltWatermark} key={TABLE_LEVELS[state.tableLevel].id}>
           {TABLE_LEVELS[state.tableLevel].subtitle}
         </span>
-        <LoanSharkFigures bankroll={state.bankroll} />
         <DealerArea
           hand={state.dealerHand}
           phase={state.phase}
