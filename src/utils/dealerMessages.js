@@ -10,13 +10,19 @@ import { RESULTS } from '../constants/results'
  * Returns { message, updatedShownLines } where updatedShownLines
  * is the new shownDealerLines state with the selected index tracked.
  */
-export function selectDealerLine(category, shownDealerLines, context = {}) {
-  const lines = DEALER_LINES[category]
+export function selectDealerLine(category, shownDealerLines, context = {}, dealerId = 'marco') {
+  // Try dealer-specific lines first, fall back to shared
+  const dealerLines = DEALER_LINES[dealerId]
+  const sharedLines = DEALER_LINES.shared
+  const lines = (dealerLines && dealerLines[category]) || (sharedLines && sharedLines[category])
+
   if (!lines || lines.length === 0) {
     return { message: '', updatedShownLines: shownDealerLines }
   }
 
-  const shown = shownDealerLines[category] || []
+  // Track per dealer:category to avoid cross-dealer contamination
+  const trackingKey = `${dealerId}:${category}`
+  const shown = shownDealerLines[trackingKey] || []
 
   // If all lines have been shown, reset this category
   let available
@@ -39,7 +45,7 @@ export function selectDealerLine(category, shownDealerLines, context = {}) {
 
   return {
     message,
-    updatedShownLines: { ...shownDealerLines, [category]: newShown },
+    updatedShownLines: { ...shownDealerLines, [trackingKey]: newShown },
   }
 }
 

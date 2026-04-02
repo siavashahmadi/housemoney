@@ -9,6 +9,18 @@
   animation: speechFadeIn 0.4s ease-out both;
 }
 
+.dealerName {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--gold, #DAA520);
+  margin-bottom: 2px;
+  opacity: 0.8;
+}
+
 .text {
   font-family: 'DM Sans', sans-serif;
   font-size: 13px;

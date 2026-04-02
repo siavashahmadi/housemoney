@@ -15,9 +15,11 @@ export function useDealerMessage(state, dispatch) {
     const { message, updatedShownLines } = selectDealerLine(
       'greeting',
       state.shownDealerLines,
-      {}
+      {},
+      state.currentDealer
     )
     dispatch(setDealerMessage(message, updatedShownLines))
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- fire-once greeting via hasInitRef guard
   }, [dispatch])
 
   // All trigger-based messages in one effect
@@ -44,7 +46,8 @@ export function useDealerMessage(state, dispatch) {
       category = isUpgrade ? 'tableLevelUp' : 'tableLevelDown'
       context = { tableName: TABLE_LEVELS[state.tableLevelChanged.to].name }
     } else if (state.handsPlayed === 0 && prev.handsPlayed > 0) {
-      category = 'greeting'
+      // Reset — use returnee if player has been to a higher table
+      category = state.highestTableLevel > state.tableLevel ? 'returnee' : 'greeting'
     }
 
     if (!category && trigger) {
@@ -59,7 +62,8 @@ export function useDealerMessage(state, dispatch) {
       const { message, updatedShownLines } = selectDealerLine(
         category,
         state.shownDealerLines,
-        context
+        context,
+        state.currentDealer
       )
       dispatch(setDealerMessage(message, updatedShownLines))
     }
@@ -72,6 +76,9 @@ export function useDealerMessage(state, dispatch) {
     state.inDebtMode,
     state.tableLevelChanged,
     state.shownDealerLines,
+    state.currentDealer,
+    state.highestTableLevel,
+    state.tableLevel,
     dispatch,
   ])
 

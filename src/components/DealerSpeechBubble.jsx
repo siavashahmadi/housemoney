@@ -4,7 +4,7 @@ import styles from './DealerSpeechBubble.module.css'
 const DISPLAY_MS = 4000
 const FADE_MS = 600
 
-function DealerSpeechBubble({ message }) {
+function DealerSpeechBubble({ message, dealerName }) {
   const [visible, setVisible] = useState(false)
   const [fading, setFading] = useState(false)
 
@@ -31,6 +31,7 @@ function DealerSpeechBubble({ message }) {
 
   return (
     <div className={`${styles.bubble}${fading ? ` ${styles.fadeOut}` : ''}`} key={message}>
+      {dealerName && <span className={styles.dealerName}>{dealerName}</span>}
       <p className={styles.text}>{message}</p>
       <div className={styles.tail} />
     </div>

@@ -39,6 +39,10 @@ export function createInitialState() {
     pendingTableUpgrade: null,
     declinedTableUpgrade: null,
 
+    // Dealer personality
+    currentDealer: 'kyle',
+    highestTableLevel: 0,
+
     // Game flow
     phase: 'betting',
     result: null,
