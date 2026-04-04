@@ -61,7 +61,7 @@
   min-height: 44px;
 }
 
-.card:active:not(:disabled) {
+.card:active:not(.disabled) {
   transform: scale(0.97);
 }
 

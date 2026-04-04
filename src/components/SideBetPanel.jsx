@@ -57,14 +57,16 @@ function SideBetPanel({ activeSideBets, onPlace, onRemoveChip, onClear, selected
           ].filter(Boolean).join(' ')
 
           return (
-            <button
+            <div
               key={def.type}
               className={cardClasses}
+              role="button"
+              tabIndex={disabled && !isActive ? -1 : 0}
               onPointerDown={() => isActive && handlePointerDown(def.type)}
               onPointerUp={() => handlePointerUp(def.type, isActive)}
               onPointerLeave={handlePointerLeave}
               onContextMenu={(e) => e.preventDefault()}
-              disabled={disabled && !isActive}
+              aria-disabled={disabled && !isActive}
             >
               {isActive && (
                 <>
@@ -81,7 +83,7 @@ function SideBetPanel({ activeSideBets, onPlace, onRemoveChip, onClear, selected
               <span className={styles.name}>{def.name}</span>
               <span className={styles.description}>{def.description}</span>
               <span className={styles.payout}>{payoutLabel}</span>
-            </button>
+            </div>
           )
         })}
       </div>
