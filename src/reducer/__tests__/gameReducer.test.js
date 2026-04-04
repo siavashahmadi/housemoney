@@ -1897,6 +1897,37 @@ describe('DEAL side bet resolution with pre-deducted bankroll', () => {
 })
 
 // ===========================================================================
+// Vig integration with side bets
+// ===========================================================================
+describe('Vig integration with side bets', () => {
+  it('computes vig on mainBet + sideBets combined using pre-deduction bankroll', () => {
+    // bankroll=-500, inDebtMode=true, chipStack=[100], sideBet=100 (already deducted)
+    // pre-deduction bankroll = -500 + 100 = -400, total wager = 100+100 = 200
+    // effectiveBankroll = max(0, -400) = 0, borrowed = 200
+    // getVigRate(-400) = 0.04 (tier: 0 to -10K), vig = floor(200*0.04) = 8
+    const state = {
+      ...bettingStateWithChip(100),
+      bankroll: -500,
+      inDebtMode: true,
+      activeSideBets: [{ type: 'colorMatch', amount: 100 }],
+    }
+    const next = dealFromBetting(state, [
+      card('5', 'hearts'), card('7', 'clubs'), card('6', 'spades'), card('8', 'clubs')
+    ])
+    expect(next.vigAmount).toBe(8)
+  })
+
+  it('no vig when pre-deduction bankroll fully covers total wager', () => {
+    let state = bettingStateWithChip(100)
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'colorMatch', chipValue: 100 })
+    const next = dealFromBetting(state, [
+      card('5', 'hearts'), card('7', 'clubs'), card('6', 'spades'), card('8', 'clubs')
+    ])
+    expect(next.vigAmount).toBe(0)
+  })
+})
+
+// ===========================================================================
 // RESOLVE_HAND deferred side bet resolution with pre-deducted bankroll
 // ===========================================================================
 describe('RESOLVE_HAND deferred side bet resolution with pre-deducted bankroll', () => {

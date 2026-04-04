@@ -237,9 +237,12 @@ export function gameReducer(state, action) {
       if (!action.cards || action.cards.length !== 4) return state
 
       const betAmount = sumChipStack(state.chipStack)
+      const totalSideBetAmount = state.activeSideBets.reduce((sum, sb) => sum + sb.amount, 0)
 
-      // Vig calculation — charge interest on borrowed portion of cash bet
-      const { vigAmount, vigRate } = computeVig(betAmount, state.bankroll)
+      // Vig calculation — charge interest on borrowed portion of total wager (main bet + side bets)
+      // Use pre-side-bet-deduction bankroll since side bets were already deducted at placement
+      const preSideBetBankroll = state.bankroll + totalSideBetAmount
+      const { vigAmount, vigRate } = computeVig(betAmount + totalSideBetAmount, preSideBetBankroll)
 
       const playerCards = [action.cards[0], action.cards[2]]
       const dealerHand = [action.cards[1], action.cards[3]]
