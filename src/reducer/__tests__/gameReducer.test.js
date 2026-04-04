@@ -1973,3 +1973,53 @@ describe('RESOLVE_HAND deferred side bet resolution with pre-deducted bankroll',
     expect(next.sideBetResults[0].payout).toBe(100)
   })
 })
+
+// ===========================================================================
+// SIDE BET OVERHAUL INTEGRATION
+// ===========================================================================
+describe('Side bet overhaul integration', () => {
+  it('full flow: place multiple side bets, deal, resolve, verify bankroll', () => {
+    let state = bettingStateWithChip(500)
+    // Place 3 side bets
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'colorMatch', chipValue: 100 })
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'dealerBust', chipValue: 200 })
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'jinxBet', chipValue: 50 })
+    expect(state.bankroll).toBe(STARTING_BANKROLL - 350)
+    expect(state.activeSideBets).toHaveLength(3)
+
+    // Deal — colorMatch resolves at deal time
+    // Player: 5h, 6h (same color = colorMatch wins at 1:1)
+    state = dealFromBetting(state, [
+      card('5', 'hearts'), card('7', 'clubs'), card('6', 'hearts'), card('8', 'clubs')
+    ])
+    // colorMatch win: delta = 100*(1+1) = 200
+    // dealerBust and jinxBet deferred
+    expect(state.sideBetResults).toHaveLength(1)
+    expect(state.sideBetResults[0].won).toBe(true)
+    expect(state.activeSideBets).toHaveLength(2) // deferred bets remain
+
+    // Resolve — player wins, dealer doesn't bust
+    state = gameReducer(state, { type: RESOLVE_HAND, outcomes: ['win'] })
+    // dealerBust loses: delta = 0 (already deducted)
+    // jinxBet loses (player won): delta = 0
+    expect(state.sideBetResults).toHaveLength(3) // 1 from deal + 2 from resolve
+    expect(state.activeSideBets).toHaveLength(0)
+  })
+
+  it('undo and clear refund correctly before deal', () => {
+    let state = bettingStateWithChip(100)
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'perfectPair', chipValue: 500 })
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'perfectPair', chipValue: 500 })
+    expect(state.bankroll).toBe(STARTING_BANKROLL - 1000)
+
+    // Remove one chip
+    state = gameReducer(state, { type: REMOVE_SIDE_BET_CHIP, betType: 'perfectPair', chipValue: 500 })
+    expect(state.bankroll).toBe(STARTING_BANKROLL - 500)
+    expect(state.activeSideBets[0].amount).toBe(500)
+
+    // Clear the rest
+    state = gameReducer(state, { type: CLEAR_SIDE_BET, betType: 'perfectPair' })
+    expect(state.bankroll).toBe(STARTING_BANKROLL)
+    expect(state.activeSideBets).toHaveLength(0)
+  })
+})
