@@ -294,9 +294,10 @@ export function gameReducer(state, action) {
             won = lp > 0
             payoutMultiplier = lp
           }
-          const payout = won ? sb.amount * payoutMultiplier : -sb.amount
-          sideBetDelta += payout
-          resolvedSideBets.push({ type: sb.type, amount: sb.amount, won, payout })
+          const delta = won ? sb.amount * (payoutMultiplier + 1) : 0
+          const displayPayout = won ? sb.amount * payoutMultiplier : -sb.amount
+          sideBetDelta += delta
+          resolvedSideBets.push({ type: sb.type, amount: sb.amount, won, payout: displayPayout })
         } else {
           deferredSideBets.push(sb)
         }
@@ -555,9 +556,10 @@ export function gameReducer(state, action) {
           let won = false
           if (sb.type === SIDE_BET_TYPES.DEALER_BUST) won = dealerBusted
           else if (sb.type === SIDE_BET_TYPES.JINX_BET) won = isLoss
-          const payout = won ? sb.amount * def.payout : -sb.amount
-          deferredSideBetDelta += payout
-          deferredResults.push({ type: sb.type, amount: sb.amount, won, payout })
+          const delta = won ? sb.amount * (def.payout + 1) : 0
+          const displayPayout = won ? sb.amount * def.payout : -sb.amount
+          deferredSideBetDelta += delta
+          deferredResults.push({ type: sb.type, amount: sb.amount, won, payout: displayPayout })
         }
       }
 

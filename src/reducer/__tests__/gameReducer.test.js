@@ -1852,3 +1852,93 @@ describe('REMOVE_SIDE_BET_CHIP', () => {
     expect(next).toBe(state)
   })
 })
+
+// ===========================================================================
+// DEAL side bet resolution with pre-deducted bankroll
+// ===========================================================================
+describe('DEAL side bet resolution with pre-deducted bankroll', () => {
+  it('winning colorMatch returns stake + 1:1 winnings', () => {
+    let state = bettingStateWithChip(100)
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'colorMatch', chipValue: 200 })
+    // bankroll = STARTING - 200. Player cards: 5h, 6h (same color = win)
+    const next = dealFromBetting(state, [
+      card('5', 'hearts'), card('7', 'clubs'), card('6', 'hearts'), card('8', 'clubs')
+    ])
+    // delta = 200 * (1+1) = 400. bankroll = (STARTING-200) + 400 = STARTING+200
+    expect(next.sideBetResults[0].won).toBe(true)
+    expect(next.sideBetResults[0].payout).toBe(200)
+    expect(next.bankroll).toBe(STARTING_BANKROLL + 200)
+  })
+
+  it('losing colorMatch has no additional deduction', () => {
+    let state = bettingStateWithChip(100)
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'colorMatch', chipValue: 200 })
+    // Player cards: 5h, 6s (different color = lose)
+    const next = dealFromBetting(state, [
+      card('5', 'hearts'), card('7', 'clubs'), card('6', 'spades'), card('8', 'clubs')
+    ])
+    // delta = 0 (already deducted). bankroll = STARTING - 200
+    expect(next.sideBetResults[0].won).toBe(false)
+    expect(next.sideBetResults[0].payout).toBe(-200)
+    expect(next.bankroll).toBe(STARTING_BANKROLL - 200)
+  })
+
+  it('winning perfectPair returns stake + 25:1 winnings', () => {
+    let state = bettingStateWithChip(100)
+    state = gameReducer(state, { type: PLACE_SIDE_BET, betType: 'perfectPair', chipValue: 100 })
+    // Player cards: Kh, Kh (perfect pair = win at 25:1)
+    const next = dealFromBetting(state, [
+      card('K', 'hearts'), card('7', 'clubs'), card('K', 'hearts'), card('8', 'clubs')
+    ])
+    // delta = 100 * (25+1) = 2600. bankroll = (STARTING-100) + 2600 = STARTING+2500
+    expect(next.bankroll).toBe(STARTING_BANKROLL + 2500)
+    expect(next.sideBetResults[0].payout).toBe(2500)
+  })
+})
+
+// ===========================================================================
+// RESOLVE_HAND deferred side bet resolution with pre-deducted bankroll
+// ===========================================================================
+describe('RESOLVE_HAND deferred side bet resolution with pre-deducted bankroll', () => {
+  it('winning dealerBust returns stake + 2:1 winnings', () => {
+    const state = {
+      ...playingState([card('K'), card('Q')], 500),
+      activeSideBets: [{ type: 'dealerBust', amount: 200 }],
+      bankroll: STARTING_BANKROLL - 200,
+    }
+    const next = gameReducer(state, { type: RESOLVE_HAND, outcomes: ['dealerBust'] })
+    // Main hand wins 500. Dealer bust side bet: delta = 200*(2+1) = 600
+    // bankroll = (STARTING-200) + 500 + 600 = STARTING+900
+    expect(next.bankroll).toBe(STARTING_BANKROLL + 900)
+    expect(next.sideBetResults[0].won).toBe(true)
+    expect(next.sideBetResults[0].payout).toBe(400)
+  })
+
+  it('losing dealerBust has no additional deduction', () => {
+    const state = {
+      ...playingState([card('K'), card('Q')], 500),
+      activeSideBets: [{ type: 'dealerBust', amount: 200 }],
+      bankroll: STARTING_BANKROLL - 200,
+    }
+    const next = gameReducer(state, { type: RESOLVE_HAND, outcomes: ['win'] })
+    // Main hand wins 500. dealerBust loses: delta = 0
+    // bankroll = (STARTING-200) + 500 = STARTING+300
+    expect(next.bankroll).toBe(STARTING_BANKROLL + 300)
+    expect(next.sideBetResults[0].won).toBe(false)
+    expect(next.sideBetResults[0].payout).toBe(-200)
+  })
+
+  it('winning jinxBet returns stake + 1:1 winnings on player loss', () => {
+    const state = {
+      ...playingState([card('5'), card('6')], 500),
+      activeSideBets: [{ type: 'jinxBet', amount: 100 }],
+      bankroll: STARTING_BANKROLL - 100,
+    }
+    const next = gameReducer(state, { type: RESOLVE_HAND, outcomes: ['lose'] })
+    // Main hand loses -500. jinxBet wins: delta = 100*(1+1) = 200
+    // bankroll = (STARTING-100) - 500 + 200 = STARTING-400
+    expect(next.bankroll).toBe(STARTING_BANKROLL - 400)
+    expect(next.sideBetResults[0].won).toBe(true)
+    expect(next.sideBetResults[0].payout).toBe(100)
+  })
+})
