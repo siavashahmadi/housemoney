@@ -5,15 +5,11 @@ import styles from './Hand.module.css'
 function getCardMargin(cardCount, cardIndex, size) {
   if (cardIndex === 0) return 0
   if (size === 'small') {
-    if (cardCount <= 2) return 4
-    if (cardCount === 3) return -4
-    return -12
+    return -30
   }
   if (size === 'medium') {
-    if (cardCount <= 2) return 6
-    if (cardCount === 3) return -2
-    if (cardCount === 4) return -10
-    return -18
+    if (cardCount <= 2) return -20
+    return -38
   }
   if (cardCount <= 2) return 10
   if (cardCount === 3) return 0

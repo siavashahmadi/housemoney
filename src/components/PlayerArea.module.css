@@ -36,7 +36,7 @@
 .handsContainer {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: clamp(4px, 1.5vw, 10px);
 }
 
 .singleHand {

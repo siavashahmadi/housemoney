@@ -6,8 +6,8 @@ import { RESULTS } from '../constants/results'
 import styles from './PlayerArea.module.css'
 
 function getCardSize(handCount) {
-  if (handCount <= 2) return 'normal'
-  if (handCount === 3) return 'medium'
+  if (handCount <= 1) return 'normal'
+  if (handCount === 2) return 'medium'
   return 'small'
 }
 
