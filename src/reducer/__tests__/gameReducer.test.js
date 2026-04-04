@@ -9,6 +9,7 @@ import {
   DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT, LOAD_ACHIEVEMENTS,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, LOAD_HIGHEST_DEBT, SET_DEALER_MESSAGE,
   SET_LOAN_SHARK_MESSAGE, SELECT_CHIP, REMOVE_ASSET,
+  PLACE_SIDE_BET,
 } from '../actions'
 import { STARTING_BANKROLL, MAX_SPLIT_HANDS, RESHUFFLE_THRESHOLD } from '../../constants/gameConfig'
 import { ASSETS } from '../../constants/assets'
@@ -1734,5 +1735,19 @@ describe('Reducer purity', () => {
     const state = playingState() // not betting phase
     const next = gameReducer(state, { type: ADD_CHIP, value: 100 })
     expect(next).toBe(state)
+  })
+})
+
+// ===========================================================================
+// PLACE_SIDE_BET
+// ===========================================================================
+describe('PLACE_SIDE_BET', () => {
+  it('allows placing all 5 side bets simultaneously', () => {
+    let state = bettingStateWithChip(100)
+    const types = ['perfectPair', 'colorMatch', 'dealerBust', 'luckyLucky', 'jinxBet']
+    for (const t of types) {
+      state = gameReducer(state, { type: PLACE_SIDE_BET, betType: t, chipValue: 100 })
+    }
+    expect(state.activeSideBets).toHaveLength(5)
   })
 })

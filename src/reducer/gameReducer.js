@@ -3,7 +3,7 @@ import {
   DEAL, BET_ASSET, REMOVE_ASSET, HIT, STAND, DOUBLE_DOWN, SPLIT, DEALER_DRAW,
   RESOLVE_HAND, NEW_ROUND, RESET_GAME, TAKE_LOAN, DISMISS_TABLE_TOAST,
   ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE,
-  PLACE_SIDE_BET, REMOVE_SIDE_BET, TOGGLE_SIDE_BETS,
+  PLACE_SIDE_BET, REMOVE_SIDE_BET, TOGGLE_SIDE_BETS, REMOVE_SIDE_BET_CHIP, CLEAR_SIDE_BET,
   TOGGLE_ASSET_MENU, TOGGLE_ACHIEVEMENTS,
   DISMISS_ACHIEVEMENT, DISMISS_LOAN_SHARK, UNLOCK_ACHIEVEMENT, LOAD_ACHIEVEMENTS,
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY,
@@ -19,7 +19,7 @@ import { getVigRate } from '../constants/vigRates'
 import { ASSETS } from '../constants/assets'
 import { RESULTS } from '../constants/results'
 import { LEVEL_TO_DEALER } from '../constants/dealers'
-import { SIDE_BET_MAP, SIDE_BET_TYPES, MAX_SIDE_BETS, resolvePerfectPair, resolveColorMatch, resolveLuckyLucky } from '../constants/sideBets'
+import { SIDE_BET_MAP, SIDE_BET_TYPES, resolvePerfectPair, resolveColorMatch, resolveLuckyLucky } from '../constants/sideBets'
 
 const MAX_BANKROLL_HISTORY = 500
 
@@ -174,7 +174,6 @@ export function gameReducer(state, action) {
 
     case PLACE_SIDE_BET: {
       if (state.phase !== 'betting') return state
-      if (state.activeSideBets.length >= MAX_SIDE_BETS) return state
       if (state.activeSideBets.some(sb => sb.type === action.betType)) return state
       const sbDef = SIDE_BET_MAP[action.betType]
       if (!sbDef) return state

@@ -1,24 +1,23 @@
 import React from 'react'
-import { SIDE_BET_DEFINITIONS, MAX_SIDE_BETS } from '../constants/sideBets'
+import { SIDE_BET_DEFINITIONS } from '../constants/sideBets'
 import { formatMoney } from '../utils/formatters'
 import styles from './SideBetPanel.module.css'
 
 function SideBetPanel({ activeSideBets, onPlace, onRemove, minBet, bankroll, inDebtMode }) {
   const activeTypes = new Set(activeSideBets.map(sb => sb.type))
-  const atMax = activeSideBets.length >= MAX_SIDE_BETS
   const canAfford = inDebtMode || bankroll >= minBet
 
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
         <span className={styles.title}>Side Bets</span>
-        <span className={styles.subtitle}>{formatMoney(minBet)} each &middot; max {MAX_SIDE_BETS}</span>
+        <span className={styles.subtitle}>{formatMoney(minBet)} each</span>
       </div>
       <div className={styles.grid}>
         {SIDE_BET_DEFINITIONS.map(def => {
           const isActive = activeTypes.has(def.type)
           const isJinx = def.type === 'jinxBet'
-          const disabled = !isActive && (atMax || !canAfford)
+          const disabled = !isActive && !canAfford
 
           const payoutLabel = def.payoutTable
             ? Object.entries(def.payoutTable).map(([k, v]) => `${k}=${v}:1`).join(' ')

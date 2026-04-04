@@ -9,8 +9,6 @@ export const SIDE_BET_TYPES = {
   JINX_BET: 'jinxBet',
 }
 
-export const MAX_SIDE_BETS = 2
-
 export const SIDE_BET_DEFINITIONS = [
   { type: 'perfectPair', name: 'Perfect Pair', description: 'First two cards: same rank and suit', payout: 25, resolveAt: 'deal' },
   { type: 'colorMatch', name: 'Color Match', description: 'First two cards: same color', payout: 1, resolveAt: 'deal' },
