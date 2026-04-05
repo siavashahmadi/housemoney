@@ -45,12 +45,9 @@
 
 .controlsArea {
   flex-shrink: 0;
-  height: 68px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  overflow: visible;
+  position: relative;
+  z-index: 2;
 }
 
 .phaseContent {
