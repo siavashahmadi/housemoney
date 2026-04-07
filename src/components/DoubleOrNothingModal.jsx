@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { formatMoney } from '../utils/formatters'
 import styles from './DoubleOrNothingModal.module.css'
+import audioManager from '../utils/audioManager'
 
 const ESCALATING_TEXT = [
   'DOUBLE OR NOTHING?',
@@ -24,12 +25,14 @@ function DoubleOrNothingModal({ doubleOrNothing, onAccept, onDecline }) {
   const handleFlip = useCallback(() => {
     setFlipping(true)
     setFlipResult(null)
+    audioManager.play('coin_flip')
 
     const won = Math.random() < 0.5
 
     setTimeout(() => {
       setFlipResult(won ? 'win' : 'lose')
       setFlipping(false)
+      audioManager.play(won ? 'don_win' : 'don_lose')
 
       setTimeout(() => {
         setFlipResult(null)

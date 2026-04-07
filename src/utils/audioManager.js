@@ -253,6 +253,31 @@ const sounds = {
     source.start(now)
     source.stop(now + 0.4)
   },
+
+  // Coin flip — metallic ping with shimmer
+  coin_flip() {
+    // High metallic ping
+    playTone(2200, 0.15, 'sine', 0.12, 0)
+    // Shimmer overtone
+    playTone(3300, 0.1, 'sine', 0.06, 0.02)
+    // Metallic resonance
+    playNoise(0.08, 'bandpass', 6000, 8, 0.08)
+  },
+
+  // D.O.N. win — triumphant ascending tones (like win but bigger)
+  don_win() {
+    playTone(523, 0.12, 'sine', 0.12, 0)      // C5
+    playTone(659, 0.12, 'sine', 0.12, 0.1)     // E5
+    playTone(784, 0.12, 'sine', 0.12, 0.2)     // G5
+    playTone(1047, 0.2, 'triangle', 0.1, 0.3)  // C6 (sustained)
+  },
+
+  // D.O.N. lose — ominous descending tones
+  don_lose() {
+    playTone(330, 0.2, 'sawtooth', 0.06, 0)    // E4
+    playTone(262, 0.2, 'sawtooth', 0.06, 0.15) // C4
+    playTone(196, 0.3, 'sawtooth', 0.08, 0.3)  // G3 (sustained, deeper)
+  },
 }
 
 const audioManager = {
