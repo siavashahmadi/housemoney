@@ -29,6 +29,9 @@ export const ACHIEVEMENTS = [
   { id: 'split_both_bust', name: 'Double Trouble', description: 'Bust on both split hands', emoji: '💀' },
   { id: 'split_both_win', name: 'Having It Both Ways', description: 'Win both split hands', emoji: '🎉' },
   { id: 'point_of_no_return', name: 'Point of No Return', description: 'Take a loan for the first time', emoji: '🏦' },
+  { id: 'don_first_win', name: 'Coin Flipper', description: 'Win a Double or Nothing', emoji: '🪙' },
+  { id: 'don_3_chain', name: 'Tempting Fate', description: 'Win after 3+ flips in one D.O.N.', emoji: '⛓️' },
+  { id: 'don_over_million', name: 'Degenerate Gambler', description: 'D.O.N. stakes exceed $1M', emoji: '🎰' },
 ]
 
 export const ACHIEVEMENT_MAP = Object.fromEntries(

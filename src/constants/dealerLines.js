@@ -120,6 +120,14 @@ export const DEALER_LINES = {
       (ctx) => `I just watched you lose your ${ctx.assetName}. I'm going to need therapy.`,
       (ctx) => `The ${ctx.assetName} is gone. My hands are shaking. YOUR ${ctx.assetName}. Gone.`,
     ],
+    doubleOrNothing: [
+      "Oh no. Oh no no no. Are you really going to...",
+      "I'm not even supposed to let you do this, I think?",
+      "My manager is going to be so mad at me.",
+      "Please just walk away. I'm begging you.",
+      "I can't watch. Tell me when it's over.",
+      "This is the most stressful moment of my career. Both days of it.",
+    ],
   },
 
   diane: {
@@ -240,6 +248,14 @@ export const DEALER_LINES = {
       (ctx) => `The ${ctx.assetName} is lost. If you need to cry, I won't judge. I might join you.`,
       (ctx) => `Lost the ${ctx.assetName}. Honey, you need to walk away. Not next hand. Now.`,
       (ctx) => `Your ${ctx.assetName}. Oh, sweetheart. This is exactly what I was afraid of.`,
+    ],
+    doubleOrNothing: [
+      "Sure, flip a coin. That's a sound financial strategy.",
+      "I've seen people lose their houses on less.",
+      "Oh honey. Just... honey.",
+      "The coin doesn't care about your feelings.",
+      "This is why casinos have marble floors.",
+      "I've been doing this 20 years and it never stops being funny.",
     ],
   },
 
@@ -378,6 +394,14 @@ export const DEALER_LINES = {
       (ctx) => `And just like that, no more ${ctx.assetName}. The house sends its regards.`,
       (ctx) => `Oh no... your ${ctx.assetName}... anyway, next hand?`,
     ],
+    doubleOrNothing: [
+      "Ah, the coin of destiny! How dramatic, how beautiful!",
+      "Fortune favors the bold, no? ...Actually, fortune favors the house.",
+      "A coin flip — the purest form of gambling. Bellissimo!",
+      "The stakes climb higher! What a spectacle!",
+      "My friend, even I am nervous. And I am never nervous.",
+      "They will tell stories about this flip. Win or lose.",
+    ],
   },
 
   voss: {
@@ -498,6 +522,14 @@ export const DEALER_LINES = {
       (ctx) => `The ${ctx.assetName}. Gone. Hegel's master-slave dialectic — the casino is the master tonight.`,
       (ctx) => `Your ${ctx.assetName} — now the casino's. Property is theft, said Proudhon. The casino disagrees.`,
       (ctx) => `Lost. The ${ctx.assetName} is lost. Every object we own is merely borrowed from time.`,
+    ],
+    doubleOrNothing: [
+      "Fifty percent. The most honest odds you'll ever get.",
+      "Each flip is independent. Your past results are irrelevant.",
+      "The expected value of this decision is exactly zero. Fascinating choice.",
+      "Doubling a loss doubles the variance. You understand this.",
+      "Statistically, the longer you play, the more certain the outcome.",
+      "I calculate your probability of walking away at... low.",
     ],
   },
 
@@ -620,6 +652,14 @@ export const DEALER_LINES = {
       (ctx) => `Asset lost: ${ctx.assetName}. Updating your net worth accordingly.`,
       (ctx) => `Your ${ctx.assetName} is gone. The house edge claimed another real-world asset.`,
     ],
+    doubleOrNothing: [
+      "The coin spins between worlds. Which one will catch you?",
+      "Double or nothing — the universe's favorite question.",
+      "I can feel the coin deciding. Can you?",
+      "Some debts are paid in currency. Others in something else entirely.",
+      "The edge of the coin is where all possibilities live.",
+      "Fate has a sense of humor. Shall we hear the punchline?",
+    ],
   },
 
   inferno: {
@@ -740,6 +780,14 @@ export const DEALER_LINES = {
       (ctx) => `Lost. The ${ctx.assetName}. The room remembers everything it has ever taken.`,
       (ctx) => `The ${ctx.assetName} is no longer yours. Was it ever? The room thinks not.`,
       (ctx) => `Your ${ctx.assetName}. Gone. The room doesn't say 'sorry.' It just takes.`,
+    ],
+    doubleOrNothing: [
+      "DOUBLE OR NOTHING?! THIS IS WHAT WE LIVE FOR!!!",
+      "THE COIN IS IN THE AIR! THE CROWD GOES WILD!!!",
+      "ABSOLUTE CHAOS! PURE ADRENALINE! FLIP THAT COIN!!!",
+      "YOU'RE EITHER A LEGEND OR A CAUTIONARY TALE! LET'S GOOO!",
+      "THE STAKES JUST DOUBLED! MY BLOOD PRESSURE JUST TRIPLED!!!",
+      "THIS IS THE MOMENT! THE FLIP HEARD 'ROUND THE WORLD!!!",
     ],
   },
 

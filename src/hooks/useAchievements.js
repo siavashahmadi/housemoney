@@ -161,6 +161,19 @@ export function useAchievements(state, dispatch) {
     }
   }, [state.inDebtMode, state.unlockedAchievements, dispatch])
 
+  // Effect 6: Double or Nothing achievements — triggers between hands
+  useEffect(() => {
+    if (state.donFlipsWon > 0 && !state.unlockedAchievements.includes('don_first_win')) {
+      dispatch(unlockAchievement('don_first_win'))
+    }
+    if (state.donLastChainLength >= 3 && !state.unlockedAchievements.includes('don_3_chain')) {
+      dispatch(unlockAchievement('don_3_chain'))
+    }
+    if (state.donBiggestStakes > 1000000 && !state.unlockedAchievements.includes('don_over_million')) {
+      dispatch(unlockAchievement('don_over_million'))
+    }
+  }, [state.donFlipsWon, state.donLastChainLength, state.donBiggestStakes, state.unlockedAchievements, dispatch])
+
   // Always update prevStateRef last
   useEffect(() => {
     prevStateRef.current = state

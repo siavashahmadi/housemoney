@@ -45,6 +45,8 @@ export function useDealerMessage(state, dispatch) {
       const isUpgrade = state.tableLevelChanged.to > state.tableLevelChanged.from
       category = isUpgrade ? 'tableLevelUp' : 'tableLevelDown'
       context = { tableName: TABLE_LEVELS[state.tableLevelChanged.to].name }
+    } else if (state.doubleOrNothing && !prev.doubleOrNothing) {
+      category = 'doubleOrNothing'
     } else if (state.handsPlayed === 0 && prev.handsPlayed > 0) {
       // Reset — use returnee if player has been to a higher table
       category = state.highestTableLevel > state.tableLevel ? 'returnee' : 'greeting'
@@ -75,6 +77,7 @@ export function useDealerMessage(state, dispatch) {
     state.playerHands,
     state.inDebtMode,
     state.tableLevelChanged,
+    state.doubleOrNothing,
     state.shownDealerLines,
     state.currentDealer,
     state.highestTableLevel,
