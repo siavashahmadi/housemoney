@@ -21,6 +21,7 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
   // Track which chip index is "new" to animate only the landing chip
   const [newChipIndex, setNewChipIndex] = useState(-1)
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const prevLen = prevChipLenRef.current
     prevChipLenRef.current = chipStack.length
@@ -40,7 +41,6 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
       setDisplayChips(chipStack)
       setDisplayAssets(bettedAssets)
       setAnimatingOut(false)
-      // Mark the newest chip for landing animation
       if (chipStack.length > prevLen) {
         setNewChipIndex(chipStack.length - 1)
       } else {
@@ -48,6 +48,7 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
       }
     }
   }, [chipStack, bettedAssets, result])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const isWin = isWinResult(result)
 

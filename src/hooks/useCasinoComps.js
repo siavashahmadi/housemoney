@@ -34,17 +34,20 @@ export function useCasinoComps(state, dispatch) {
       pendingRef.current.messages.push(...newMessages)
       pendingRef.current.thresholds.push(...newThresholds)
 
+      // Capture seenCompThresholds now (avoid stale closure in timer)
+      const seenAtDispatch = state.seenCompThresholds
+
       // Reset timer — waits 1500ms after last increase so player sees result first
       clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => {
         const allMessages = pendingRef.current.messages
-        const allThresholds = [...state.seenCompThresholds, ...pendingRef.current.thresholds]
+        const allThresholds = [...seenAtDispatch, ...pendingRef.current.thresholds]
         const totalCompValue = allMessages.reduce((sum, m) => sum + (m.value || 0), 0)
         pendingRef.current = { messages: [], thresholds: [] }
         dispatch(setCompMessage(allMessages, allThresholds, totalCompValue))
       }, 1500)
     }
-  }, [state.totalLost, dispatch])
+  }, [state.totalLost, state.seenCompThresholds, dispatch])
 
   // Reset on game reset (handsPlayed drops to 0)
   useEffect(() => {

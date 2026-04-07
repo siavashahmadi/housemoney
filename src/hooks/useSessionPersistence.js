@@ -35,7 +35,7 @@ export function useSessionPersistence(state, dispatch) {
     } catch {
       // Corrupted localStorage, ignore
     }
-  }, [dispatch])
+  }, [dispatch]) // eslint-disable-line react-hooks/exhaustive-deps -- intentionally runs once on mount
 
   // Persist mute preference
   useEffect(() => {

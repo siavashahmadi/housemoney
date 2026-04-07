@@ -127,7 +127,7 @@ export function useAchievements(state, dispatch) {
     for (const id of newIds) {
       dispatch(unlockAchievement(id))
     }
-  }, [state.handsPlayed, dispatch])
+  }, [state, dispatch])
 
   // Effect 3: Persist to localStorage when achievements change
   useEffect(() => {

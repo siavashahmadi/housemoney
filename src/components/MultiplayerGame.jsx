@@ -34,11 +34,11 @@ const mpChipActions = {
 
 function MultiplayerGame({ state, send, dispatch, onLeave }) {
   const stateRef = useRef(state)
-  stateRef.current = state
+  useEffect(() => { stateRef.current = state })
 
   useMultiplayerSound(state)
 
-  const [showDebtTracker, setShowDebtTracker] = useState(false)
+  const [_showDebtTracker, setShowDebtTracker] = useState(false)
   const circleRef = useRef(null)
   const { flyingChips, handleChipTap, handleUndo, removeFlyingChip } = useChipInteraction(
     dispatch, mpChipActions, stateRef, circleRef

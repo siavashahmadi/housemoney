@@ -6,12 +6,14 @@ function SideBetResults({ results }) {
   if (!results || results.length === 0) return null
 
   const netPayout = results.reduce((sum, r) => sum + r.payout, 0)
-  if (netPayout === 0) return null
 
   const isPositive = netPayout > 0
-  const badgeClass = isPositive ? styles.won : styles.lost
+  const isZero = netPayout === 0
+  const badgeClass = isPositive ? styles.won : isZero ? styles.push : styles.lost
   const label = isPositive
     ? `Side Bets: +${formatMoney(netPayout)}`
+    : isZero
+    ? 'Side Bets: Break Even'
     : `Side Bets: ${formatMoney(netPayout)}`
 
   return (

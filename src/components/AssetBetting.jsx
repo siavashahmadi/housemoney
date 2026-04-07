@@ -15,7 +15,7 @@ function AssetBetting({
     a => bankroll <= a.unlockThreshold && ownedAssets[a.id] && !bettedAssets.some(b => b.id === a.id)
   )
 
-  const hasUnlockedAssets = ASSETS.some(a => bankroll <= a.unlockThreshold)
+  const hasUnlockedAssets = ASSETS.some(a => bankroll <= a.unlockThreshold && ownedAssets[a.id])
   if (!hasUnlockedAssets) return null
 
   return (

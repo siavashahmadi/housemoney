@@ -15,10 +15,12 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
   const prevPhaseRef = useRef(phase)
   const [flipHoleCard, setFlipHoleCard] = useState(false)
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (prevPhaseRef.current === 'playing' && phase === 'dealerTurn') {
       setFlipHoleCard(true)
       const timer = setTimeout(() => setFlipHoleCard(false), 600)
+      prevPhaseRef.current = phase
       return () => clearTimeout(timer)
     }
     prevPhaseRef.current = phase
@@ -33,6 +35,7 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
     }
     prevDeckRef.current = deckLength
   }, [deckLength])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const displayValue = useMemo(() => {
     if (!hasCards) return ''

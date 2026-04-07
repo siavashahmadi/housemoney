@@ -8,6 +8,7 @@ function DealerSpeechBubble({ message, dealerName }) {
   const [visible, setVisible] = useState(false)
   const [fading, setFading] = useState(false)
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!message) {
       setVisible(false)
@@ -26,6 +27,7 @@ function DealerSpeechBubble({ message, dealerName }) {
       clearTimeout(hideTimer)
     }
   }, [message])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   if (!visible || !message) return null
 

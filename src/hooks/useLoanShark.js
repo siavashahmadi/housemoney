@@ -36,16 +36,19 @@ export function useLoanShark(state, dispatch) {
       pendingRef.current.messages.push(...newMessages)
       pendingRef.current.thresholds.push(...newThresholds)
 
+      // Capture seenLoanThresholds now (avoid stale closure in timer)
+      const seenAtDispatch = state.seenLoanThresholds
+
       // Reset timer — waits 1500ms after last drop so player sees result first
       clearTimeout(timerRef.current)
       timerRef.current = setTimeout(() => {
         const allMessages = pendingRef.current.messages
-        const allThresholds = [...state.seenLoanThresholds, ...pendingRef.current.thresholds]
+        const allThresholds = [...seenAtDispatch, ...pendingRef.current.thresholds]
         pendingRef.current = { messages: [], thresholds: [] }
         dispatch(setLoanSharkMessage(allMessages, allThresholds))
       }, 1500)
     }
-  }, [state.bankroll, dispatch])
+  }, [state.bankroll, state.seenLoanThresholds, dispatch])
 
   // Reset on game reset (handsPlayed drops to 0)
   useEffect(() => {

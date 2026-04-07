@@ -21,6 +21,7 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
   const prevTierRef = useRef(-1)
   const prevHandsRef = useRef(handsPlayed)
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const tierIndex = getCreditTierIndex(bankroll)
     if (tierIndex >= 0) {
@@ -51,6 +52,7 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
     }
     setShowVig(false)
   }, [vigAmount, vigRate])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const colorClass = isOnCredit
     ? styles.credit

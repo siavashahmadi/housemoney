@@ -65,10 +65,12 @@ function SoloGame({ onBack }) {
     deck: shuffle(createDeck()),
   }))
   const stateRef = useRef(state)
-  stateRef.current = state
+  stateRef.current = state // eslint-disable-line react-hooks/refs
 
-  // Debug: expose game state and dispatch for console testing
-  if (typeof window !== 'undefined') window.$game = { state, dispatch }
+  // Debug: expose game state and dispatch for console testing (dev only)
+  useEffect(() => {
+    if (import.meta.env.DEV) window.$game = { state, dispatch }
+  })
 
   const circleRef = useRef(null)
   const trayRef = useRef(null)

@@ -85,5 +85,5 @@ export function useSound(state) {
     }
 
     prevRef.current = state
-  }, [state.phase, state.result, state.playerHands, state.dealerHand])
+  }, [state.phase, state.result, state.playerHands, state.dealerHand, state.muted]) // eslint-disable-line react-hooks/exhaustive-deps -- prevRef pattern; adding full state would re-run on every render
 }

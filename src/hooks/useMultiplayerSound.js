@@ -74,5 +74,5 @@ export function useMultiplayerSound(state) {
     }
 
     prevRef.current = state
-  }, [state.phase, state.dealerHand, state.playerStates, state.playerId])
+  }, [state.phase, state.dealerHand, state.playerStates, state.playerId, state.muted]) // eslint-disable-line react-hooks/exhaustive-deps -- prevRef pattern
 }

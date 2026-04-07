@@ -138,7 +138,8 @@ function BettingControls({
       )}
       <button
         className={dealClasses}
-        onClick={canDeal ? onDeal : undefined}
+        onClick={onDeal}
+        disabled={!canDeal}
       >
         DEAL
       </button>
