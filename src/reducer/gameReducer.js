@@ -9,6 +9,7 @@ import {
   TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY,
   SET_DEALER_MESSAGE, SET_LOAN_SHARK_MESSAGE,
   LOAD_HIGHEST_DEBT, SET_COMP_MESSAGE, DISMISS_COMP,
+  OFFER_DOUBLE_OR_NOTHING, ACCEPT_DOUBLE_OR_NOTHING, DECLINE_DOUBLE_OR_NOTHING,
 } from './actions'
 import { createInitialState, createHandObject } from './initialState'
 import { BLACKJACK_PAYOUT, RESHUFFLE_THRESHOLD, MAX_SPLIT_HANDS } from '../constants/gameConfig'
@@ -694,6 +695,58 @@ export function gameReducer(state, action) {
       }
     }
 
+    case OFFER_DOUBLE_OR_NOTHING: {
+      if (state.phase !== 'result') return state
+      return {
+        ...state,
+        doubleOrNothing: {
+          originalLoss: action.lossAmount,
+          currentStakes: action.lossAmount,
+          flipCount: 0,
+          lastResult: null,
+        },
+      }
+    }
+
+    case ACCEPT_DOUBLE_OR_NOTHING: {
+      if (!state.doubleOrNothing) return state
+      const don = state.doubleOrNothing
+      if (action.won) {
+        // Win: erase the loss (add currentStakes back to bankroll)
+        return {
+          ...state,
+          bankroll: state.bankroll + don.currentStakes,
+          doubleOrNothing: null,
+          donFlipsWon: state.donFlipsWon + 1,
+          donBiggestStakes: Math.max(state.donBiggestStakes, don.currentStakes),
+          donLastChainLength: don.flipCount,
+        }
+      } else {
+        // Lose: lose an additional currentStakes, double the stakes for next flip
+        const newStakes = don.currentStakes * 2
+        return {
+          ...state,
+          bankroll: state.bankroll - don.currentStakes,
+          doubleOrNothing: {
+            ...don,
+            currentStakes: newStakes,
+            flipCount: don.flipCount + 1,
+            lastResult: 'lose',
+          },
+          donFlipsLost: state.donFlipsLost + 1,
+          donBiggestStakes: Math.max(state.donBiggestStakes, newStakes),
+          lowestBankroll: Math.min(state.lowestBankroll, state.bankroll - don.currentStakes),
+        }
+      }
+    }
+
+    case DECLINE_DOUBLE_OR_NOTHING: {
+      return {
+        ...state,
+        doubleOrNothing: null,
+      }
+    }
+
     case NEW_ROUND: {
       if (state.phase !== 'result' || state.chipStack.length > 0) return state
 
@@ -720,6 +773,7 @@ export function gameReducer(state, action) {
         vigAmount: 0,
         vigRate: 0,
         tableLevelChanged: null,
+        doubleOrNothing: null,
       }
     }
 
