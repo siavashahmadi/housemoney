@@ -154,31 +154,6 @@
   animation: chipSweep 0.6s cubic-bezier(0.55, 0.06, 0.68, 0.19) both;
 }
 
-/* Chip landing bounce + wobble in betting circle */
-@keyframes chipBounce {
-  0% {
-    transform: scale(0.4) rotate(0deg);
-    opacity: 0;
-  }
-  30% {
-    transform: scale(1.12) rotate(3deg);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(0.95) rotate(-2deg);
-  }
-  68% {
-    transform: scale(1.04) rotate(1deg);
-  }
-  82% {
-    transform: scale(0.98) rotate(-0.5deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
 /* Win chips — burst outward, pause, then slide toward player */
 @keyframes chipSpread {
   0% {

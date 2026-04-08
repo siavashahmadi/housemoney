@@ -42,11 +42,6 @@
   letter-spacing: 1px;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes loanSharkSlideIn {
   0% {
     transform: translateY(-20px) scale(0.95);

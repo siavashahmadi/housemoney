@@ -72,24 +72,3 @@
   font-size: 12px;
   color: var(--text-dim);
 }
-
-@keyframes toastIn {
-  0% {
-    transform: translateX(-50%) translateY(-20px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes toastOut {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-50%) translateY(-10px);
-    opacity: 0;
-  }
-}

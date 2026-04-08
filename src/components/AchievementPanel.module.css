@@ -104,8 +104,3 @@
   font-size: 10px;
   color: var(--text-dim);
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
