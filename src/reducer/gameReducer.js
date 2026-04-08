@@ -284,7 +284,7 @@ export function gameReducer(state, action) {
 
       for (const sb of state.activeSideBets) {
         const def = SIDE_BET_MAP[sb.type]
-        if (def.resolveAt === 'deal') {
+        if (def && def.resolveAt === 'deal') {
           let won = false
           let payoutMultiplier = 0
           if (sb.type === SIDE_BET_TYPES.PERFECT_PAIR) {
