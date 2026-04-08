@@ -6,6 +6,7 @@ import { usePrevious } from './usePrevious'
 
 export function useSound(state) {
   const prevState = usePrevious(state)
+  const timersRef = useRef([])
 
   useAudioInit()
 
@@ -27,6 +28,9 @@ export function useSound(state) {
 
   // Trigger sounds on state transitions
   useEffect(() => {
+    timersRef.current.forEach(clearTimeout)
+    timersRef.current = []
+
     const prev = prevState
 
     // Chip sounds are handled directly in App.jsx handleChipTap for instant feedback
@@ -34,7 +38,7 @@ export function useSound(state) {
     // Deal — phase changed from betting to playing (4 cards dealt)
     if (prev.phase === 'betting' && state.phase === 'playing') {
       for (let i = 0; i < 4; i++) {
-        setTimeout(() => audioManager.play('card_deal'), i * 150)
+        timersRef.current.push(setTimeout(() => audioManager.play('card_deal'), i * 150))
       }
     }
 
@@ -67,23 +71,27 @@ export function useSound(state) {
     if (state.result && !prev.result) {
       if (state.result === RESULTS.BLACKJACK) {
         audioManager.play('blackjack')
-        setTimeout(() => audioManager.play('chip_collect'), 400)
+        timersRef.current.push(setTimeout(() => audioManager.play('chip_collect'), 400))
       } else if (state.result === RESULTS.WIN || state.result === RESULTS.DEALER_BUST) {
         audioManager.play('win')
-        setTimeout(() => audioManager.play('chip_collect'), 300)
+        timersRef.current.push(setTimeout(() => audioManager.play('chip_collect'), 300))
       } else if (state.result === RESULTS.BUST) {
         audioManager.play('bust')
-        setTimeout(() => audioManager.play('chip_sweep'), 350)
+        timersRef.current.push(setTimeout(() => audioManager.play('chip_sweep'), 350))
       } else if (state.result === RESULTS.LOSE) {
         audioManager.play('lose')
-        setTimeout(() => audioManager.play('chip_sweep'), 300)
+        timersRef.current.push(setTimeout(() => audioManager.play('chip_sweep'), 300))
       } else if (state.result === RESULTS.MIXED) {
         audioManager.play('win')
-        setTimeout(() => audioManager.play('chip_collect'), 300)
+        timersRef.current.push(setTimeout(() => audioManager.play('chip_collect'), 300))
       } else if (state.result === RESULTS.PUSH) {
         audioManager.play('card_flip')
       }
     }
 
+    return () => {
+      timersRef.current.forEach(clearTimeout)
+      timersRef.current = []
+    }
   }, [prevState, state.phase, state.result, state.playerHands, state.dealerHand, state.muted])
 }

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import audioManager from '../utils/audioManager'
 import { useAudioInit } from './useAudioInit'
 import { RESULTS } from '../constants/results'
@@ -6,6 +6,7 @@ import { usePrevious } from './usePrevious'
 
 export function useMultiplayerSound(state) {
   const prevState = usePrevious(state)
+  const timersRef = useRef([])
 
   useAudioInit()
 
@@ -15,6 +16,9 @@ export function useMultiplayerSound(state) {
   }, [state.muted])
 
   useEffect(() => {
+    timersRef.current.forEach(clearTimeout)
+    timersRef.current = []
+
     const prev = prevState
 
     // Cards dealt — transition from betting to playing
@@ -33,7 +37,7 @@ export function useMultiplayerSound(state) {
         totalCards = (Object.keys(state.playerStates).length + 1) * 2
       }
       for (let i = 0; i < totalCards; i++) {
-        setTimeout(() => audioManager.play('card_deal'), i * 120)
+        timersRef.current.push(setTimeout(() => audioManager.play('card_deal'), i * 120))
       }
     }
 
@@ -74,5 +78,9 @@ export function useMultiplayerSound(state) {
       }
     }
 
+    return () => {
+      timersRef.current.forEach(clearTimeout)
+      timersRef.current = []
+    }
   }, [prevState, state.phase, state.dealerHand, state.playerStates, state.playerId, state.muted])
 }
