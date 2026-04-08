@@ -133,9 +133,5 @@ export function determineDealerCategory(prevState, newState, trigger) {
     return null
   }
 
-  if (trigger === 'reset') {
-    return { category: 'greeting', context: {} }
-  }
-
   return null
 }

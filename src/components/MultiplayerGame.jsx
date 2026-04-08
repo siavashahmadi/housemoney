@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { sumChipStack } from '../utils/chipUtils'
 import { useMultiplayerSound } from '../hooks/useMultiplayerSound'
 import { useChipInteraction } from '../hooks/useChipInteraction'
@@ -38,7 +38,6 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
 
   useMultiplayerSound(state)
 
-  const [_showDebtTracker, setShowDebtTracker] = useState(false)
   const circleRef = useRef(null)
   const { flyingChips, handleChipTap, handleUndo, removeFlyingChip } = useChipInteraction(
     dispatch, mpChipActions, stateRef, circleRef
@@ -68,7 +67,6 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
   const handleClear = useCallback(() => dispatch({ type: MP_CLEAR_CHIPS }), [dispatch])
   const handleAllIn = useCallback(() => dispatch({ type: MP_ALL_IN }), [dispatch])
   const handleToggleAssetMenu = useCallback(() => dispatch({ type: MP_TOGGLE_ASSET_MENU }), [dispatch])
-  const handleToggleDebtTracker = useCallback(() => setShowDebtTracker(prev => !prev), [])
   const handleTakeLoan = useCallback(() => send({ type: 'take_loan' }), [send])
 
   // Submit bet to server (equivalent of "DEAL" in solo)
@@ -149,7 +147,6 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
         onToggleMute={handleToggleMute}
         isHost={state.isHost}
         onViewStats={handleViewStats}
-        onToggleDebtTracker={handleToggleDebtTracker}
       />
       <BankrollDisplay
         bankroll={bankroll}
