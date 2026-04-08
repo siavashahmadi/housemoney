@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 800;
+  z-index: var(--z-panel);
   background: rgba(0, 0, 0, 0.85);
   animation: fadeIn 0.3s ease-out both;
   overflow-y: auto;
@@ -106,6 +106,6 @@
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
