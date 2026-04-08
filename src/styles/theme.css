@@ -30,6 +30,18 @@
   --text-dim:         rgba(232, 224, 208, 0.5);
   --surface:          rgba(0, 0, 0, 0.25);
 
+  /* Toast & popup backgrounds */
+  --comp-accent:         #7FFFD4;
+  --toast-bg-gold:       #2a1f00;
+  --toast-bg-gold-end:   #1a1400;
+  --toast-bg-danger:     #1a0a0a;
+  --toast-bg-danger-end: #140808;
+  --popup-bg-danger:     #3a0a0a;
+  --popup-bg-danger-end: #1a0505;
+  --comp-bg:             #3a2a0a;
+  --comp-bg-end:         #1a1205;
+  --modal-bg-warm:       #1a1a10;
+
   /* Overlay & panel tokens */
   --overlay-bg:       rgba(0, 0, 0, 0.7);
   --panel-bg:         rgba(10, 10, 10, 0.92);
@@ -45,10 +57,15 @@
   --radius-xl: 16px;
 
   /* Z-index scale */
+  --z-base: 1;
   --z-sticky: 100;
-  --z-overlay: 200;
+  --z-dropdown: 200;
+  --z-overlay: 400;
+  --z-panel: 600;
   --z-modal: 800;
-  --z-toast: 900;
+  --z-popup: 900;
+  --z-toast: 1000;
+  --z-critical: 1100;
 
   /* ===== Sizing Tokens (responsive, overridden per breakpoint) ===== */
 
@@ -244,4 +261,23 @@ a {
 img, svg {
   display: block;
   max-width: 100%;
+}
+
+/* Very short phones (e.g., iPhone SE landscape, phones with large browser chrome) */
+@media (max-height: 600px) and (max-width: 480px) {
+  :root {
+    --circle-size: 96px;
+    --hand-min-height: 56px;
+    --action-btn-height: 40px;
+    --action-btn-font: 13px;
+    --bankroll-font-size: 22px;
+  }
+}
+
+/* Extremely cramped — narrow AND short */
+@media (max-width: 375px) and (max-height: 600px) {
+  :root {
+    --circle-size: 80px;
+    --hand-min-height: 50px;
+  }
 }
