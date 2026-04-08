@@ -2,9 +2,10 @@ import { useEffect, useRef } from 'react'
 import audioManager from '../utils/audioManager'
 import { useAudioInit } from './useAudioInit'
 import { RESULTS } from '../constants/results'
+import { usePrevious } from './usePrevious'
 
 export function useSound(state) {
-  const prevRef = useRef(state)
+  const prevState = usePrevious(state)
 
   useAudioInit()
 
@@ -26,7 +27,7 @@ export function useSound(state) {
 
   // Trigger sounds on state transitions
   useEffect(() => {
-    const prev = prevRef.current
+    const prev = prevState
 
     // Chip sounds are handled directly in App.jsx handleChipTap for instant feedback
 
@@ -84,6 +85,5 @@ export function useSound(state) {
       }
     }
 
-    prevRef.current = state
-  }, [state.phase, state.result, state.playerHands, state.dealerHand, state.muted]) // eslint-disable-line react-hooks/exhaustive-deps -- prevRef pattern; adding full state would re-run on every render
+  }, [prevState, state.phase, state.result, state.playerHands, state.dealerHand, state.muted])
 }

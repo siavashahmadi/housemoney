@@ -1,15 +1,13 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { TABLE_LEVELS } from '../constants/tableLevels'
 import { isLossResult } from '../utils/cardUtils'
 import { offerDoubleOrNothing } from '../reducer/actions'
+import { usePrevious } from './usePrevious'
 
 export function useDoubleOrNothing(state, dispatch) {
-  const prevPhaseRef = useRef(state.phase)
+  const prevPhase = usePrevious(state.phase)
 
   useEffect(() => {
-    const prevPhase = prevPhaseRef.current
-    prevPhaseRef.current = state.phase
-
     // Only trigger on transition TO result phase
     if (state.phase !== 'result' || prevPhase === 'result') return
 
@@ -34,5 +32,5 @@ export function useDoubleOrNothing(state, dispatch) {
     }, 800)
 
     return () => clearTimeout(timer)
-  }, [state.phase, state.result, state.doubleOrNothing, state.playerHands, state.tableLevel, dispatch])
+  }, [prevPhase, state.phase, state.result, state.doubleOrNothing, state.playerHands, state.tableLevel, dispatch])
 }

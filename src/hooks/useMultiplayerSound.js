@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import audioManager from '../utils/audioManager'
 import { useAudioInit } from './useAudioInit'
 import { RESULTS } from '../constants/results'
+import { usePrevious } from './usePrevious'
 
 export function useMultiplayerSound(state) {
-  const prevRef = useRef(state)
+  const prevState = usePrevious(state)
 
   useAudioInit()
 
@@ -14,7 +15,7 @@ export function useMultiplayerSound(state) {
   }, [state.muted])
 
   useEffect(() => {
-    const prev = prevRef.current
+    const prev = prevState
 
     // Cards dealt — transition from betting to playing
     if (prev.phase === 'betting' && state.phase === 'playing') {
@@ -73,6 +74,5 @@ export function useMultiplayerSound(state) {
       }
     }
 
-    prevRef.current = state
-  }, [state.phase, state.dealerHand, state.playerStates, state.playerId, state.muted]) // eslint-disable-line react-hooks/exhaustive-deps -- prevRef pattern
+  }, [prevState, state.phase, state.dealerHand, state.playerStates, state.playerId, state.muted])
 }

@@ -2,9 +2,10 @@ import { useEffect, useRef } from 'react'
 import { setDealerMessage } from '../reducer/actions'
 import { selectDealerLine, determineDealerCategory } from '../utils/dealerMessages'
 import { TABLE_LEVELS } from '../constants/tableLevels'
+import { usePrevious } from './usePrevious'
 
 export function useDealerMessage(state, dispatch) {
-  const prevStateRef = useRef(state)
+  const prevState = usePrevious(state)
   const hasInitRef = useRef(false)
 
   // Greeting on initial mount
@@ -24,7 +25,7 @@ export function useDealerMessage(state, dispatch) {
 
   // All trigger-based messages in one effect
   useEffect(() => {
-    const prev = prevStateRef.current
+    const prev = prevState
 
     // Determine which trigger fired (check in priority order)
     let category = null
@@ -71,6 +72,7 @@ export function useDealerMessage(state, dispatch) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally narrow: only fire on specific state transitions, not every dispatch
   }, [
+    prevState,
     state.handsPlayed,
     state.phase,
     state.bettedAssets,
@@ -85,8 +87,4 @@ export function useDealerMessage(state, dispatch) {
     dispatch,
   ])
 
-  // Always update prevStateRef LAST so the trigger effect reads the previous state
-  useEffect(() => {
-    prevStateRef.current = state
-  })
 }

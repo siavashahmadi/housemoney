@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { isWinResult, isLossResult } from '../utils/cardUtils'
 import { unlockAchievement, loadAchievements } from '../reducer/actions'
 import { RESULTS } from '../constants/results'
+import { usePrevious } from './usePrevious'
 
 const STORAGE_KEY = 'blackjack_achievements'
 
@@ -97,7 +98,7 @@ function checkAchievements(prevState, state) {
 }
 
 export function useAchievements(state, dispatch) {
-  const prevStateRef = useRef(state)
+  const prevState = usePrevious(state)
   const loadedRef = useRef(false)
 
   // Effect 1: Load from localStorage on mount
@@ -120,14 +121,13 @@ export function useAchievements(state, dispatch) {
   // Effect 2: Check achievements when handsPlayed increments
   useEffect(() => {
     if (state.handsPlayed === 0) return
-    const prevState = prevStateRef.current
     if (state.handsPlayed <= prevState.handsPlayed) return
 
     const newIds = checkAchievements(prevState, state)
     for (const id of newIds) {
       dispatch(unlockAchievement(id))
     }
-  }, [state, dispatch])
+  }, [state, prevState, dispatch])
 
   // Effect 3: Persist to localStorage when achievements change
   useEffect(() => {
@@ -141,7 +141,6 @@ export function useAchievements(state, dispatch) {
 
   // Effect 4: Clear localStorage on game reset
   useEffect(() => {
-    const prevState = prevStateRef.current
     if (state.handsPlayed === 0 && prevState.handsPlayed > 0) {
       try {
         localStorage.removeItem(STORAGE_KEY)
@@ -149,17 +148,16 @@ export function useAchievements(state, dispatch) {
         // ignore
       }
     }
-  }, [state.handsPlayed])
+  }, [state.handsPlayed, prevState])
 
   // Effect 5: Debt mode achievement — triggers on TAKE_LOAN (not on hands played)
   useEffect(() => {
-    const prevState = prevStateRef.current
     if (state.inDebtMode && !prevState.inDebtMode) {
       if (!state.unlockedAchievements.includes('point_of_no_return')) {
         dispatch(unlockAchievement('point_of_no_return'))
       }
     }
-  }, [state.inDebtMode, state.unlockedAchievements, dispatch])
+  }, [state.inDebtMode, state.unlockedAchievements, prevState, dispatch])
 
   // Effect 6: Double or Nothing achievements — triggers between hands
   useEffect(() => {
@@ -174,8 +172,4 @@ export function useAchievements(state, dispatch) {
     }
   }, [state.donFlipsWon, state.donLastChainLength, state.donBiggestStakes, state.unlockedAchievements, dispatch])
 
-  // Always update prevStateRef last
-  useEffect(() => {
-    prevStateRef.current = state
-  })
 }
