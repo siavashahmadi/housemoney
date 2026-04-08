@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-popup);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,7 +12,7 @@
 }
 
 .popup {
-  background: linear-gradient(135deg, #3a0a0a, #1a0505);
+  background: linear-gradient(135deg, var(--popup-bg-danger), var(--popup-bg-danger-end));
   border: 1px solid rgba(231, 76, 60, 0.4);
   border-radius: 12px;
   padding: 24px 28px;
@@ -42,6 +42,11 @@
   letter-spacing: 1px;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes loanSharkSlideIn {
   0% {
     transform: translateY(-20px) scale(0.95);
@@ -51,9 +56,4 @@
     transform: translateY(0) scale(1);
     opacity: 1;
   }
-}
-
-@keyframes fadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
 }
