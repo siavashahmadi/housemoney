@@ -19,8 +19,7 @@ function Header({
   onToggleHandHistory,
   muted,
   onToggleMute,
-  notificationsEnabled,
-  onToggleNotifications,
+  onToggleSettings,
   onBack,
   // Multiplayer props
   mode,
@@ -102,14 +101,16 @@ function Header({
                 Hand History
               </button>
             )}
-            {!isMultiplayer && (
-              <button className={styles.menuItem} onClick={() => { closeMenu(); onToggleNotifications(); }}>
-                Notifications {notificationsEnabled ? 'On' : 'Off'}
+            {!isMultiplayer && onToggleSettings && (
+              <button className={styles.menuItem} onClick={() => { closeMenu(); onToggleSettings(); }}>
+                Settings
               </button>
             )}
-            <button className={styles.menuItem} onClick={() => { closeMenu(); onToggleMute(); }}>
-              Sound {muted ? 'Off' : 'On'}
-            </button>
+            {isMultiplayer && (
+              <button className={styles.menuItem} onClick={() => { closeMenu(); onToggleMute(); }}>
+                Sound {muted ? 'Off' : 'On'}
+              </button>
+            )}
             {isMultiplayer && isHost && (
               <button className={styles.menuItem} onClick={() => { closeMenu(); onViewStats(); }}>
                 Stats

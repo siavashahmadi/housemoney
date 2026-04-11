@@ -41,6 +41,9 @@ export const CLEAR_SIDE_BET = 'CLEAR_SIDE_BET'
 export const OFFER_DOUBLE_OR_NOTHING = 'OFFER_DOUBLE_OR_NOTHING'
 export const ACCEPT_DOUBLE_OR_NOTHING = 'ACCEPT_DOUBLE_OR_NOTHING'
 export const DECLINE_DOUBLE_OR_NOTHING = 'DECLINE_DOUBLE_OR_NOTHING'
+export const TOGGLE_SETTINGS = 'TOGGLE_SETTINGS'
+export const TOGGLE_ACHIEVEMENTS_ENABLED = 'TOGGLE_ACHIEVEMENTS_ENABLED'
+export const TOGGLE_DD_FACE_DOWN = 'TOGGLE_DD_FACE_DOWN'
 
 // Action creators for actions with payloads
 export const addChip = (value) => ({ type: ADD_CHIP, value })

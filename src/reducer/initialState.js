@@ -102,6 +102,9 @@ export function createInitialState() {
     loanSharkQueue: [],
     muted: false,
     notificationsEnabled: true,
+    showSettings: false,
+    achievementsEnabled: true,
+    ddCardFaceDown: false,
   }
 }
 
