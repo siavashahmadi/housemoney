@@ -91,6 +91,7 @@
   --bankroll-font-size: 28px;
   --action-btn-height: 48px;
   --action-btn-font: 15px;
+  --controls-area-height: 260px;
 }
 
 /* ===== Table Level Felt Colors ===== */
@@ -158,6 +159,7 @@
     --hand-min-height: 70px;
     --action-btn-height: 44px;
     --action-btn-font: 14px;
+    --controls-area-height: 240px;
   }
 }
 
@@ -271,6 +273,7 @@ img, svg {
     --action-btn-height: 40px;
     --action-btn-font: 13px;
     --bankroll-font-size: 22px;
+    --controls-area-height: 220px;
   }
 }
 
