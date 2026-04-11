@@ -1,7 +1,7 @@
 import { useReducer, useRef, useCallback, useMemo, useState, useEffect } from 'react'
 import { gameReducer } from '../reducer/gameReducer'
 import { createInitialState } from '../reducer/initialState'
-import { createDeck, shuffle } from '../utils/cardUtils'
+import { createDeck, shuffle, cardValue } from '../utils/cardUtils'
 import { sumChipStack } from '../utils/chipUtils'
 import { drawFromDeck } from '../utils/deckUtils'
 import { TABLE_LEVELS } from '../constants/tableLevels'
@@ -12,7 +12,7 @@ import {
   takeLoan, newRound, resetGame,
   UNDO_CHIP, CLEAR_CHIPS, ALL_IN, STAND,
   TOGGLE_ASSET_MENU, DISMISS_LOAN_SHARK, TOGGLE_ACHIEVEMENTS, DISMISS_ACHIEVEMENT,
-  TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY, DISMISS_TABLE_TOAST,
+  TOGGLE_MUTE, TOGGLE_NOTIFICATIONS, TOGGLE_DEBT_TRACKER, TOGGLE_HAND_HISTORY, DISMISS_TABLE_TOAST, TOGGLE_SETTINGS, TOGGLE_ACHIEVEMENTS_ENABLED, TOGGLE_DD_FACE_DOWN,
   ACCEPT_TABLE_UPGRADE, DECLINE_TABLE_UPGRADE, DISMISS_COMP,
   TOGGLE_SIDE_BETS,
   placeSideBet, removeSideBetChip, clearSideBet,
@@ -47,6 +47,7 @@ import TableUpgradeModal from './TableUpgradeModal'
 import DoubleOrNothingModal from './DoubleOrNothingModal'
 import SideBetPanel from './SideBetPanel'
 import SideBetResults from './SideBetResults'
+import SettingsPanel from './SettingsPanel'
 import FlyingChip from './FlyingChip'
 import styles from './SoloGame.module.css'
 
@@ -197,6 +198,9 @@ function SoloGame({ onBack }) {
   const handleDismissAchievement = useCallback(() => dispatch({ type: DISMISS_ACHIEVEMENT }), [])
   const handleToggleMute = useCallback(() => dispatch({ type: TOGGLE_MUTE }), [])
   const handleToggleNotifications = useCallback(() => dispatch({ type: TOGGLE_NOTIFICATIONS }), [])
+  const handleToggleSettings = useCallback(() => dispatch({ type: TOGGLE_SETTINGS }), [])
+  const handleToggleAchievementsEnabled = useCallback(() => dispatch({ type: TOGGLE_ACHIEVEMENTS_ENABLED }), [])
+  const handleToggleDdFaceDown = useCallback(() => dispatch({ type: TOGGLE_DD_FACE_DOWN }), [])
   const handlePlaceSideBet = useCallback(
     (betType) => dispatch(placeSideBet(betType, stateRef.current.selectedChipValue)),
     []
@@ -230,7 +234,7 @@ function SoloGame({ onBack }) {
     if (currentActiveHand.cards.length !== 2) return false
     if (currentActiveHand.isSplitAces) return false
     if (state.playerHands.length >= 4) return false
-    return currentActiveHand.cards[0].rank === currentActiveHand.cards[1].rank
+    return cardValue(currentActiveHand.cards[0]) === cardValue(currentActiveHand.cards[1])
   }, [state.phase, currentActiveHand, state.playerHands.length])
 
   const hideHoleCard = state.phase === 'playing'
@@ -247,8 +251,7 @@ function SoloGame({ onBack }) {
         onToggleHandHistory={handleToggleHandHistory}
         muted={state.muted}
         onToggleMute={handleToggleMute}
-        notificationsEnabled={state.notificationsEnabled}
-        onToggleNotifications={handleToggleNotifications}
+        onToggleSettings={handleToggleSettings}
         onBack={handleBack}
       />
       <BankrollDisplay
@@ -288,6 +291,7 @@ function SoloGame({ onBack }) {
             activeHandIndex={state.activeHandIndex}
             phase={state.phase}
             bettedAssets={state.bettedAssets}
+            ddCardFaceDown={state.ddCardFaceDown}
           />
         </div>
         {state.sideBetResults.length > 0 && (
@@ -458,7 +462,7 @@ function SoloGame({ onBack }) {
         />
       )}
 
-      {state.notificationsEnabled && state.achievementQueue.length > 0 && (
+      {state.notificationsEnabled && state.achievementsEnabled && state.achievementQueue.length > 0 && (
         <AchievementToast
           key={state.achievementQueue[0]}
           achievementId={state.achievementQueue[0]}
@@ -479,6 +483,20 @@ function SoloGame({ onBack }) {
 
       {state.showHandHistory && (
         <HandHistory handHistory={state.handHistory} onClose={handleToggleHandHistory} />
+      )}
+
+      {state.showSettings && (
+        <SettingsPanel
+          muted={state.muted}
+          notificationsEnabled={state.notificationsEnabled}
+          achievementsEnabled={state.achievementsEnabled}
+          ddCardFaceDown={state.ddCardFaceDown}
+          onToggleMute={handleToggleMute}
+          onToggleNotifications={handleToggleNotifications}
+          onToggleAchievementsEnabled={handleToggleAchievementsEnabled}
+          onToggleDdFaceDown={handleToggleDdFaceDown}
+          onClose={handleToggleSettings}
+        />
       )}
     </div>
   )

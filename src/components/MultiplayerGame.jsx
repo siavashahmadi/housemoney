@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { sumChipStack } from '../utils/chipUtils'
+import { cardValue } from '../utils/cardUtils'
 import { useMultiplayerSound } from '../hooks/useMultiplayerSound'
 import { useChipInteraction } from '../hooks/useChipInteraction'
 import {
@@ -133,7 +134,7 @@ function MultiplayerGame({ state, send, dispatch, onLeave }) {
     if (!activeHand || activeHand.cards?.length !== 2) return false
     if (activeHand.is_split_aces) return false
     if ((localPlayer.hands?.length || 0) >= 4) return false
-    return activeHand.cards[0].rank === activeHand.cards[1].rank
+    return cardValue(activeHand.cards[0]) === cardValue(activeHand.cards[1])
   }, [state.phase, isMyTurn, localPlayer.hands, localPlayer.active_hand_index])
 
   return (

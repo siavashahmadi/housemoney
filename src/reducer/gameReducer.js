@@ -10,11 +10,12 @@ import {
   SET_DEALER_MESSAGE, SET_LOAN_SHARK_MESSAGE,
   LOAD_HIGHEST_DEBT, SET_COMP_MESSAGE, DISMISS_COMP,
   OFFER_DOUBLE_OR_NOTHING, ACCEPT_DOUBLE_OR_NOTHING, DECLINE_DOUBLE_OR_NOTHING,
+  TOGGLE_SETTINGS, TOGGLE_ACHIEVEMENTS_ENABLED, TOGGLE_DD_FACE_DOWN,
 } from './actions'
 import { createInitialState, createHandObject } from './initialState'
 import { BLACKJACK_PAYOUT, RESHUFFLE_THRESHOLD, MAX_SPLIT_HANDS } from '../constants/gameConfig'
 import { getTableLevel, getTableChips, TABLE_LEVELS } from '../constants/tableLevels'
-import { handValue, isBlackjack, isWinResult, isLossResult } from '../utils/cardUtils'
+import { handValue, cardValue, isBlackjack, isWinResult, isLossResult } from '../utils/cardUtils'
 import { decomposeIntoChips, sumChipStack } from '../utils/chipUtils'
 import { getVigRate } from '../constants/vigRates'
 import { ASSETS } from '../constants/assets'
@@ -456,7 +457,7 @@ export function gameReducer(state, action) {
 
       const splitHand = activeHand(state)
       if (!splitHand || splitHand.cards.length !== 2) return state
-      if (splitHand.cards[0].rank !== splitHand.cards[1].rank) return state
+      if (cardValue(splitHand.cards[0]) !== cardValue(splitHand.cards[1])) return state
       if (splitHand.isSplitAces) return state
       if (splitHand.bet === 0) return state
       if (state.bankroll - splitHand.bet < 0 && !state.inDebtMode) return state
@@ -815,7 +816,7 @@ export function gameReducer(state, action) {
     }
 
     case RESET_GAME: {
-      return { ...createInitialState(), deck: action.freshDeck, muted: state.muted, notificationsEnabled: state.notificationsEnabled }
+      return { ...createInitialState(), deck: action.freshDeck, muted: state.muted, notificationsEnabled: state.notificationsEnabled, achievementsEnabled: state.achievementsEnabled, ddCardFaceDown: state.ddCardFaceDown }
     }
 
     case TOGGLE_ASSET_MENU: {
@@ -899,6 +900,18 @@ export function gameReducer(state, action) {
 
     case TOGGLE_NOTIFICATIONS: {
       return { ...state, notificationsEnabled: !state.notificationsEnabled }
+    }
+
+    case TOGGLE_SETTINGS: {
+      return { ...state, showSettings: !state.showSettings }
+    }
+
+    case TOGGLE_ACHIEVEMENTS_ENABLED: {
+      return { ...state, achievementsEnabled: !state.achievementsEnabled }
+    }
+
+    case TOGGLE_DD_FACE_DOWN: {
+      return { ...state, ddCardFaceDown: !state.ddCardFaceDown }
     }
 
     case LOAD_HIGHEST_DEBT: {

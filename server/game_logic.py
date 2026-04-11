@@ -683,8 +683,8 @@ class GameEngine:
             raise ValueError("Can only split with exactly two cards")
         if hand["is_split_aces"]:
             raise ValueError("Cannot re-split aces")
-        if hand["cards"][0]["rank"] != hand["cards"][1]["rank"]:
-            raise ValueError("Can only split cards of equal rank")
+        if card_value(hand["cards"][0]) != card_value(hand["cards"][1]):
+            raise ValueError("Can only split cards of equal value")
         if hand["bet"] == 0:
             raise ValueError("Cannot split a zero bet")
 
