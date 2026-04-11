@@ -1,4 +1,4 @@
-# Blackjack: Unlimited Debt Edition
+# House Money
 
 A mobile-first blackjack web app where you can never go broke -- the casino extends unlimited credit, letting you spiral into fictional debt by betting your watch, car, house, kidney, and immortal soul. A sarcastic dealer trash-talks your every decision while loan sharks send increasingly threatening messages. Play solo or bring friends to the table with real-time multiplayer.
 
