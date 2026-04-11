@@ -26,6 +26,7 @@
   display: flex;
   justify-content: center;
   align-self: end;
+  transition: filter 0.3s ease;
 }
 
 .playerRow {
@@ -33,6 +34,15 @@
   display: flex;
   justify-content: center;
   align-self: start;
+  transition: opacity 0.3s ease;
+}
+
+.dealerSpotlight .playerRow {
+  opacity: 0.6;
+}
+
+.dealerSpotlight .dealerRow {
+  filter: brightness(1.15);
 }
 
 /* SideBetResults overlay — floats above the grid without occupying a row */
@@ -79,12 +89,6 @@
 }
 
 .phaseContent {
-  animation: controlsFadeIn 0.15s ease-out;
-}
-
-@keyframes controlsFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .waitingMessage {

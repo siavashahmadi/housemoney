@@ -1,42 +1,63 @@
 import React, { useState, useEffect } from 'react'
+import { m, AnimatePresence } from 'motion/react'
 import styles from './DealerSpeechBubble.module.css'
 
 const DISPLAY_MS = 4000
-const FADE_MS = 600
 
 function DealerSpeechBubble({ message, dealerName }) {
   const [visible, setVisible] = useState(false)
-  const [fading, setFading] = useState(false)
+  const [displayedText, setDisplayedText] = useState('')
 
-  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!message) {
       setVisible(false)
-      setFading(false)
       return
     }
 
     setVisible(true)
-    setFading(false)
 
-    const fadeTimer = setTimeout(() => setFading(true), DISPLAY_MS)
-    const hideTimer = setTimeout(() => setVisible(false), DISPLAY_MS + FADE_MS)
+    const hideTimer = setTimeout(() => setVisible(false), DISPLAY_MS)
 
     return () => {
-      clearTimeout(fadeTimer)
       clearTimeout(hideTimer)
     }
   }, [message])
-  /* eslint-enable react-hooks/set-state-in-effect */
 
-  if (!visible || !message) return null
+  useEffect(() => {
+    if (!message) {
+      setDisplayedText('')
+      return
+    }
+
+    setDisplayedText('')
+    let index = 0
+    const interval = Math.min(300 / message.length, 30)
+    const timer = setInterval(() => {
+      index++
+      setDisplayedText(message.slice(0, index))
+      if (index >= message.length) clearInterval(timer)
+    }, interval)
+
+    return () => clearInterval(timer)
+  }, [message])
 
   return (
-    <div className={`${styles.bubble}${fading ? ` ${styles.fadeOut}` : ''}`} key={message}>
-      {dealerName && <span className={styles.dealerName}>{dealerName}</span>}
-      <p className={styles.text}>{message}</p>
-      <div className={styles.tail} />
-    </div>
+    <AnimatePresence>
+      {visible && message && (
+        <m.div
+          className={styles.bubble}
+          key={message}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.3 }}
+        >
+          {dealerName && <span className={styles.dealerName}>{dealerName}</span>}
+          <p className={styles.text}>{displayedText}</p>
+          <div className={styles.tail} />
+        </m.div>
+      )}
+    </AnimatePresence>
   )
 }
 

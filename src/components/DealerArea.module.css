@@ -50,6 +50,10 @@
   color: var(--text-primary);
 }
 
+.bust {
+  color: #e74c3c !important;
+}
+
 /* Shuffle riffle animation container */
 .reshuffleAnimation {
   position: absolute;

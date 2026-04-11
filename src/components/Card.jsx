@@ -68,26 +68,17 @@ function renderAce(symbol, size) {
   )
 }
 
-const DEAL_TYPE_CLASS = {
-  deal: 'dealing',
-  hit: 'hitting',
-  dealerDraw: 'dealerDraw',
-  flip: 'flipping',
-}
-
-const Card = memo(function Card({ card, faceDown = false, index = 0, animate = true, size = 'normal', dealType = 'deal' }) {
+const Card = memo(function Card({ card, faceDown = false, size = 'normal' }) {
   if (!card) return null
 
   // Server sends {rank: "?", suit: "?"} for hidden hole card
   const isHidden = faceDown || card.rank === '?'
   const sizeClass = size === 'small' ? styles.small : size === 'medium' ? styles.medium : ''
-  const animClass = animate && DEAL_TYPE_CLASS[dealType] ? styles[DEAL_TYPE_CLASS[dealType]] : ''
-  const animationStyle = animate ? { animationDelay: `${index * 150}ms` } : undefined
-  const cardClass = `${styles.card}${animClass ? ` ${animClass}` : ''}${sizeClass ? ` ${sizeClass}` : ''}`
+  const cardClass = `${styles.card}${sizeClass ? ` ${sizeClass}` : ''}`
 
   if (isHidden) {
     return (
-      <div className={cardClass} style={animationStyle}>
+      <div className={cardClass}>
         <div className={styles.back} />
       </div>
     )
@@ -108,7 +99,7 @@ const Card = memo(function Card({ card, faceDown = false, index = 0, animate = t
   }
 
   return (
-    <div className={cardClass} style={animationStyle}>
+    <div className={cardClass}>
       <div className={`${styles.face} ${colorClass}`}>
         <div className={styles.cornerTopLeft}>
           <span className={styles.rank}>{card.rank}</span>

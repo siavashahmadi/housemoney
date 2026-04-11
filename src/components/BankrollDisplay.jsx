@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useMotionValue, useSpring } from 'motion/react'
 import { formatMoney } from '../utils/formatters'
 import { CREDIT_LABEL_TIERS, getCreditTierIndex } from '../constants/creditLabels'
 import styles from './BankrollDisplay.module.css'
@@ -16,7 +17,19 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
   const isOnCredit = bankroll > 0 && currentBetTotal > bankroll
   const debtClass = getDebtClass(bankroll)
 
-  // Escalating credit labels — local UI state
+  const motionBankroll = useMotionValue(bankroll)
+  const springBankroll = useSpring(motionBankroll, { stiffness: 300, damping: 30, restDelta: 1 })
+  const [displayValue, setDisplayValue] = useState(bankroll)
+
+  useEffect(() => { motionBankroll.set(bankroll) }, [bankroll, motionBankroll])
+
+  useEffect(() => {
+    const unsubscribe = springBankroll.on('change', (v) => {
+      setDisplayValue(Math.round(v))
+    })
+    return unsubscribe
+  }, [springBankroll])
+
   const [creditLabel, setCreditLabel] = useState('')
   const prevTierRef = useRef(-1)
   const prevHandsRef = useRef(handsPlayed)
@@ -65,7 +78,7 @@ function BankrollDisplay({ bankroll, currentBetTotal = 0, handsPlayed = 0, vigAm
   return (
     <div className={styles.display}>
       <span className={`${styles.amount} ${colorClass} ${debtClass}`}>
-        {formatMoney(bankroll)}
+        {formatMoney(displayValue)}
       </span>
       {isOnCredit && (
         <span className={styles.creditLabel}>

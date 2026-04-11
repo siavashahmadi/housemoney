@@ -6,6 +6,7 @@ import MultiplayerGame from './components/MultiplayerGame'
 import { multiplayerReducer } from './reducer/multiplayerReducer'
 import { multiplayerInitialState } from './reducer/multiplayerInitialState'
 import { useWebSocket } from './hooks/useWebSocket'
+import MotionProvider from './motion/MotionProvider'
 import styles from './App.module.css'
 
 function MultiplayerApp({ onBack }) {
@@ -46,20 +47,22 @@ function App() {
   const [mode, setMode] = useState(null)
 
   return (
-    <div className={styles.app}>
-      {mode === null && (
-        <ModeSelect
-          onSelectSolo={() => setMode('solo')}
-          onSelectMultiplayer={() => setMode('multiplayer')}
-        />
-      )}
-      {mode === 'solo' && (
-        <SoloGame onBack={() => setMode(null)} />
-      )}
-      {mode === 'multiplayer' && (
-        <MultiplayerApp onBack={() => setMode(null)} />
-      )}
-    </div>
+    <MotionProvider>
+      <div className={styles.app}>
+        {mode === null && (
+          <ModeSelect
+            onSelectSolo={() => setMode('solo')}
+            onSelectMultiplayer={() => setMode('multiplayer')}
+          />
+        )}
+        {mode === 'solo' && (
+          <SoloGame onBack={() => setMode(null)} />
+        )}
+        {mode === 'multiplayer' && (
+          <MultiplayerApp onBack={() => setMode(null)} />
+        )}
+      </div>
+    </MotionProvider>
   )
 }
 

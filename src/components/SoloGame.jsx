@@ -1,4 +1,5 @@
 import { useReducer, useRef, useCallback, useMemo, useState, useEffect } from 'react'
+import { m, AnimatePresence } from 'motion/react'
 import { gameReducer } from '../reducer/gameReducer'
 import { createInitialState } from '../reducer/initialState'
 import { createDeck, shuffle } from '../utils/cardUtils'
@@ -259,7 +260,7 @@ function SoloGame({ onBack }) {
         vigRate={state.vigRate}
       />
 
-      <div className={styles.table}>
+      <div className={`${styles.table}${state.phase === 'dealerTurn' ? ` ${styles.dealerSpotlight}` : ''}`}>
         <span className={styles.feltWatermark} key={TABLE_LEVELS[state.tableLevel].id}>
           {TABLE_LEVELS[state.tableLevel].subtitle}
         </span>
@@ -305,9 +306,16 @@ function SoloGame({ onBack }) {
       </div>
 
       <div className={styles.controlsArea}>
-        <div className={styles.phaseContent}>
+        <AnimatePresence>
           {state.phase === 'betting' && (
-            <>
+            <m.div
+              key="betting"
+              className={styles.phaseContent}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+            >
               <BettingControls
                 bankroll={state.bankroll}
                 selectedChipValue={state.selectedChipValue}
@@ -341,30 +349,57 @@ function SoloGame({ onBack }) {
                   inDebtMode={state.inDebtMode}
                 />
               )}
-            </>
+            </m.div>
           )}
           {state.phase === 'playing' && (
-            <ActionButtons
-              onHit={handleHit}
-              onStand={handleStand}
-              onDoubleDown={handleDoubleDown}
-              canDoubleDown={canDoubleDown}
-              onSplit={handleSplit}
-              canSplit={canSplit}
-            />
+            <m.div
+              key="playing"
+              className={styles.phaseContent}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <ActionButtons
+                onHit={handleHit}
+                onStand={handleStand}
+                onDoubleDown={handleDoubleDown}
+                canDoubleDown={canDoubleDown}
+                onSplit={handleSplit}
+                canSplit={canSplit}
+              />
+            </m.div>
           )}
           {state.phase === 'dealerTurn' && (
-            <div className={styles.waitingMessage}>Dealer&apos;s turn...</div>
+            <m.div
+              key="dealerTurn"
+              className={styles.phaseContent}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <div className={styles.waitingMessage}>Dealer&apos;s turn...</div>
+            </m.div>
           )}
           {state.phase === 'result' && state.chipStack.length === 0 && !state.doubleOrNothing && (
-            <ResultBanner
-              result={state.result}
-              bankroll={state.bankroll}
-              playerHands={state.playerHands}
-              onNextHand={handleNewRound}
-            />
+            <m.div
+              key="result"
+              className={styles.phaseContent}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ResultBanner
+                result={state.result}
+                bankroll={state.bankroll}
+                playerHands={state.playerHands}
+                onNextHand={handleNewRound}
+              />
+            </m.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
 
       {/* Flying chip animations */}

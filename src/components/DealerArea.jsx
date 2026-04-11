@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
+import { m } from 'motion/react'
 import Hand from './Hand'
 import DealerSpeechBubble from './DealerSpeechBubble'
 import { handValue, cardValue } from '../utils/cardUtils'
@@ -19,7 +20,7 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
   useEffect(() => {
     if (prevPhaseRef.current === 'playing' && phase === 'dealerTurn') {
       setFlipHoleCard(true)
-      const timer = setTimeout(() => setFlipHoleCard(false), 600)
+      const timer = setTimeout(() => setFlipHoleCard(false), 300)
       prevPhaseRef.current = phase
       return () => clearTimeout(timer)
     }
@@ -82,7 +83,18 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
           )}
         </div>
       </div>
-      <span className={styles.value}>{hasCards ? displayValue : '\u00A0'}</span>
+      {hasCards && displayValue !== '' ? (
+        <m.span
+          className={`${styles.value}${displayValue > 21 ? ` ${styles.bust}` : ''}`}
+          initial={{ scale: 1.25 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        >
+          {displayValue}
+        </m.span>
+      ) : (
+        <span className={styles.value}>{'\u00A0'}</span>
+      )}
     </div>
   )
 }

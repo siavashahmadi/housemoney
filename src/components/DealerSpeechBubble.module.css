@@ -7,7 +7,6 @@
   max-width: min(85vw, 500px);
   width: max-content;
   text-align: center;
-  animation: speechFadeIn 0.4s ease-out both;
   overflow: hidden;
 }
 
@@ -38,30 +37,4 @@
 
 .tail {
   display: none;
-}
-
-.fadeOut {
-  animation: speechFadeOut 0.6s ease-in forwards;
-}
-
-@keyframes speechFadeIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes speechFadeOut {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
 }

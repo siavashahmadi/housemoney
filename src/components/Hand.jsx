@@ -1,6 +1,29 @@
 import { memo, useRef, useEffect } from 'react'
+import { m, AnimatePresence } from 'motion/react'
 import Card from './Card'
 import styles from './Hand.module.css'
+
+const DEAL_ANIMATIONS = {
+  deal: {
+    initial: { x: 150, y: -100, rotate: -5, scale: 0.4, opacity: 0 },
+    animate: { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 },
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+  hit: {
+    initial: { x: 100, y: -60, rotate: 8, scale: 0.5, opacity: 0 },
+    animate: { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 },
+    transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+  dealerDraw: {
+    initial: { x: 60, scale: 0.9, opacity: 0 },
+    animate: { x: 0, scale: 1, opacity: 1 },
+    transition: { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] },
+  },
+  flip: {
+    animate: { scaleX: [1, 0, 1], scale: [1, 1.05, 1] },
+    transition: { duration: 0.3, ease: 'easeInOut' },
+  },
+}
 
 function getCardMargin(cardCount, cardIndex, size) {
   if (cardIndex === 0) return 0
@@ -46,29 +69,39 @@ const Hand = memo(function Hand({ cards = [], hideFirst = false, animate = true,
 
   return (
     <div className={styles.hand}>
-      {cards.map((card, i) => {
-        const isNew = newCardIds.has(card.id)
-        const isFlipping = i === flipIndex
-        return (
-          <div
-            key={card.id}
-            className={styles.handCard}
-            style={{
-              marginLeft: getCardMargin(cardCount, i, size),
-              zIndex: i,
-            }}
-          >
-            <Card
-              card={card}
-              faceDown={hideFirst && i === 0}
-              index={isNew ? (newCardStagger.get(card.id) || 0) : 0}
-              animate={animate && (isNew || isFlipping)}
-              size={size}
-              dealType={isFlipping ? 'flip' : dealType}
-            />
-          </div>
-        )
-      })}
+      <AnimatePresence>
+        {cards.map((card, i) => {
+          const isNew = newCardIds.has(card.id)
+          const isFlipping = i === flipIndex
+          const shouldAnimate = animate && (isNew || isFlipping)
+          const animType = isFlipping ? 'flip' : dealType
+          const anim = shouldAnimate && animType ? DEAL_ANIMATIONS[animType] : null
+          const staggerDelay = isNew ? (newCardStagger.get(card.id) || 0) * 0.2 : 0
+          return (
+            <m.div
+              key={card.id}
+              className={styles.handCard}
+              initial={anim ? anim.initial : false}
+              animate={anim ? anim.animate : undefined}
+              exit={{ opacity: 0, y: -30, scale: 0.8 }}
+              transition={anim
+                ? { ...anim.transition, delay: staggerDelay, exit: { duration: 0.3 } }
+                : { exit: { duration: 0.3 } }
+              }
+              style={{
+                marginLeft: getCardMargin(cardCount, i, size),
+                zIndex: i,
+              }}
+            >
+              <Card
+                card={card}
+                faceDown={hideFirst && i === 0}
+                size={size}
+              />
+            </m.div>
+          )
+        })}
+      </AnimatePresence>
     </div>
   )
 })

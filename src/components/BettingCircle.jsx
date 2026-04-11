@@ -1,4 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef, forwardRef } from 'react'
+import { m, useAnimate } from 'motion/react'
+import { stagger } from 'motion'
 import { CHIP_MAP } from '../constants/chips'
 import { isWinResult } from '../utils/cardUtils'
 import { sumChipStack } from '../utils/chipUtils'
@@ -20,6 +22,7 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
   const prevChipLenRef = useRef(chipStack.length)
   // Track which chip index is "new" to animate only the landing chip
   const [newChipIndex, setNewChipIndex] = useState(-1)
+  const [chipScope, animateChips] = useAnimate()
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -63,9 +66,29 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
     }
   }, [displayChips, displayAssets])
 
-  const animOutStyle = animatingOut
-    ? (isWin ? styles.spreadOut : styles.sweepOut)
-    : ''
+  const chipSelector = `.${styles.stackedChip}`
+
+  useEffect(() => {
+    if (!animatingOut || visibleChips.length === 0) return
+
+    if (isWin) {
+      animateChips(chipSelector, (i) => ({
+        y: 80,
+        x: (i - visibleChips.length / 2) * 15,
+        rotate: (i - visibleChips.length / 2) * -8,
+        scale: 0.5,
+        opacity: 0,
+      }), { duration: 0.5, delay: stagger(0.04) })
+    } else {
+      animateChips(chipSelector, () => ({
+        x: (Math.random() - 0.5) * 160,
+        y: (Math.random() - 0.5) * 120 - 30,
+        rotate: (Math.random() - 0.5) * 90,
+        scale: 0.3,
+        opacity: 0,
+      }), { duration: 0.5, delay: stagger(0.03, { from: 'last' }) })
+    }
+  }, [animatingOut, isWin, animateChips, visibleChips.length, chipSelector])
 
   return (
     <div className={styles.wrapper} ref={ref}>
@@ -77,20 +100,14 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isEmpty) onUndo() }}
       >
         {visibleChips.length > 0 && (
-          <div className={styles.chipStack}>
+          <div className={styles.chipStack} ref={chipScope}>
             {visibleChips.map((value, i) => {
               const chip = CHIP_MAP[value] || CHIP_MAP[25]
-              // Map newChipIndex into visible range
               const visibleStart = displayChips.length - visibleChips.length
               const isNew = newChipIndex >= 0 && i === newChipIndex - visibleStart
-              // Stagger result animations per chip (top chips leave first for sweep, bottom first for spread)
-              const staggerDelay = animatingOut
-                ? `${(isWin ? i : visibleChips.length - 1 - i) * 40}ms`
-                : undefined
               const chipClasses = [
                 styles.stackedChip,
                 isNew ? styles.chipLanding : '',
-                animOutStyle,
               ].filter(Boolean).join(' ')
               return (
                 <div
@@ -98,7 +115,7 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
                   className={chipClasses}
                   style={isNew
                     ? { '--land-x': `${i}px`, '--land-y': `${-i * 3}px`, zIndex: i }
-                    : { transform: `translate(-50%, -50%) translate(${i}px, ${-i * 3}px)`, zIndex: i, animationDelay: staggerDelay }
+                    : { transform: `translate(-50%, -50%) translate(${i}px, ${-i * 3}px)`, zIndex: i }
                   }
                 >
                   <Chip
@@ -113,10 +130,20 @@ const BettingCircle = React.memo(forwardRef(function BettingCircle(
                 </div>
               )
             })}
+            {animatingOut && isWin && total > 0 && (
+              <m.span
+                className={styles.winAmount}
+                initial={{ opacity: 0, y: 0, scale: 0.8 }}
+                animate={{ opacity: [0, 1, 1, 0], y: -40, scale: [0.8, 1.1, 1.1, 1] }}
+                transition={{ duration: 1 }}
+              >
+                +{formatMoney(total)}
+              </m.span>
+            )}
           </div>
         )}
         {displayAssets.length > 0 && (
-          <div className={`${styles.assetChips} ${animOutStyle}`}>
+          <div className={styles.assetChips}>
             {displayAssets.map((asset, i) => {
               const baseOffset = visibleChips.length
               return (

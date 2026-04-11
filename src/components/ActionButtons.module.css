@@ -13,12 +13,8 @@
   font-weight: 700;
   color: #fff;
   letter-spacing: 1px;
-  transition: transform 0.1s ease;
   touch-action: manipulation;
-}
-
-.button:active {
-  transform: scale(0.97);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .hit {
