@@ -52,13 +52,16 @@
 
 /* Shuffle riffle animation container */
 .reshuffleAnimation {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0;
   height: 60px;
-  margin-bottom: 8px;
+  z-index: 15;
   animation: reshuffleFadeInOut 1.5s ease-out forwards;
 }
 

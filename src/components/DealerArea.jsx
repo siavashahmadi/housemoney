@@ -82,9 +82,7 @@ function DealerArea({ hand, phase, hideHoleCard, dealerMessage, deckLength, deal
           )}
         </div>
       </div>
-      {hasCards && (
-        <span className={styles.value}>{displayValue}</span>
-      )}
+      <span className={styles.value}>{hasCards ? displayValue : '\u00A0'}</span>
     </div>
   )
 }
