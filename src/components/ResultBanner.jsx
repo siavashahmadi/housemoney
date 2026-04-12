@@ -83,6 +83,16 @@ function ResultBanner({ result, bankroll, onNextHand, playerHands = [], autoAdva
 
   return (
     <div className={styles.controls}>
+      <span className={`${styles.resultText} ${styles[config.colorClass]}`}>
+        {isSplit && result === RESULTS.MIXED ? getSplitResultText(playerHands) : config.text}
+      </span>
+
+      {result !== RESULTS.PUSH && netPayout !== 0 && (
+        <span className={`${styles.payout} ${netPayout >= 0 ? styles.payoutWin : styles.payoutLoss}`}>
+          {netPayout >= 0 ? '+' : ''}{formatMoney(Math.abs(netPayout))}
+        </span>
+      )}
+
       {autoAdvance ? (
         <span className={styles.countdownText}>
           Next round in {countdown ?? '...'}s

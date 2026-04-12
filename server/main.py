@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import time
 
-from constants import NEW_ROUND_DELAY, QUICK_CHAT_MESSAGES, STARTING_BANKROLL
+from constants import DEALER_REVEAL_DELAY, NEW_ROUND_DELAY, QUICK_CHAT_MESSAGES, STARTING_BANKROLL
 from game_logic import GameEngine
 from game_room import (
     MIN_PLAYERS,
@@ -26,6 +26,17 @@ from game_room import (
     remove_player_from_room,
     rooms,
     validate_player_name,
+)
+from slots_constants import SPIN_TIMEOUT
+from slots_engine import SlotsEngine
+from slots_room import (
+    add_player_to_slots_room,
+    create_slots_room,
+    get_slots_player_list,
+    get_slots_room,
+    remove_player_from_slots_room,
+    reset_round_state,
+    slots_rooms,
 )
 
 logging.basicConfig(
@@ -110,6 +121,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 engine = GameEngine()
+slots_engine = SlotsEngine()
 
 # Quick chat rate limiting: player_id -> last send timestamp
 chat_cooldowns: dict[str, float] = {}
@@ -129,6 +141,12 @@ turn_timers: dict[str, asyncio.Task] = {}
 
 # Bet timers: room_code -> asyncio.Task that auto-skips AFK bettors after BET_TIMEOUT
 bet_timers: dict[str, asyncio.Task] = {}
+
+# Slots spin timers: room_code -> asyncio.Task that auto-spins AFK players
+slots_spin_timers: dict[str, asyncio.Task] = {}
+
+# Track which game type each player is in: player_id -> "blackjack" | "slots"
+player_game_types: dict[str, str] = {}
 
 
 # --- Background Tasks ---
@@ -214,7 +232,7 @@ app.add_middleware(
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "rooms": len(rooms)}
+    return {"status": "ok", "rooms": len(rooms), "slots_rooms": len(slots_rooms)}
 
 
 # --- Message Handlers ---
@@ -249,6 +267,7 @@ async def handle_create_room(player_id: str, message: dict):
 
     room = create_room(name, player_id)
     manager.player_rooms[player_id] = room.code
+    player_game_types[player_id] = "blackjack"
 
     logger.info(f"Room {room.code} created by {name} ({player_id})")
 
@@ -299,6 +318,7 @@ async def handle_join_room(player_id: str, message: dict):
         return
 
     manager.player_rooms[player_id] = room.code
+    player_game_types[player_id] = "blackjack"
 
     logger.info(f"{name} ({player_id}) joined room {room.code}")
 
@@ -409,6 +429,7 @@ async def handle_leave(player_id: str):
 
         new_host_id = remove_player_from_room(room, player_id)
         manager.player_rooms.pop(player_id, None)
+        player_game_types.pop(player_id, None)
         manager.cancel_disconnect_task(player_id)
         chat_cooldowns.pop(player_id, None)
         action_cooldowns.pop(player_id, None)
@@ -493,12 +514,20 @@ async def handle_disconnect(player_id: str, websocket: WebSocket = None, generat
         chat_cooldowns.pop(player_id, None)
         action_cooldowns.pop(player_id, None)
         room_create_cooldowns.pop(player_id, None)
+        player_game_types.pop(player_id, None)
         _cancel_turn_timer(player_id)
+        return
+
+    # Route slots players to their own disconnect/leave logic
+    if player_game_types.get(player_id) == "slots":
+        manager.disconnect(player_id)
+        await handle_leave_slots(player_id)
         return
 
     room = get_room(room_code)
     if not room or player_id not in room.players:
         manager.player_rooms.pop(player_id, None)
+        player_game_types.pop(player_id, None)
         manager.disconnect(player_id)
         chat_cooldowns.pop(player_id, None)
         action_cooldowns.pop(player_id, None)
@@ -904,6 +933,11 @@ async def _run_dealer_and_advance(room: GameRoom, room_code: str):
             active_pids = [pid for pid in room.turn_order if pid in room.players]
             all_busted = all(room.players[pid].status == "bust" for pid in active_pids)
 
+        # Pause so clients can render the revealed hole card before any draws or resolution.
+        # The dealer_turn_start event (with the hole card revealed) was already broadcast
+        # by _advance_turn; this delay ensures the client has time to display it.
+        await asyncio.sleep(DEALER_REVEAL_DELAY)
+
         if not all_busted:
             # Draw dealer cards one at a time, releasing the lock between draws
             while True:
@@ -1086,6 +1120,406 @@ async def handle_view_stats(player_id: str):
     )
 
 
+# --- Slots Handlers ---
+
+
+def _cancel_slots_spin_timer(room_code: str):
+    task = slots_spin_timers.pop(room_code, None)
+    if task and not task.done():
+        task.cancel()
+
+
+def _start_slots_spin_timer(room_code: str):
+    """Auto-spin AFK players after SPIN_TIMEOUT seconds."""
+    _cancel_slots_spin_timer(room_code)
+
+    async def _auto_spin():
+        await asyncio.sleep(SPIN_TIMEOUT)
+        room = get_slots_room(room_code)
+        if not room:
+            return
+        async with room._lock:
+            if room.phase != "spinning":
+                return
+            # Auto-spin any connected player who hasn't spun
+            events = []
+            for pid, player in room.players.items():
+                if player.connected and not player.has_spun:
+                    logger.info(f"Slots spin timer expired for {player.name} in room {room_code}")
+                    events.extend(slots_engine.auto_spin(room, pid))
+
+            for event in events:
+                await _slots_broadcast(room_code, event)
+
+            # If round resolved, schedule next round
+            if room.phase == "round_result":
+                asyncio.create_task(_slots_advance_after_round(room_code))
+
+    slots_spin_timers[room_code] = asyncio.create_task(_auto_spin())
+
+
+async def _slots_broadcast(room_code: str, message: dict):
+    """Broadcast to all connected players in a slots room."""
+    room = get_slots_room(room_code)
+    if not room:
+        return
+    msg_text = json.dumps(message)
+    for pid, player in room.players.items():
+        if not player.connected:
+            continue
+        ws = manager.connections.get(pid)
+        if ws:
+            try:
+                await ws.send_text(msg_text)
+            except Exception as e:
+                logger.warning("Failed to broadcast to slots player %s: %s", pid, e)
+
+
+async def _slots_advance_after_round(room_code: str, delay: float = 3.0):
+    """Wait then advance to next round."""
+    await asyncio.sleep(delay)
+    room = get_slots_room(room_code)
+    if not room:
+        return
+    async with room._lock:
+        if room.phase != "round_result":
+            return
+        events = slots_engine.advance_round(room)
+        for event in events:
+            await _slots_broadcast(room_code, event)
+        _start_slots_spin_timer(room_code)
+
+
+async def handle_create_slots_room(player_id: str, message: dict):
+    if len(slots_rooms) >= MAX_ROOMS:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Server is full. Try again later."}
+        )
+        return
+
+    now = time.monotonic()
+    if now - room_create_cooldowns.get(player_id, 0) < ROOM_CREATE_COOLDOWN_SECONDS:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Please wait before creating another room."}
+        )
+        return
+    room_create_cooldowns[player_id] = now
+
+    if player_id in manager.player_rooms:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "You are already in a room. Leave first."}
+        )
+        return
+
+    try:
+        name = validate_player_name(message.get("player_name"))
+    except ValueError as e:
+        await manager.send_to_player(player_id, {"type": "error", "message": str(e)})
+        return
+
+    room = create_slots_room(name, player_id)
+    manager.player_rooms[player_id] = room.code
+    player_game_types[player_id] = "slots"
+
+    logger.info(f"Slots room {room.code} created by {name} ({player_id})")
+
+    await manager.send_to_player(
+        player_id,
+        {
+            "type": "slots_room_created",
+            "code": room.code,
+            "player_id": player_id,
+            "session_token": room.players[player_id].session_token,
+            "players": get_slots_player_list(room),
+            "total_rounds": room.total_rounds,
+            "bet_per_round": room.bet_per_round,
+        },
+    )
+
+
+async def handle_join_slots_room(player_id: str, message: dict):
+    if player_id in manager.player_rooms:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "You are already in a room. Leave first."}
+        )
+        return
+
+    try:
+        name = validate_player_name(message.get("player_name"))
+    except ValueError as e:
+        await manager.send_to_player(player_id, {"type": "error", "message": str(e)})
+        return
+
+    code = message.get("code", "").strip().upper()
+    if not code:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Room code is required"}
+        )
+        return
+
+    room = get_slots_room(code)
+    if not room:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Room not found"}
+        )
+        return
+
+    try:
+        add_player_to_slots_room(room, name, player_id)
+    except ValueError as e:
+        await manager.send_to_player(player_id, {"type": "error", "message": str(e)})
+        return
+
+    manager.player_rooms[player_id] = room.code
+    player_game_types[player_id] = "slots"
+
+    logger.info(f"{name} ({player_id}) joined slots room {code}")
+
+    player_list = get_slots_player_list(room)
+
+    await manager.send_to_player(
+        player_id,
+        {
+            "type": "slots_player_joined",
+            "player_name": name,
+            "player_id": player_id,
+            "session_token": room.players[player_id].session_token,
+            "code": room.code,
+            "players": player_list,
+            "total_rounds": room.total_rounds,
+            "bet_per_round": room.bet_per_round,
+        },
+    )
+
+    await _slots_broadcast(
+        room.code,
+        {
+            "type": "slots_player_joined",
+            "player_name": name,
+            "player_id": player_id,
+            "players": player_list,
+        },
+    )
+
+
+async def handle_configure_slots(player_id: str, message: dict):
+    room_code = manager.player_rooms.get(player_id)
+    if not room_code:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "You are not in a room"}
+        )
+        return
+
+    room = get_slots_room(room_code)
+    if not room:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Room not found"}
+        )
+        return
+
+    if room.host_id != player_id:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Only the host can configure"}
+        )
+        return
+
+    if room.phase != "lobby":
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Cannot configure during game"}
+        )
+        return
+
+    total_rounds = message.get("total_rounds")
+    bet_per_round = message.get("bet_per_round")
+
+    if total_rounds is not None:
+        if total_rounds not in ROUND_OPTIONS:
+            await manager.send_to_player(
+                player_id, {"type": "error", "message": f"Rounds must be one of {ROUND_OPTIONS}"}
+            )
+            return
+        room.total_rounds = total_rounds
+
+    if bet_per_round is not None:
+        if not isinstance(bet_per_round, int) or isinstance(bet_per_round, bool):
+            await manager.send_to_player(
+                player_id, {"type": "error", "message": "Bet must be an integer"}
+            )
+            return
+        if bet_per_round < 25 or bet_per_round > 10_000_000:
+            await manager.send_to_player(
+                player_id, {"type": "error", "message": "Bet must be between $25 and $10,000,000"}
+            )
+            return
+        room.bet_per_round = bet_per_round
+
+    await _slots_broadcast(
+        room_code,
+        {
+            "type": "slots_configured",
+            "total_rounds": room.total_rounds,
+            "bet_per_round": room.bet_per_round,
+            "buy_in": room.total_rounds * room.bet_per_round,
+        },
+    )
+
+
+async def handle_start_slots(player_id: str):
+    room_code = manager.player_rooms.get(player_id)
+    if not room_code:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "You are not in a room"}
+        )
+        return
+
+    room = get_slots_room(room_code)
+    if not room:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Room not found"}
+        )
+        return
+
+    if room.host_id != player_id:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Only the host can start the game"}
+        )
+        return
+
+    async with room._lock:
+        try:
+            events = slots_engine.start_game(room)
+        except ValueError as e:
+            await manager.send_to_player(player_id, {"type": "error", "message": str(e)})
+            return
+
+        logger.info(f"Slots game started in room {room_code}")
+
+        for event in events:
+            await _slots_broadcast(room_code, event)
+
+        _start_slots_spin_timer(room_code)
+
+
+async def handle_slots_spin(player_id: str):
+    room_code = manager.player_rooms.get(player_id)
+    if not room_code:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "You are not in a room"}
+        )
+        return
+
+    room = get_slots_room(room_code)
+    if not room:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Room not found"}
+        )
+        return
+
+    async with room._lock:
+        try:
+            events = slots_engine.handle_spin(room, player_id)
+        except ValueError as e:
+            await manager.send_to_player(player_id, {"type": "error", "message": str(e)})
+            return
+
+        for event in events:
+            await _slots_broadcast(room_code, event)
+
+        # If round resolved, cancel spin timer and schedule next round
+        if room.phase == "round_result":
+            _cancel_slots_spin_timer(room_code)
+            asyncio.create_task(_slots_advance_after_round(room_code))
+        elif room.phase == "final_result":
+            _cancel_slots_spin_timer(room_code)
+
+
+async def handle_leave_slots(player_id: str):
+    room_code = manager.player_rooms.get(player_id)
+    if not room_code:
+        await manager.send_to_player(player_id, {"type": "left_room"})
+        return
+
+    room = get_slots_room(room_code)
+    if not room:
+        manager.player_rooms.pop(player_id, None)
+        player_game_types.pop(player_id, None)
+        await manager.send_to_player(player_id, {"type": "left_room"})
+        return
+
+    async with room._lock:
+        player_name = room.players[player_id].name if player_id in room.players else "Unknown"
+
+        new_host_id = remove_player_from_slots_room(room, player_id)
+        manager.player_rooms.pop(player_id, None)
+        player_game_types.pop(player_id, None)
+        manager.cancel_disconnect_task(player_id)
+        action_cooldowns.pop(player_id, None)
+
+        logger.info(f"{player_name} ({player_id}) left slots room {room_code}")
+
+        await manager.send_to_player(player_id, {"type": "left_room"})
+
+        remaining_room = get_slots_room(room_code)
+        if remaining_room:
+            new_host_name = None
+            if new_host_id and new_host_id in remaining_room.players:
+                new_host_name = remaining_room.players[new_host_id].name
+
+            await _slots_broadcast(
+                room_code,
+                {
+                    "type": "slots_player_left",
+                    "player_name": player_name,
+                    "players": get_slots_player_list(remaining_room),
+                    "new_host": new_host_name,
+                },
+            )
+
+            # If in spinning phase and all remaining players have spun, resolve
+            if remaining_room.phase == "spinning":
+                connected = [p for p in remaining_room.players.values() if p.connected]
+                if connected and all(p.has_spun for p in connected):
+                    events = slots_engine.resolve_round(remaining_room)
+                    for event in events:
+                        await _slots_broadcast(room_code, event)
+                    _cancel_slots_spin_timer(room_code)
+                    if remaining_room.phase == "round_result":
+                        asyncio.create_task(_slots_advance_after_round(room_code))
+                elif len(connected) < MIN_PLAYERS and remaining_room.phase != "lobby":
+                    # Not enough players — return to lobby
+                    events = slots_engine.return_to_lobby(remaining_room)
+                    for event in events:
+                        await _slots_broadcast(room_code, event)
+                    _cancel_slots_spin_timer(room_code)
+        else:
+            _cancel_slots_spin_timer(room_code)
+
+
+async def handle_slots_play_again(player_id: str):
+    """Return to lobby after game ends so host can start a new game."""
+    room_code = manager.player_rooms.get(player_id)
+    if not room_code:
+        return
+
+    room = get_slots_room(room_code)
+    if not room:
+        return
+
+    if room.host_id != player_id:
+        await manager.send_to_player(
+            player_id, {"type": "error", "message": "Only the host can start a new game"}
+        )
+        return
+
+    if room.phase != "final_result":
+        return
+
+    async with room._lock:
+        events = slots_engine.return_to_lobby(room)
+        for event in events:
+            await _slots_broadcast(room_code, event)
+
+
 async def handle_message(player_id: str, message: dict):
     msg_type = message.get("type")
 
@@ -1107,7 +1541,10 @@ async def handle_message(player_id: str, message: dict):
     elif msg_type == "start_game":
         await handle_start_game(player_id)
     elif msg_type == "leave":
-        await handle_leave(player_id)
+        if player_game_types.get(player_id) == "slots":
+            await handle_leave_slots(player_id)
+        else:
+            await handle_leave(player_id)
     elif msg_type == "pong":
         pass  # Heartbeat response, no action needed
     elif msg_type == "quick_chat":
@@ -1116,6 +1553,21 @@ async def handle_message(player_id: str, message: dict):
         await handle_view_stats(player_id)
     elif msg_type in ("place_bet", "bet_asset", "remove_asset", "take_loan", "hit", "stand", "double_down", "split"):
         await handle_game_action(player_id, message)
+    # --- Slots messages ---
+    elif msg_type == "create_slots_room":
+        await handle_create_slots_room(player_id, message)
+    elif msg_type == "join_slots_room":
+        await handle_join_slots_room(player_id, message)
+    elif msg_type == "configure_slots":
+        await handle_configure_slots(player_id, message)
+    elif msg_type == "start_slots":
+        await handle_start_slots(player_id)
+    elif msg_type == "slots_spin":
+        await handle_slots_spin(player_id)
+    elif msg_type == "leave_slots":
+        await handle_leave_slots(player_id)
+    elif msg_type == "slots_play_again":
+        await handle_slots_play_again(player_id)
     else:
         await manager.send_to_player(
             player_id,

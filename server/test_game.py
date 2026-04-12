@@ -1455,16 +1455,36 @@ class TestVigOnDeal(unittest.TestCase):
         bankroll_before = p.bankroll
         eng.place_bet(room, "player0", 100)
 
-        # Fix #4: Committed bets reduce effective bankroll for vig calculation.
-        # Bankroll=50, bet=100, other_committed=100 (the bet itself)
-        # effective_bankroll = max(0, 50 - 100) = 0
-        # borrowed = max(0, 100 - 0) = 100
+        # Bankroll=50, bet=100 → borrowed = max(0, 100 - 50) = 50
         # Vig rate at +50 bankroll = 0.02
         expected_rate = get_vig_rate(50)
         self.assertEqual(expected_rate, 0.02)
-        expected_vig = math.floor(100 * expected_rate)  # floor(2.0) = 2
+        expected_vig = math.floor(50 * expected_rate)  # floor(1.0) = 1
         self.assertEqual(p.vig_amount, expected_vig)
         self.assertEqual(p.bankroll, bankroll_before - expected_vig)
+
+    def test_no_vig_when_bet_equals_bankroll(self):
+        """Betting the full bankroll should charge zero vig (nothing borrowed)."""
+        room = make_room_with_players(1)
+        eng = GameEngine()
+        eng.start_game(room)
+
+        p = room.players["player0"]
+        p.bankroll = 10_000
+
+        room.deck = [
+            make_card("5"),   # p0 card1
+            make_card("7"),   # dealer card1
+            make_card("8"),   # p0 card2
+            make_card("9"),   # dealer card2
+        ] + [make_card("2")] * 50
+
+        bankroll_before = p.bankroll
+        eng.place_bet(room, "player0", 10_000)
+
+        # Bankroll=10000, bet=10000 → borrowed=max(0, 10000-10000)=0 → vig=0
+        self.assertEqual(p.vig_amount, 0)
+        self.assertEqual(p.bankroll, bankroll_before)
 
 
 # =============================================================================

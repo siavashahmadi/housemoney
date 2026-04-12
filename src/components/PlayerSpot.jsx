@@ -99,9 +99,16 @@ const PlayerSpot = memo(function PlayerSpot({ player, isLocal, isActive, compact
         {hasCards && !isSplit && hands[0].hand_value > 0 && (
           <span className={styles.value}>{hands[0].hand_value}</span>
         )}
-        {player.bet > 0 && (
-          <span className={styles.bet}>${player.bet.toLocaleString()}</span>
-        )}
+        {(() => {
+          // During playing/result, player.bet is 0 (bet migrates to hand dicts on deal).
+          // Show sum of hand bets when cards are dealt, otherwise the pre-deal bet.
+          const totalBet = hasCards
+            ? hands.reduce((sum, h) => sum + (h.bet || 0), 0)
+            : player.bet
+          return totalBet > 0 ? (
+            <span className={styles.bet}>${totalBet.toLocaleString()}</span>
+          ) : null
+        })()}
         {player.betted_assets?.length > 0 && (
           <span className={styles.assets}>
             {player.betted_assets.map(a => a.emoji || a.name).join(' ')}

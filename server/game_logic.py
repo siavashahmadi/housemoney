@@ -430,13 +430,12 @@ class GameEngine:
 
         room.dealer_hand = [drawn[num_players], drawn[num_players * 2 + 1]]
 
-        # Calculate and apply vig for each player's borrowed portion
-        # Fix #4: Pass the hand bet as other_committed so vig treats it as
-        # unavailable bankroll (the bet is already committed to the hand).
+        # Calculate and apply vig for each player's borrowed portion.
+        # No other_committed here — the initial deal has no prior hands.
         for pid in active_pids:
             player = room.players[pid]
             hand = player.hands[0]
-            self._apply_vig(player, hand["bet"], other_committed=hand["bet"])
+            self._apply_vig(player, hand["bet"])
 
             # Fix #25: Also charge vig on asset value when bankroll < 0
             if player.betted_assets and player.bankroll < 0:
