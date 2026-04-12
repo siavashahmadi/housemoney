@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { SLOT_SYMBOLS } from '../../constants/slotSymbols'
 import styles from './SlotReel.module.css'
 
@@ -11,45 +11,27 @@ const SYMBOL_STRIP = Array.from({ length: REPEAT_COUNT }, () => SLOT_SYMBOLS).fl
 function SlotReel({ targetSymbol, spinning, delay = 0, onStop }) {
   // Animation state machine: idle → spinning → landing → stopped
   const [animState, setAnimState] = useState('idle')
-  const stripRef = useRef(null)
-  const finalYRef = useRef(0)
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (spinning && animState === 'idle') {
-      // Start spinning
       setAnimState('spinning')
 
-      // After delay + 800ms, begin landing
       const landTimer = setTimeout(() => {
-        const targetIndex = targetSymbol.index
-        const targetPos = 4 * SYMBOL_COUNT + targetIndex // land on 4th repetition
-        const finalY = -(targetPos - 1)                  // offset by 1 for center row
-        finalYRef.current = finalY
-
-        // Apply the final translateY before switching to landing class
-        // so the transition animates FROM current position TO final
-        if (stripRef.current) {
-          stripRef.current.style.transform = `translateY(calc(${finalY} * var(--symbol-height)))`
-        }
-
         setAnimState('landing')
       }, 800 + delay)
 
       return () => clearTimeout(landTimer)
     }
-  }, [spinning, animState, targetSymbol, delay])
-  /* eslint-enable react-hooks/set-state-in-effect */
+  }, [spinning, animState, delay])
 
   // Reset to idle when spinning goes false after stopped
   useEffect(() => {
     if (!spinning && animState === 'stopped') {
       setAnimState('idle')
-      if (stripRef.current) {
-        stripRef.current.style.transform = ''
-      }
     }
   }, [spinning, animState])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function handleTransitionEnd() {
     if (animState === 'landing') {
@@ -69,16 +51,19 @@ function SlotReel({ targetSymbol, spinning, delay = 0, onStop }) {
     .filter(Boolean)
     .join(' ')
 
-  // Inline style for final position during landing/stopped
+  // Calculate final position from targetSymbol (derived, not stored in ref)
+  const targetIndex = targetSymbol ? targetSymbol.index : 0
+  const targetPos = 4 * SYMBOL_COUNT + targetIndex
+  const finalY = -(targetPos - 1)
+
   const stripStyle =
     animState === 'landing' || animState === 'stopped'
-      ? { transform: `translateY(calc(${finalYRef.current} * var(--symbol-height)))` }
+      ? { transform: `translateY(calc(${finalY} * var(--symbol-height)))` }
       : {}
 
   return (
     <div className={styles.reel}>
       <div
-        ref={stripRef}
         className={stripClass}
         style={stripStyle}
         onTransitionEnd={handleTransitionEnd}
