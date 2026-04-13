@@ -2,6 +2,7 @@ import { useState, useReducer, useCallback } from 'react'
 import ModeSelect from './components/ModeSelect'
 import SoloGame from './components/SoloGame'
 import SoloSlots from './components/slots/SoloSlots'
+import MultiplayerSlotsApp from './components/slots/MultiplayerSlotsApp'
 import Lobby from './components/Lobby'
 import MultiplayerGame from './components/MultiplayerGame'
 import { multiplayerReducer } from './reducer/multiplayerReducer'
@@ -59,6 +60,9 @@ function App() {
       )}
       {mode === 'solo-slots' && (
         <SoloSlots onBack={() => setMode(null)} />
+      )}
+      {mode === 'multiplayer-slots' && (
+        <MultiplayerSlotsApp onBack={() => setMode(null)} />
       )}
     </div>
   )

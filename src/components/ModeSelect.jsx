@@ -54,8 +54,8 @@ function ModeSelect({ onSelectMode }) {
         </button>
 
         <button
-          className={`${styles.modeButton}${isBlackjack ? '' : ` ${styles.disabled}`}`}
-          onClick={isBlackjack ? () => onSelectMode('multiplayer-blackjack') : undefined}
+          className={styles.modeButton}
+          onClick={() => onSelectMode(`multiplayer-${selectedGame}`)}
         >
           <span className={styles.modeIcon}>{'\u{1F465}'}</span>
           <span className={styles.modeTitle}>{isBlackjack ? 'MULTIPLAYER' : 'BATTLE'}</span>
