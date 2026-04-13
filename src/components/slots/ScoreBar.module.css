@@ -1,0 +1,63 @@
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  min-width: 64px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nameSelf {
+  color: var(--gold);
+}
+
+.barTrack {
+  flex: 1;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--surface);
+  overflow: hidden;
+  position: relative;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 2px;
+}
+
+.barDefault {
+  background: rgba(240, 200, 80, 0.3);
+}
+
+.barLeader {
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+}
+
+.score {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dim);
+  min-width: 40px;
+}
+
+.scoreLeader {
+  color: var(--gold);
+}
