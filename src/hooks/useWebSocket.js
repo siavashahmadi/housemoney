@@ -7,7 +7,7 @@ const RECONNECT_BASE_DELAY = 1000
 // Only queue messages that are safe to replay after reconnect.
 // Game-action messages (hit, stand, double_down, split, place_bet, etc.)
 // must NOT be queued — replaying them after reconnect causes duplicate actions.
-const QUEUEABLE_TYPES = new Set(['create_room', 'join_room'])
+const QUEUEABLE_TYPES = new Set(['create_room', 'join_room', 'create_slots_room', 'join_slots_room'])
 
 /**
  * Manages a WebSocket connection to the multiplayer server.
@@ -88,7 +88,17 @@ export function useWebSocket(dispatch) {
         if (message.code) sessionStorage.setItem('mp_room_code', message.code)
         if (message.session_token) sessionStorage.setItem('mp_session_token', message.session_token)
       }
+      if (message.type === 'slots_room_created') {
+        if (message.player_id) sessionStorage.setItem('mp_player_id', message.player_id)
+        if (message.code) sessionStorage.setItem('mp_room_code', message.code)
+        if (message.session_token) sessionStorage.setItem('mp_session_token', message.session_token)
+      }
       if (message.type === 'player_joined' && !sessionStorage.getItem('mp_player_id')) {
+        if (message.player_id) sessionStorage.setItem('mp_player_id', message.player_id)
+        if (message.code) sessionStorage.setItem('mp_room_code', message.code)
+        if (message.session_token) sessionStorage.setItem('mp_session_token', message.session_token)
+      }
+      if (message.type === 'slots_player_joined' && !sessionStorage.getItem('mp_player_id')) {
         if (message.player_id) sessionStorage.setItem('mp_player_id', message.player_id)
         if (message.code) sessionStorage.setItem('mp_room_code', message.code)
         if (message.session_token) sessionStorage.setItem('mp_session_token', message.session_token)
@@ -106,7 +116,8 @@ export function useWebSocket(dispatch) {
       }
 
       // Reset reconnect counter only on confirmed room success
-      if (message.type === 'room_created' || message.type === 'player_joined' || message.type === 'reconnected') {
+      if (message.type === 'room_created' || message.type === 'player_joined' || message.type === 'reconnected' ||
+          message.type === 'slots_room_created' || message.type === 'slots_player_joined') {
         reconnectAttempts = 0
         // Flush any messages queued while disconnected
         if (pendingMessages.length > 0) {
