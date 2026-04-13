@@ -23,7 +23,7 @@ function SlotReel({ targetSymbol, spinning, delay = 0, onStop }) {
 
       return () => clearTimeout(landTimer)
     }
-  }, [spinning, animState, delay])
+  }, [spinning, delay]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset to idle when spinning goes false after stopped
   useEffect(() => {
