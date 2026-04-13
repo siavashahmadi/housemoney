@@ -3,7 +3,7 @@ import {
   DEALER_DRAW, TAKE_LOAN,
 } from './actions'
 import { createHandObject } from './initialState'
-import { BLACKJACK_PAYOUT, MAX_SPLIT_HANDS } from '../constants/gameConfig'
+import { MAX_SPLIT_HANDS } from '../constants/gameConfig'
 import { TABLE_LEVELS } from '../constants/tableLevels'
 import { handValue, cardValue, isBlackjack } from '../utils/cardUtils'
 import { sumChipStack } from '../utils/chipUtils'
