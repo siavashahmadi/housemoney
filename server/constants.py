@@ -15,6 +15,7 @@ BLACKJACK_PAYOUT = 1.5
 # Timing (seconds) — used for async dealer turn pacing
 DEALER_HIT_DELAY = 0.6
 DEALER_STAND_DELAY = 0.4
+DEALER_REVEAL_DELAY = 1.2  # Pause after revealing the hole card before drawing/resolving
 NEW_ROUND_DELAY = 5.0
 
 # Assets — unlockThreshold is the bankroll level at which the asset becomes bettable

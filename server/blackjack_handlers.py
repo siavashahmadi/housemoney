@@ -11,6 +11,7 @@ from fastapi import WebSocket
 
 from constants import (
     DEALER_HIT_DELAY,
+    DEALER_REVEAL_DELAY,
     DEALER_STAND_DELAY,
     NEW_ROUND_DELAY,
     QUICK_CHAT_MESSAGES,
@@ -812,6 +813,9 @@ async def _run_dealer_and_advance(room: GameRoom, room_code: str):
         async with room._lock:
             active_pids = [pid for pid in room.turn_order if pid in room.players]
             all_busted = all(room.players[pid].status == "bust" for pid in active_pids)
+
+        # Pause so clients can render the revealed hole card before any draws or resolution.
+        await asyncio.sleep(DEALER_REVEAL_DELAY)
 
         if not all_busted:
             # Draw dealer cards one at a time, releasing the lock between draws
