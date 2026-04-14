@@ -101,9 +101,9 @@ class TestHandleSpin(unittest.TestCase):
         events = self.engine.handle_spin(self.room, "p0")
         self.assertTrue(self.room.players["p0"].has_spun)
         self.assertEqual(self.room.players["p0"].current_spin, [CHERRY, CHERRY, CHERRY])
-        score = score_reels([CHERRY, CHERRY, CHERRY])["score"]  # 50
-        self.assertEqual(self.room.players["p0"].round_score, score)
-        self.assertEqual(self.room.players["p0"].total_score, score)
+        mult = score_reels([CHERRY, CHERRY, CHERRY])["multiplier"]  # 3
+        self.assertEqual(self.room.players["p0"].round_score, mult)
+        self.assertEqual(self.room.players["p0"].total_score, mult)
 
     @patch("slots_engine.generate_spin")
     def test_returns_spin_result_event(self, mock_spin):
@@ -163,7 +163,7 @@ class TestAdvanceRound(unittest.TestCase):
 
     @patch("slots_engine.generate_spin")
     def test_advance_resets_round_state(self, mock_spin):
-        mock_spin.return_value = [CHERRY, LEMON, BELL]
+        mock_spin.return_value = [CHERRY, CHERRY, CHERRY]  # triple, multiplier=3
         self.engine.handle_spin(self.room, "p0")
         self.engine.handle_spin(self.room, "p1")
         self.engine.advance_round(self.room)

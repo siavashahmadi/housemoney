@@ -51,21 +51,43 @@
   letter-spacing: 0.5px;
 }
 
+.buttonRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
 .nextButton {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 16px;
   font-weight: 900;
   color: var(--felt-dark);
   background: linear-gradient(135deg, var(--gold), var(--gold-dim));
-  padding: 12px 32px;
+  padding: 12px 24px;
   border-radius: 10px;
   letter-spacing: 2px;
   box-shadow: 0 2px 12px var(--gold-glow);
-  margin-top: 4px;
   touch-action: manipulation;
   transition: transform 0.1s ease;
 }
 
 .nextButton:active {
+  transform: scale(0.97);
+}
+
+.changeBetButton {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 12px 16px;
+  border-radius: 10px;
+  letter-spacing: 1px;
+  touch-action: manipulation;
+  transition: transform 0.1s ease;
+}
+
+.changeBetButton:active {
   transform: scale(0.97);
 }

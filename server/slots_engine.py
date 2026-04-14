@@ -68,8 +68,8 @@ class SlotsEngine:
         result = score_reels(reels)
 
         player.current_spin = reels
-        player.round_score = result["score"]
-        player.total_score += result["score"]
+        player.round_score = result["multiplier"]
+        player.total_score += result["multiplier"]
         player.has_spun = True
 
         events = [
@@ -77,7 +77,7 @@ class SlotsEngine:
                 "type": "slots_spin_result",
                 "player_id": player_id,
                 "reels": reels,
-                "score": result["score"],
+                "multiplier": result["multiplier"],
                 "match_type": result["match_type"],
                 "matched_symbol": result["matched_symbol"],
                 "total_score": player.total_score,

@@ -1,6 +1,5 @@
 import { memo } from 'react'
 import { formatMoney } from '../../utils/formatters'
-import { sumChipStack } from '../../utils/chipUtils'
 import styles from './SlotsResultBanner.module.css'
 
 const MATCH_CONFIG = {
@@ -11,15 +10,15 @@ const MATCH_CONFIG = {
 
 const SlotsResultBanner = memo(function SlotsResultBanner({
   matchType,
-  score,
+  multiplier,
   payout,
-  chipStack,
+  betAmount,
   bankroll,
-  onNextRound,
+  onSpinAgain,
+  onChangeBet,
   onReset,
 }) {
-  const bet = sumChipStack(chipStack)
-  const net = payout - bet
+  const net = payout - betAmount
   const config = MATCH_CONFIG[matchType] ?? MATCH_CONFIG.none
 
   let payoutClass
@@ -33,10 +32,12 @@ const SlotsResultBanner = memo(function SlotsResultBanner({
       ? `-${formatMoney(Math.abs(net))}`
       : formatMoney(0)
 
+  const multiplierLabel = multiplier > 0 ? `${multiplier}×` : ''
+
   return (
     <div className={styles.banner}>
       <span className={`${styles.matchText} ${styles[config.textClass]}`}>
-        {config.label}
+        {config.label}{multiplierLabel ? ` ${multiplierLabel}` : ''}
       </span>
 
       <span className={`${styles.payout} ${payoutClass}`}>
@@ -44,7 +45,7 @@ const SlotsResultBanner = memo(function SlotsResultBanner({
       </span>
 
       <span className={styles.scoreDetail}>
-        Score: {score} | Bet: {formatMoney(bet)} | Return: {formatMoney(payout)}
+        Bet: {formatMoney(betAmount)} | Return: {formatMoney(payout)}
       </span>
 
       {bankroll <= 0 ? (
@@ -52,9 +53,14 @@ const SlotsResultBanner = memo(function SlotsResultBanner({
           NEW GAME
         </button>
       ) : (
-        <button className={styles.nextButton} onClick={onNextRound}>
-          SPIN AGAIN
-        </button>
+        <div className={styles.buttonRow}>
+          <button className={styles.nextButton} onClick={onSpinAgain}>
+            SPIN AGAIN
+          </button>
+          <button className={styles.changeBetButton} onClick={onChangeBet}>
+            CHANGE BET
+          </button>
+        </div>
       )}
     </div>
   )

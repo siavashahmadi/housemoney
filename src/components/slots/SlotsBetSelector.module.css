@@ -1,0 +1,138 @@
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 16px;
+}
+
+.presetRow {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.presetButton {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px 10px;
+  border-radius: 8px;
+  min-height: 36px;
+  min-width: 52px;
+  transition: background 0.12s ease, color 0.12s ease;
+  touch-action: manipulation;
+}
+
+.presetButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.presetButton:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.presetButton.active {
+  color: var(--felt-dark);
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.maxButton {
+  color: #fff;
+  background: rgba(255, 59, 48, 0.25);
+  border: 1px solid rgba(255, 59, 48, 0.4);
+}
+
+.maxButton.active {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(255, 59, 48, 0.4);
+}
+
+/* Slider row */
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.sliderLabel {
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 36px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--gold-glow);
+  cursor: pointer;
+  border: 2px solid var(--felt-dark);
+}
+
+.slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 6px var(--gold-glow);
+  cursor: pointer;
+  border: 2px solid var(--felt-dark);
+}
+
+.slider:disabled {
+  opacity: 0.3;
+}
+
+/* Spin button */
+.spinButton {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--felt-dark);
+  background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+  padding: 0 24px;
+  min-height: 52px;
+  border-radius: 12px;
+  letter-spacing: 3px;
+  box-shadow: 0 2px 12px var(--gold-glow);
+  transition: transform 0.1s ease, opacity 0.15s ease;
+  touch-action: manipulation;
+}
+
+.spinButton:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.disabled:active {
+  transform: none;
+}
